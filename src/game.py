@@ -1,10 +1,12 @@
-from attributes import PlayerRank
+from src.attributes import PlayerRank
+from src.telnet import magenta, bold, white
 
 
 ########################################################################
 class Game(object):
     timer = None
     running = False
+
     ####################################################################
     def __init__(self, connection, player):
         self.connection = connection
@@ -28,7 +30,6 @@ class Game(object):
             # if not, record the command
             self.last_command = data
 
-        words =
         first_word, rest = data.split(None, 1)
 
         # REGULAR access commands
@@ -44,7 +45,7 @@ class Game(object):
     def leave(self): pass
 
     ####################################################################
-    def hungup(self): pass
+    def hung_up(self): pass
 
     ####################################################################
     def flooded(self): pass
@@ -156,6 +157,7 @@ class Game(object):
 
     ####################################################################
     # Enemy Functions Added in Chapter 10                            ###
+    ####################################################################
     ####################################################################
     @staticmethod
     def enemy_attack(enemy): pass

@@ -32,3 +32,49 @@ class ItemTest(unittest.TestCase):
         self.assertEqual(self.attr_set[Attributes.HP_REGEN], 7)
         self.assertEqual(self.attr_set[Attributes.DAMAGE_ABSORB], 0)
 
+    ####################################################################
+    def test_loading(self):
+        items = Item.load_data()
+        self.assertEqual(len(items), 72)
+        item = items[0]
+        self.assertEqual(item.id, 1)
+        self.assertEqual(item.name, "LIES!!!@~")
+        self.assertEqual(item.type, ItemType.HEALING)
+        self.assertEqual(item.min, 0)
+        self.assertEqual(item.max, 0)
+        self.assertEqual(item.price, 1)
+        self.assertEqual(item.speed, 0)
+        self.assertEqual(item.attributes.STRENGTH, 0)
+        self.assertEqual(item.attributes.HEALTH, 0)
+        self.assertEqual(item.attributes.AGILITY, 0)
+        self.assertEqual(item.attributes.MAX_HIT_POINTS, 0)
+        self.assertEqual(item.attributes.ACCURACY, 0)
+        self.assertEqual(item.attributes.DODGING, 0)
+        self.assertEqual(item.attributes.STRIKE_DAMAGE, 0)
+        self.assertEqual(item.attributes.DAMAGE_ABSORB, 0)
+        self.assertEqual(item.attributes.HP_REGEN, 0)
+
+        item = items[54]
+        self.assertEqual(item.id, 55)
+        self.assertEqual(item.name, "Platemail Armor of Power")
+        self.assertEqual(item.type, ItemType.ARMOR)
+        self.assertEqual(item.min, 0)
+        self.assertEqual(item.max, 0)
+        self.assertEqual(item.price, 15000)
+        self.assertEqual(item.speed, 0)
+        self.assertEqual(item.attributes.STRENGTH, 0)
+        self.assertEqual(item.attributes.HEALTH, 0)
+        self.assertEqual(item.attributes.AGILITY, 0)
+        self.assertEqual(item.attributes.MAX_HIT_POINTS, 0)
+        self.assertEqual(item.attributes.ACCURACY, 10)
+        self.assertEqual(item.attributes.DODGING, 60)
+        self.assertEqual(item.attributes.STRIKE_DAMAGE, 10)
+        self.assertEqual(item.attributes.DAMAGE_ABSORB, 5)
+        self.assertEqual(item.attributes.HP_REGEN, 0)
+
+
+########################################################################
+class ItemDatabaseTest(unittest.TestCase):
+    ####################################################################
+    def test_load(self):
+        self.fail()

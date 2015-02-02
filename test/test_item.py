@@ -1,6 +1,6 @@
 import unittest
 from attributes import AttributeSet, Attributes, ItemType
-from item import Item
+from item import Item, ItemDatabase
 
 
 ########################################################################
@@ -77,4 +77,14 @@ class ItemTest(unittest.TestCase):
 class ItemDatabaseTest(unittest.TestCase):
     ####################################################################
     def test_load(self):
-        self.fail()
+        item_database = ItemDatabase.load()
+        self.assertEqual(item_database, ItemDatabase.db)
+        ItemDatabase.load()
+        self.assertEqual(item_database, ItemDatabase.db)
+        self.assertEqual(len(item_database.by_id), 72)
+        self.assertEqual(len(item_database.by_name), 72)
+
+        self.assertEqual(item_database.find(40).name, "Rusty Knife")
+        self.assertEqual(item_database.find_full("Dagger").id, 42)
+        self.assertEqual(item_database.find("Rusty").id, 40)
+        self.assertEqual(item_database.find("Short").id, 2)

@@ -50,6 +50,6 @@ class ItemDatabase(EntityDatabase):
             db = ItemDatabase()
             for item in items:
                 db.by_id[item.id] = item
-                db.by_name[item.name] = item
+                db.by_name[item.name.lower()] = item
             ItemDatabase.db = db
         return ItemDatabase.db

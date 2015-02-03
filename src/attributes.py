@@ -1,12 +1,10 @@
 from enum import Enum
 
-ItemType = Enum("ItemType", "WEAPON ARMOR HEALING SPECIAL")
+ItemType = Enum("ItemType", "WEAPON ARMOR HEALING")
 
-PlayerRank = Enum("PlayerRank", "REGULAR WARRIOR MAGE ARCHER ADMIN")
+PlayerRank = Enum("PlayerRank", "REGULAR MODERATOR ADMIN")
 
-RoomType = Enum("RoomType", "PLAINROOM CENTRAL SAVEROOM STORE LOCKEDROOM")
-
-Area = Enum("Area", "METROPOLIS MOUNTAIN FOREST")
+RoomType = Enum("RoomType", "PLAIN_ROOM TRAINING_ROOM STORE")
 
 
 ########################################################################
@@ -59,3 +57,13 @@ class AttributeSet(dict):
     ####################################################################
     def __setattr__(self, name, value):
         self[name] = value
+
+    ####################################################################
+    def serialize_to_dict(self):
+        return {key.value: value for key, value in self.items()}
+
+    ####################################################################
+    @staticmethod
+    def deserialize_from_dict(data_dict):
+        for key, value in data_dict.items():
+            self[Attributes(key)] = value

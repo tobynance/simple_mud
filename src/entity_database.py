@@ -23,6 +23,10 @@ class EntityDatabase(object):
                         return entity
 
     ####################################################################
+    def __getitem__(self, item_id):
+        return self.by_id.get(item_id)
+
+    ####################################################################
     def has(self, name_or_id):
         return self.find(name_or_id) is not None
 

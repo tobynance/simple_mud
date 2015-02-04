@@ -22,20 +22,16 @@ class Item(Entity):
 
     ####################################################################
     @staticmethod
-    def load_data():
-        items_data = json.load(open(data_file))
-        items = []
-        for item_data in items_data:
-            item = Item()
-            items.append(item)
-            for field, value in item_data.items():
-                if field in ["id", "name", "min", "max", "speed", "price"]:
-                    setattr(item, field, value)
-                elif field == "type":
-                    item.type = getattr(ItemType, value)
-                else:
-                    setattr(item.attributes, field, value)
-        return items
+    def deserialize_from_dict(item_data):
+        item = Item()
+        for field, value in item_data.items():
+            if field in ["id", "name", "min", "max", "speed", "price"]:
+                setattr(item, field, value)
+            elif field == "type":
+                item.type = getattr(ItemType, value)
+            else:
+                setattr(item.attributes, field, value)
+        return item
 
 
 ########################################################################
@@ -46,9 +42,10 @@ class ItemDatabase(EntityDatabase):
     @staticmethod
     def load():
         if ItemDatabase.db is None:
-            items = Item.load_data()
             db = ItemDatabase()
-            for item in items:
+            items_data = json.load(open(data_file))
+            for item_data in items_data:
+                item = Item.deserialize_from_dict(item_data)
                 db.by_id[item.id] = item
                 db.by_name[item.name.lower()] = item
             ItemDatabase.db = db

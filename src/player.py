@@ -1,11 +1,16 @@
+import os
 import time
 import math
 import logging
 import json
 from attributes import PlayerRank, Attributes, AttributeSet
 from entity import Entity
+from entity_database import EntityDatabase
 from item import ItemDatabase
 from utils import clamp, double_find_by_name
+
+base = os.path.dirname(__file__)
+data_file = os.path.join(base, "..", "data", "players.json")
 
 MAX_PLAYER_ITEMS = 16
 logger = logging.getLogger(__name__)
@@ -238,3 +243,52 @@ class Player(Entity):
         if data_dict["armor"]:
             player.weapon = item_db[data_dict["armor"]]
         return player
+
+
+########################################################################
+class PlayerDatabase(EntityDatabase):
+    db = None
+
+    ####################################################################
+    @staticmethod
+    def load():
+        if PlayerDatabase.db is None:
+            db = PlayerDatabase()
+            players_data = json.load(open(data_file))
+            for player_data in players_data:
+                player = Player.deserialize_from_dict(player_data)
+                db.by_id[player.id] = player
+                db.by_name[player.name.lower()] = player
+            PlayerDatabase.db = db
+        return PlayerDatabase.db
+
+    ####################################################################
+    def save(self):
+        players = []
+        for player in self.by_id.values():
+            players.append(player.serialize())
+        player_text = json.dumps(players, indent=4)
+        with open(data_file, "w") as out_file:
+            out_file.write(player_text)
+
+    ####################################################################
+    def add_player(self, player):
+        if self.has(player.id):
+            return False
+        if self.has_full(player.name):
+            return False
+        self.by_id[player.id] = player
+        self.by_name[player.name.lower()] = player
+        self.save()
+
+    ####################################################################
+    def find_active(self, name):
+        raise NotImplementedError
+
+    ####################################################################
+    def find_logged_in(self, name):
+        raise NotImplementedError
+
+    ####################################################################
+    def log_out(self, player):
+        raise NotImplementedError

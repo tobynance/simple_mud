@@ -280,15 +280,23 @@ class PlayerDatabase(EntityDatabase):
         self.by_id[player.id] = player
         self.by_name[player.name.lower()] = player
         self.save()
+        return True
 
     ####################################################################
     def find_active(self, name):
-        raise NotImplementedError
+        players = [player for player in self.by_id.values() if player.active]
+        return double_find_by_name(name, players)
 
     ####################################################################
     def find_logged_in(self, name):
-        raise NotImplementedError
+        players = [player for player in self.by_id.values() if player.logged_in]
+        return double_find_by_name(name, players)
 
     ####################################################################
-    def log_out(self, player):
-        raise NotImplementedError
+    def log_out(self, player_id):
+        player = self[player_id]
+        logger.info("%s - User %s logged off", player.connection.get_remote_address(), player.name)
+        player.connection = None
+        player.logged_in = False
+        player.active = False
+        self.save()

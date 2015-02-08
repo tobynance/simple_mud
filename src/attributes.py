@@ -6,6 +6,8 @@ PlayerRank = Enum("PlayerRank", "REGULAR MODERATOR ADMIN")
 
 RoomType = Enum("RoomType", "PLAIN_ROOM TRAINING_ROOM STORE")
 
+LogonState = Enum("LogonState", "NEW_CONNECTION NEW_USER ENTER_NEW_PASSWORD ENTER_PASSWORD")
+
 
 ########################################################################
 class Direction(Enum):

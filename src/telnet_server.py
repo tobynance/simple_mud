@@ -36,19 +36,30 @@ bwhite = "\x1B[47m"
 
 newline = "\r\n\x1B[0m"
 
-TelnetStates = Enum("TelnetStates", "USERNAME PASSWORD COMMAND")
+
+########################################################################
+class MudTelnetHandler(object):
+    ####################################################################
+    def __init__(self, protocol):
+        self.protocol = protocol
+
+    ####################################################################
+    def send(self, data):
+        self.protocol.send(data)
 
 
 ########################################################################
 class MudTelnetProtocol(TelnetProtocol):
-    state_enum = TelnetStates
-    initial_state = TelnetStates.USERNAME
+    handler_class = None
+
+    ####################################################################
+    @classmethod
+    def set_handler_class(cls, handler_class):
+        cls.handler_class = handler_class
 
     ####################################################################
     def __init__(self):
-        self.state = self.initial_state
-        self.username = None
-        self.password = None
+        self.handler = self.handler_class(self)
 
     ####################################################################
     def enableRemote(self, option):
@@ -67,24 +78,6 @@ class MudTelnetProtocol(TelnetProtocol):
         pass
 
     ####################################################################
-    def handle_username(self, username):
-        self.username = username
-        self.state = TelnetStates.PASSWORD
-
-    ####################################################################
-    def handle_password(self, password):
-        self.password = password
-        self.state = TelnetStates.COMMAND
-
-    ####################################################################
-    def handle_command(self, data):
-        print "do something..."
-
-    ####################################################################
-    def handle(self, data):
-        raise NotImplementedError
-
-    ####################################################################
     def send(self, data):
         self.transport.write(data)
 
@@ -92,20 +85,19 @@ class MudTelnetProtocol(TelnetProtocol):
     def dataReceived(self, data):
         logger.info("self: %s", self)
         data = data.strip()
-        self.send("I received %r from you while in state %s\r\n" % (data, self.state_enum(self.state).name))
+        self.send("I received %r from you while in state %s\r\n" % (data, self.handler.state_enum(self.handler.state).name))
 
-        if self.state in self.state_enum:
-            method_name = ("handle_%s" % self.state_enum(self.state).name).lower()
+        if self.handler.state in self.handler.state_enum:
+            method_name = ("handle_%s" % self.handler.state_enum(self.handler.state).name).lower()
             logger.info("Received '%s', passing it to handler %s", data, method_name)
-            getattr(self, method_name)(data)
+            getattr(self.handler, method_name)(data)
         else:
-            logger.warn("In unknown state '%s', using generic handler", self.state)
-            self.handle(data)
+            logger.warn("In unknown state '%s', using generic handler", self.handler.state)
+            self.handler.handle(data)
 
     ####################################################################
     def connectionMade(self):
-        logger.info("test")
-        self.transport.write('Username: ')
+        self.handler.initial_connection()
 
 
 ########################################################################

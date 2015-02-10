@@ -15,7 +15,7 @@ data_file = os.path.join(base, "..", "data", "players.json")
 MAX_PLAYER_ITEMS = 16
 logger = logging.getLogger(__name__)
 
-SIMPLE_FIELDS = ["name", "password", "rank", "stat_points", "experience", "level", "room", "money", "next_attack_time"]
+SIMPLE_FIELDS = ["name", "password", "stat_points", "experience", "level", "room", "money", "next_attack_time"]
 
 
 ########################################################################
@@ -31,6 +31,7 @@ class Player(Entity):
         self.room = 0
         self.money = 0
         self.next_attack_time = 0
+        self.attributes = AttributeSet()
         self.base_attributes = AttributeSet()
         self.base_attributes[Attributes.STRENGTH] = 1
         self.base_attributes[Attributes.HEALTH] = 1
@@ -45,7 +46,6 @@ class Player(Entity):
         self.logged_in = None
         self.active = None
         self.newbie = None
-        self.attributes = AttributeSet()
 
         self.recalculate_stats()
 
@@ -200,6 +200,7 @@ class Player(Entity):
         output = {}
         for field in SIMPLE_FIELDS:
             output[field] = getattr(self, field)
+        output["rank"] = self.rank.value
         output["base_attributes"] = self.base_attributes.serialize_to_dict()
         output["attributes"] = self.attributes.serialize_to_dict()
         output["inventory"] = [item.id for item in self.inventory]
@@ -233,6 +234,8 @@ class Player(Entity):
 
         item_db = ItemDatabase.load()
 
+        player.rank = PlayerRank(data_dict["rank"])
+
         player.base_attributes = AttributeSet.deserialize_from_dict(data_dict["base_attributes"])
         player.attributes = AttributeSet.deserialize_from_dict(data_dict["attributes"])
         player.inventory = []
@@ -254,7 +257,10 @@ class PlayerDatabase(EntityDatabase):
     def load():
         if PlayerDatabase.db is None:
             db = PlayerDatabase()
-            players_data = json.load(open(data_file))
+            if os.path.exists(data_file):
+                players_data = json.load(open(data_file))
+            else:
+                players_data = []
             for player_data in players_data:
                 player = Player.deserialize_from_dict(player_data)
                 db.by_id[player.id] = player
@@ -266,7 +272,7 @@ class PlayerDatabase(EntityDatabase):
     def save(self):
         players = []
         for player in self.by_id.values():
-            players.append(player.serialize())
+            players.append(player.serialize_to_dict())
         player_text = json.dumps(players, indent=4)
         with open(data_file, "w") as out_file:
             out_file.write(player_text)

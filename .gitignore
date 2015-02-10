@@ -56,3 +56,5 @@ target/
 # PyCharm
 .idea/
 *.iml
+
+/data/players.json

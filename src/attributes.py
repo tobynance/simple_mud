@@ -67,5 +67,7 @@ class AttributeSet(dict):
     ####################################################################
     @staticmethod
     def deserialize_from_dict(data_dict):
+        attr_set = AttributeSet()
         for key, value in data_dict.items():
-            self[Attributes(key)] = value
+            attr_set[Attributes(key)] = value
+        return attr_set

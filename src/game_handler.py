@@ -1,15 +1,18 @@
-from src.attributes import PlayerRank
-from src.telnet import magenta, bold, white
+from attributes import PlayerRank, GameState
+import telnet
+from telnet import magenta, bold, white, reset
 
 
 ########################################################################
-class Game(object):
+class GameHandler(telnet.MudTelnetHandler):
+    state_enum = []
+    initial_state = None
     timer = None
     running = False
 
     ####################################################################
     def __init__(self, connection, player):
-        self.connection = connection
+        super(GameHandler, self).__init__(connection)
         self.player = player
         self.last_command = None
 
@@ -34,21 +37,9 @@ class Game(object):
 
         # REGULAR access commands
         if first_word in ["chat", ":"]:
-            message = "".join([magenta, bold, self.player.get_name(), " chats: ", white, rest])
+            message = "".join([magenta, bold, self.player.get_name(), " chats: ", white, reset])
             self.send_game(message)
             return
-
-    ####################################################################
-    def enter(self): pass
-
-    ####################################################################
-    def leave(self): pass
-
-    ####################################################################
-    def hung_up(self): pass
-
-    ####################################################################
-    def flooded(self): pass
 
     ####################################################################
     def goto_train(self): pass
@@ -128,12 +119,12 @@ class Game(object):
     ####################################################################
     @staticmethod
     def get_timer():
-        return Game.timer
+        return GameHandler.timer
 
     ####################################################################
     @staticmethod
     def get_running():
-        return Game.running
+        return GameHandler.running
 
     ####################################################################
     # Map Functions Added in Chapter 9                               ###

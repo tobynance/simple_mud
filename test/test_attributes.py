@@ -46,3 +46,17 @@ class AttributeSetTest(unittest.TestCase):
         self.assertEqual(self.attr_set[Attributes.HEALTH.name], 17)
         self.assertEqual(self.attr_set[Attributes.HEALTH.value], 17)
         self.assertEqual(self.attr_set[Attributes.HEALTH], 17)
+
+    ####################################################################
+    def test_saving(self):
+        attr_set = AttributeSet()
+        attr_set[Attributes.STRENGTH] = 1
+        attr_set[Attributes.HEALTH] = 3
+        attr_set[Attributes.STRIKE_DAMAGE] = 5
+        attr_set[Attributes.HP_REGEN] = 7
+
+        self.assertEqual(attr_set[Attributes.STRENGTH], 1)
+        self.assertEqual(attr_set[Attributes.HEALTH], 3)
+        self.assertEqual(attr_set[Attributes.STRIKE_DAMAGE], 5)
+        self.assertEqual(attr_set[Attributes.HP_REGEN], 7)
+        self.assertEqual(attr_set[Attributes.DAMAGE_ABSORB], 0)

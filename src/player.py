@@ -217,10 +217,6 @@ class Player(Entity):
         return output
 
     ####################################################################
-    def serialize(self):
-        return json.dumps(self.serialize_to_dict())
-
-    ####################################################################
     @staticmethod
     def deserialize(string_data):
         return Player.deserialize_from_dict(json.loads(string_data))

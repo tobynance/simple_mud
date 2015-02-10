@@ -19,20 +19,6 @@ class ItemTest(unittest.TestCase):
         self.item.attributes.STRIKE_DAMAGE = 2
 
     ####################################################################
-    def test_saving(self):
-        self.attr_set = AttributeSet()
-        self.attr_set[Attributes.STRENGTH] = 1
-        self.attr_set[Attributes.HEALTH] = 3
-        self.attr_set[Attributes.STRIKE_DAMAGE] = 5
-        self.attr_set[Attributes.HP_REGEN] = 7
-
-        self.assertEqual(self.attr_set[Attributes.STRENGTH], 1)
-        self.assertEqual(self.attr_set[Attributes.HEALTH], 3)
-        self.assertEqual(self.attr_set[Attributes.STRIKE_DAMAGE], 5)
-        self.assertEqual(self.attr_set[Attributes.HP_REGEN], 7)
-        self.assertEqual(self.attr_set[Attributes.DAMAGE_ABSORB], 0)
-
-    ####################################################################
     def test_deserialize_from_dict(self):
         item_data = {"id": 1,
                      "name": "LIES!!!@~",

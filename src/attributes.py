@@ -37,7 +37,7 @@ class AttributeSet(dict):
     ####################################################################
     def __get_attribute(self, item):
         if isinstance(item, basestring):
-            item = getattr(Attributes, item)
+            item = Attributes[item]
         elif isinstance(item, int):
             item = Attributes(item)
         return item

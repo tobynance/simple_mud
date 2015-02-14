@@ -1,4 +1,4 @@
-from attributes import PlayerRank, GameState
+from attributes import PlayerRank
 import telnet
 from telnet import magenta, bold, white, reset
 

@@ -21,8 +21,9 @@ SIMPLE_FIELDS = ["name", "password", "stat_points", "experience", "level", "room
 ########################################################################
 class Player(Entity):
     ####################################################################
-    def __init__(self):
+    def __init__(self, player_id=None):
         super(Player, self).__init__()
+        self.id = player_id or PlayerDatabase.get_next_id()
         self.password = "UNDEFINED"
         self.rank = PlayerRank.REGULAR
         self.stat_points = 18
@@ -48,6 +49,11 @@ class Player(Entity):
         self.newbie = None
 
         self.recalculate_stats()
+
+    ####################################################################
+    def get_remote_address(self):
+        if self.connection is not None:
+            return self.connection.get_remote_address()
 
     ####################################################################
     def able_to_attack(self):
@@ -197,7 +203,7 @@ class Player(Entity):
 
     ####################################################################
     def serialize_to_dict(self):
-        output = {}
+        output = {"id": self.id}
         for field in SIMPLE_FIELDS:
             output[field] = getattr(self, field)
         output["rank"] = self.rank.value
@@ -224,7 +230,7 @@ class Player(Entity):
     ####################################################################
     @staticmethod
     def deserialize_from_dict(data_dict):
-        player = Player()
+        player = Player(data_dict["id"])
         for field in SIMPLE_FIELDS:
             setattr(player, field, data_dict[field])
 
@@ -265,6 +271,12 @@ class PlayerDatabase(EntityDatabase):
         return PlayerDatabase.db
 
     ####################################################################
+    @classmethod
+    def get_next_id(cls):
+        player_db = PlayerDatabase.load()
+        return len(player_db.by_id) + 1
+
+    ####################################################################
     def save(self):
         players = []
         for player in self.by_id.values():
@@ -297,7 +309,7 @@ class PlayerDatabase(EntityDatabase):
     ####################################################################
     def log_out(self, player_id):
         player = self[player_id]
-        logger.info("%s - User %s logged off", player.connection.get_remote_address(), player.name)
+        logger.info("%s - User %s logged off", player.get_remote_address(), player.name)
         player.connection = None
         player.logged_in = False
         player.active = False

@@ -69,5 +69,5 @@ class AttributeSet(dict):
     def deserialize_from_dict(data_dict):
         attr_set = AttributeSet()
         for key, value in data_dict.items():
-            attr_set[Attributes(key)] = value
+            attr_set[Attributes(int(key))] = value
         return attr_set

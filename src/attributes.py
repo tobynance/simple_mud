@@ -1,12 +1,10 @@
-from enum import Enum
+from enum import Enum, IntEnum
 
 ItemType = Enum("ItemType", "WEAPON ARMOR HEALING")
 
-PlayerRank = Enum("PlayerRank", "REGULAR MODERATOR ADMIN")
+PlayerRank = IntEnum("PlayerRank", "REGULAR MODERATOR ADMIN")
 
 RoomType = Enum("RoomType", "PLAIN_ROOM TRAINING_ROOM STORE")
-
-LogonState = Enum("LogonState", "NEW_CONNECTION NEW_USER ENTER_NEW_PASSWORD ENTER_PASSWORD")
 
 
 ########################################################################

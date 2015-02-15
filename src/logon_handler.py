@@ -1,6 +1,6 @@
 import logging
 import re
-from attributes import LogonState
+from enum import Enum
 from game_handler import GameHandler
 from player import PlayerDatabase, Player
 import telnet
@@ -9,6 +9,7 @@ from telnet import bold, green, white, reset, red, clearscreen, concealed
 logger = logging.getLogger(__name__)
 
 MAX_ERRORS = 6
+LogonState = Enum("LogonState", "NEW_CONNECTION NEW_USER ENTER_NEW_PASSWORD ENTER_PASSWORD")
 
 
 ########################################################################
@@ -29,7 +30,7 @@ class LogonHandler(telnet.MudTelnetHandler):
     def may_continue(self):
         if self.num_errors >= MAX_ERRORS:
             self.send(bold + red + "Too many errors\r\n" + reset)
-            self.protocol.transport.loseConnection()
+            self.protocol.drop_connection()
             logger.warn("Dropped user for too many errors during login")
             return False
         else:
@@ -113,13 +114,13 @@ class LogonHandler(telnet.MudTelnetHandler):
         player_database = PlayerDatabase.load()
         player = player_database.find_full(self.username)
         if player.logged_in:
-            player.connection.closeConnection()
-            player.connection.handler.hung_up()
-            player.connection.clear_handlers()
+            player.protocol.drop_connection()
+            player.protocol.handler.hung_up()
+            player.protocol.clear_handlers()
         player.newbie = newbie
 
-        player.connection = self.protocol
-        player.connection.add_handler(GameHandler(self.protocol, player))
+        player.protocol = self.protocol
+        player.protocol.add_handler(GameHandler(self.protocol, player))
 
     ####################################################################
     def enter(self):

@@ -42,6 +42,12 @@ class PlayerTest(unittest.TestCase):
                             "weapon": None}
 
     ####################################################################
+    def test_player_rank_order(self):
+        self.assertTrue(PlayerRank.REGULAR < PlayerRank.MODERATOR)
+        self.assertTrue(PlayerRank.MODERATOR < PlayerRank.ADMIN)
+        self.assertFalse(PlayerRank.REGULAR > PlayerRank.ADMIN)
+
+    ####################################################################
     def test_serialize_to_dict(self):
         player_data = self.player.serialize_to_dict()
         self.assertEqual(self.player_data, player_data)
@@ -151,10 +157,10 @@ class PlayerDatabaseTest(unittest.TestCase):
         self.assertEqual(user, player_database.find_logged_in("user"))
 
     ####################################################################
-    def test_log_out(self):
+    def test_logout(self):
         player_database = PlayerDatabase.load()
         user = player_database.find("user")
         user.logged_in = True
         self.assertTrue(player_database.find_logged_in("user").logged_in)
-        player_database.log_out(1)
+        player_database.logout(1)
         self.assertEqual(player_database.find_logged_in("user"), None)

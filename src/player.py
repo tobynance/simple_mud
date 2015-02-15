@@ -43,7 +43,7 @@ class Player(Entity):
         self.armor = None
         self.hit_points = self.attributes.MAX_HIT_POINTS
 
-        self.connection = None
+        self.protocol = None
         self.logged_in = None
         self.active = None
         self.newbie = None
@@ -52,8 +52,8 @@ class Player(Entity):
 
     ####################################################################
     def get_remote_address(self):
-        if self.connection is not None:
-            return self.connection.get_remote_address()
+        if self.protocol is not None:
+            return self.protocol.get_remote_address()
 
     ####################################################################
     def able_to_attack(self):
@@ -188,12 +188,12 @@ class Player(Entity):
 
     ####################################################################
     def send_string(self, text):
-        """This sends a string to the player's connection."""
-        if self.connection is None:
+        """This sends a string to the player's connection protocol."""
+        if self.protocol is None:
             logger.error("Trying to send string to player %s but player is not connected." % self.name)
             return
 
-        self.connection.protocol.send_string(text + "\n")
+        self.protocol.protocol.send_string(text + "\n")
         if self.active:
             self.print_status_bar()
 
@@ -307,10 +307,12 @@ class PlayerDatabase(EntityDatabase):
         return double_find_by_name(name, players)
 
     ####################################################################
-    def log_out(self, player_id):
+    def logout(self, player_id):
         player = self[player_id]
         logger.info("%s - User %s logged off", player.get_remote_address(), player.name)
-        player.connection = None
+        if player.protocol and player.protocol.closed is False:
+            player.protocol.drop_connection()
+        player.protocol = None
         player.logged_in = False
         player.active = False
         self.save()

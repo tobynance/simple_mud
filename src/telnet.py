@@ -1,3 +1,4 @@
+import re
 import logging
 from twisted.conch.telnet import TelnetTransport, TelnetProtocol
 from twisted.internet import reactor, endpoints
@@ -39,34 +40,74 @@ newline = "\r\n\x1B[0m"
 
 ########################################################################
 class MudTelnetHandler(object):
+    state_enum = []
+    initial_state = None
+
     ####################################################################
     def __init__(self, protocol):
         self.protocol = protocol
+        self.data_handlers = []
 
     ####################################################################
     def send(self, data):
         self.protocol.send(data)
 
     ####################################################################
+    def get_remote_address(self):
+        if self.protocol:
+            return self.protocol.get_remote_address()
+        # if self.protocol and self.protocol.transport:
+        #     return self.protocol.transport.getPeer()
+        else:
+            return "<unknown address>"
+
+    ####################################################################
     def leave(self):
-        logger.info("%s - leave called in %s", self.protocol.transport.getPeer(), self.__class__.__name__)
+        logger.info("%s - leave called in %s", self.get_remote_address(), self.__class__.__name__)
 
     ####################################################################
     def enter(self):
-        logger.info("%s - enter called in %s", self.protocol.transport.getPeer(), self.__class__.__name__)
+        logger.info("%s - enter called in %s", self.get_remote_address(), self.__class__.__name__)
 
     ####################################################################
     def hung_up(self):
-        logger.warn("%s - hung up in %s", self.protocol.transport.getPeer(), self.__class__.__name__)
+        logger.warn("%s - hung up in %s", self.get_remote_address(), self.__class__.__name__)
 
     ####################################################################
     def flooded(self):
-        logger.warn("%s - flooded in %s", self.protocol.transport.getPeer(), self.__class__.__name__)
+        logger.warn("%s - flooded in %s", self.get_remote_address(), self.__class__.__name__)
+
+    ####################################################################
+    def _register_data_handler(self, predicate, handler):
+        self.data_handlers.append((predicate, handler))
+
+    ####################################################################
+    def handle(self, data):
+        first_word, rest = data.split(None, 1)
+
+        for predicate, handler in self.data_handlers:
+            if self.check_predicate(predicate, first_word):
+                handler(data, first_word, rest)
+
+    ####################################################################
+    def check_predicate(self, predicate, data):
+        if isinstance(predicate, basestring):
+            return predicate == data
+        elif isinstance(predicate, list) or isinstance(predicate, tuple):
+            return data in predicate
+        elif isinstance(predicate, re._pattern_type):
+            if predicate.match(data):
+                return True
+            else:
+                return False
+        else:
+            raise ValueError("I don't know how to use the predicate '%s' of type '%s'" % predicate, type(predicate))
 
 
 ########################################################################
 class MudTelnetProtocol(TelnetProtocol):
     handler_class = None
+    closed = False
 
     ####################################################################
     @classmethod
@@ -87,6 +128,10 @@ class MudTelnetProtocol(TelnetProtocol):
     ####################################################################
     def add_handler(self, handler):
         self.handlers.append(handler)
+
+    ####################################################################
+    def drop_connection(self):
+        self.transport.loseConnection()
 
     ####################################################################
     def remove_handler(self):
@@ -138,6 +183,9 @@ class MudTelnetProtocol(TelnetProtocol):
     def connectionMade(self):
         self.handler.enter()
 
+    ####################################################################
+    def connectionLost(self, reason=None):
+        self.closed = True
 
 ########################################################################
 def initialize_logger(logging_level=logging.INFO):

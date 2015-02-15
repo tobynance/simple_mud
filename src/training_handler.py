@@ -18,9 +18,9 @@ class TrainingHandler(telnet.MudTelnetHandler):
     def handle(self, data):
         if data == "quit":
             PlayerDatabase.load().save()
-            self.player.connection.remove_handler()
+            self.player.protocol.remove_handler()
             # tell the previous handler that it now has control again
-            self.player.connection.handler.enter()
+            self.player.protocol.handler.enter()
             return
         if data in ["1", "2", "3"]:
             data = int(data)
@@ -46,12 +46,12 @@ class TrainingHandler(telnet.MudTelnetHandler):
     ####################################################################
     def hung_up(self):
         logger.warn("%s - hung up in %s", self.protocol.transport.getPeer(), self.__class__.__name__)
-        PlayerDatabase.load().logout(self.player)
+        PlayerDatabase.load().logout(self.player.id)
 
     ####################################################################
     def flooded(self):
         logger.warn("%s - flooded in %s", self.protocol.transport.getPeer(), self.__class__.__name__)
-        PlayerDatabase.load().logout(self.player)
+        PlayerDatabase.load().logout(self.player.id)
 
     ####################################################################
     def print_stats(self, clear_screen=True):

@@ -8,6 +8,7 @@ from entity import Entity
 from entity_database import EntityDatabase
 from item import ItemDatabase
 from utils import clamp, double_find_by_name
+from telnet import green, white, yellow, red
 
 base = os.path.dirname(__file__)
 data_file = os.path.join(base, "..", "data", "players.json")
@@ -223,6 +224,28 @@ class Player(Entity):
         return output
 
     ####################################################################
+    def who_text(self):
+        """Return a string describing the player"""
+        text = [" {:<17}| {:<10}| "]
+        if self.active:
+            text.append(green + "Online  " + white)
+        elif self.logged_in:
+            text.append(yellow + "Inactive" + white)
+        else:
+            text.append(red + "Offline " + white)
+
+        text.append(" | ")
+        if self.rank == PlayerRank.REGULAR:
+            text.append(white)
+        elif self.rank == PlayerRank.ADMIN:
+            text.append(green)
+        else:
+            text.append(yellow)
+        text.append(self.rank.name)
+        text.append(white + "\r\n")
+        return "".join(text)
+
+    ####################################################################
     @staticmethod
     def deserialize(string_data):
         return Player.deserialize_from_dict(json.loads(string_data))
@@ -273,8 +296,23 @@ class PlayerDatabase(EntityDatabase):
     ####################################################################
     @classmethod
     def get_next_id(cls):
-        player_db = PlayerDatabase.load()
-        return len(player_db.by_id) + 1
+        return len(player_database.by_id) + 1
+
+    ####################################################################
+    def all(self):
+        return self.by_id.values()
+
+    ####################################################################
+    def all_logged_in(self):
+        for player in self.all():
+            if player.logged_in:
+                yield player
+
+    ####################################################################
+    def all_active(self):
+        for player in self.all():
+            if player.active:
+                yield player
 
     ####################################################################
     def save(self):
@@ -316,3 +354,5 @@ class PlayerDatabase(EntityDatabase):
         player.logged_in = False
         player.active = False
         self.save()
+
+player_database = PlayerDatabase.load()

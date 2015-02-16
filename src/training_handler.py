@@ -1,6 +1,6 @@
 import logging
 from attributes import Attributes
-from player import PlayerDatabase
+from player import player_database
 import telnet
 from telnet import bold, white, reset, red, clearscreen, magenta, dim
 
@@ -17,7 +17,7 @@ class TrainingHandler(telnet.MudTelnetHandler):
     ####################################################################
     def handle(self, data):
         if data == "quit":
-            PlayerDatabase.load().save()
+            player_database.save()
             self.player.protocol.remove_handler()
             # tell the previous handler that it now has control again
             self.player.protocol.handler.enter()
@@ -46,12 +46,12 @@ class TrainingHandler(telnet.MudTelnetHandler):
     ####################################################################
     def hung_up(self):
         logger.warn("%s - hung up in %s", self.protocol.transport.getPeer(), self.__class__.__name__)
-        PlayerDatabase.load().logout(self.player.id)
+        player_database.logout(self.player.id)
 
     ####################################################################
     def flooded(self):
         logger.warn("%s - flooded in %s", self.protocol.transport.getPeer(), self.__class__.__name__)
-        PlayerDatabase.load().logout(self.player.id)
+        player_database.logout(self.player.id)
 
     ####################################################################
     def print_stats(self, clear_screen=True):

@@ -48,6 +48,10 @@ class PlayerTest(unittest.TestCase):
         self.assertFalse(PlayerRank.REGULAR > PlayerRank.ADMIN)
 
     ####################################################################
+    def test_who_text(self):
+        self.fail()
+
+    ####################################################################
     def test_serialize_to_dict(self):
         player_data = self.player.serialize_to_dict()
         self.assertEqual(self.player_data, player_data)
@@ -164,3 +168,15 @@ class PlayerDatabaseTest(unittest.TestCase):
         self.assertTrue(player_database.find_logged_in("user").logged_in)
         player_database.logout(1)
         self.assertEqual(player_database.find_logged_in("user"), None)
+
+    ####################################################################
+    def test_all(self):
+        self.fail()
+
+    ####################################################################
+    def test_all_logged_in(self):
+        self.fail()
+
+    ####################################################################
+    def test_all_active(self):
+        self.fail()

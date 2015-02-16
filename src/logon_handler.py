@@ -2,7 +2,7 @@ import logging
 import re
 from enum import Enum
 from game_handler import GameHandler
-from player import PlayerDatabase, Player
+from player import Player, player_database
 import telnet
 from telnet import bold, green, white, reset, red, clearscreen, concealed
 
@@ -43,7 +43,6 @@ class LogonHandler(telnet.MudTelnetHandler):
                 self.state = LogonState.NEW_USER
                 self.send(bold + white + "Please enter your new login name: " + reset)
             else:
-                player_database = PlayerDatabase.load()
                 player = player_database.find_full(username)
                 if player is None:
                     self.num_errors += 1
@@ -62,7 +61,6 @@ class LogonHandler(telnet.MudTelnetHandler):
     ####################################################################
     def handle_new_user(self, username):
         if self.may_continue():
-            player_database = PlayerDatabase.load()
             player = player_database.find_full(username)
             if player is not None:
                 self.num_errors += 1
@@ -92,7 +90,6 @@ class LogonHandler(telnet.MudTelnetHandler):
             player = Player()
             player.name = self.username
             player.password = password
-            player_database = PlayerDatabase.load()
             player_database.add_player(player)
             self.enter_game(newbie=True)
 
@@ -111,7 +108,6 @@ class LogonHandler(telnet.MudTelnetHandler):
 
     ####################################################################
     def enter_game(self, newbie):
-        player_database = PlayerDatabase.load()
         player = player_database.find_full(self.username)
         if player.logged_in:
             player.protocol.drop_connection()

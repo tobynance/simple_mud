@@ -1,11 +1,58 @@
 import logging
 import datetime
 from attributes import PlayerRank
-from player import PlayerDatabase
+from item import ItemDatabase
+from player import player_database
 import telnet
-from telnet import magenta, bold, white, reset, green, cyan
+from telnet import bold, white, reset, green, cyan, red, yellow
 
 logger = logging.getLogger(__name__)
+
+HELP = white + bold + \
+       "--------------------------------- Command List ---------------------------------\r\n" + \
+       " /                            - Repeats your last command exactly.\r\n" + \
+       " chat <msg>                   - Sends message to everyone in the game\r\n" + \
+       " experience                   - Shows your experience statistics\r\n" + \
+       " help                         - Shows this menu\r\n" + \
+       " inventory                    - Shows a list of your items\r\n" + \
+       " quit                         - Allows you to leave the realm.\r\n" + \
+       " remove <'weapon'/'armor'>    - Removes your weapon or armor\r\n" + \
+       " stats                        - Shows all of your statistics\r\n" + \
+       " train                        - Go to train using StatPoints\r\n" + \
+       " time                         - Shows the current system time.\r\n" + \
+       " use <item>                   - Use an item in your inventory\r\n" + \
+       " whisper <who> <msg>          - Sends message to one person\r\n" + \
+       " who                          - Shows a list of everyone online\r\n" + \
+       " who all                      - Shows a list of everyone\r\n" + \
+       " look                         - Shows you the contents of a room\r\n" + \
+       " north/east/south/west        - Moves in a direction\r\n" + \
+       " get/drop <item>              - Picks up or drops an item on the ground\r\n" + \
+       " attack <enemy>               - Attacks an enemy\r\n" + \
+       " talk                         - Talks to NPC's in the room\r\n" + \
+       " buy <item name / id>         - Buys an item from the store\r\n" + \
+       " sell <item name>             - Sells an item to the store\r\n" + \
+       " inspect <item name>          - Shows stats of an item\r\n" + \
+       " map                          - Shows the map\r\n" + \
+       " team <team name>             - Creates a team with a team name\r\n" + \
+       " invite <who>                 - Invites a player to join your team\r\n" + \
+       " confirm <team name>          - Confirms to a team invitation\r\n" + \
+       " leave                        - Leaves the team\r\n" + \
+       " tellteam <msg>               - Talks to your teammates\r\n" + \
+       " listteam                     - Shows a list of your team members\r\n" + \
+       " skill                        - Shows your skill list\r\n"
+
+MODERATOR_HELP = yellow + bold + \
+                 "------------------------------ Moderator Commands ------------------------------\r\n" + \
+                 " kick <who>                   - Kicks a user from the realm\r\n"
+
+ADMIN_HELP = green + bold + \
+             "-------------------------------- Admin Commands --------------------------------\r\n" + \
+             " kick <who>                   - Kicks a user from the realm\r\n" + \
+             " announce <msg>               - Makes a global system announcement\r\n" + \
+             " changerank <who> <rank>      - Changes the rank of a player\r\n" + \
+             " reload <db>                  - Reloads the requested database\r\n" + \
+             " shutdown                     - Shuts the server down\r\n"
+HELP_END = white + bold + ("-" * 80) + "\r\n"
 
 
 ########################################################################
@@ -20,6 +67,7 @@ class GameHandler(telnet.MudTelnetHandler):
         self.last_command = ""
         self._register_data_handler("/", self.handle_last_command)
         self._register_data_handler(["chat", ":"], self.handle_chat)
+        self._register_data_handler(["experience", "exp"], self.handle_experience)
         self._register_data_handler(["help", "commands"], self.handle_help)
         self._register_data_handler(["inventory", "i"], self.handle_inventory)
         self._register_data_handler(["stats", "st"], self.handle_stats)
@@ -29,6 +77,12 @@ class GameHandler(telnet.MudTelnetHandler):
         self._register_data_handler("time", self.handle_time)
         self._register_data_handler("whisper", self.handle_whisper)
         self._register_data_handler("who", self.handle_who)
+        self._register_data_handler("kick", self.handle_kick)
+        self._register_data_handler("announce", self.handle_announce)
+        self._register_data_handler("changerank", self.handle_change_rank)
+        self._register_data_handler("reload", self.handle_reload)
+        self._register_data_handler("shutdown", self.handle_shutdown)
+        self._register_data_handler(True, lambda d, fw, r: self.handle_chat(d, fw, d))  # send whole message to chat
 
     ####################################################################
     # Handler Methods                                                ###
@@ -38,9 +92,13 @@ class GameHandler(telnet.MudTelnetHandler):
         self.handle(self.last_command)
 
     ####################################################################
-    def handle_chat(self, data, first_word, rest):
-        message = "".join([magenta, bold, self.player.get_name(), " chats: ", white, reset])
+    def handle_chat(self, data, first_word, text):
+        message = "".join([white, bold, self.player.get_name(), " chats: ", text])
         self.send_game(message)
+
+    ####################################################################
+    def handle_experience(self, data, first_word, rest):
+        self.send(self.print_experience())
 
     ####################################################################
     def handle_help(self, data, first_word, rest):
@@ -58,15 +116,15 @@ class GameHandler(telnet.MudTelnetHandler):
     def handle_quit(self, data, first_word, rest):
         self.protocol.drop_connection()
         self.logout_message("%s has left the realm." % self.player.name)
-        PlayerDatabase.load().logout(self.player.id)
+        player_database.logout(self.player.id)
 
     ####################################################################
-    def handle_remove(self, data, first_word, rest):
-        self.remove_item(rest)
+    def handle_remove(self, data, first_word, remove_target):
+        self.remove_item(remove_target)
 
     ####################################################################
-    def handle_use(self, data, first_word, rest):
-        self.use_item(rest)
+    def handle_use(self, data, first_word, item_name):
+        self.use_item(item_name)
 
     ####################################################################
     def handle_time(self, data, first_word, rest):
@@ -87,20 +145,81 @@ class GameHandler(telnet.MudTelnetHandler):
     ####################################################################
     def handle_who(self, data, first_word, rest):
         if rest:
-            name = rest.split(None, 1)[0]
+            who = rest.split(None, 1)[0]
         else:
-            name = None
-        self.send(self.who_list(name))
+            who = None
+        self.send(self.who_list(who))
 
     ####################################################################
     # Moderator Methods                                              ###
     ####################################################################
     ####################################################################
-    def handle_kick(self, data, first_word, rest):
+    def handle_kick(self, data, first_word, player_name):
         if self.player.rank < PlayerRank.MODERATOR:
             logger.warn("player %s tried to use the kick command, but doesn't have permission to do so", self.player.name)
             return
-        #PlayerDatabase.load().
+        kicked_player = player_database.find_logged_in(player_name)
+        if kicked_player is None:
+            self.send(red + bold + "Player could not be found.")
+            return
+        if kicked_player.rank > self.player.rank:
+            self.send(red + bold + "You can't kick that player!")
+            return
+
+        kicked_player.protocol.drop_connection()
+        self.logout_message("%s has been kicked by %s!!!" % (kicked_player.name, self.player.name))
+        player_database.logout(kicked_player.id)
+
+    ####################################################################
+    # Admin Methods                                                  ###
+    ####################################################################
+    ####################################################################
+    def handle_announce(self, data, first_word, announcement):
+        if self.player.rank < PlayerRank.ADMIN:
+            logger.warn("player %s tried to use the announce command, but doesn't have permission to do so", self.player.name)
+            return
+        self.announce(announcement)
+
+    ####################################################################
+    def handle_change_rank(self, data, first_word, rest):
+        if self.player.rank < PlayerRank.ADMIN:
+            logger.warn("player %s tried to use the changerank command, but doesn't have permission to do so", self.player.name)
+            return
+        rest = rest.split()
+        if len(rest) != 2:
+            self.send(red + bold + "Error: Bad Command")
+            return
+        name, rank = rest
+        other_player = player_database.find(name)
+        if other_player is None:
+            self.send(red + bold + "Error: Could not find user " + name)
+            return
+
+        if not hasattr(PlayerRank, rank):
+            self.send(red + bold + "Error: Cannot understand rank '%s'" % rank)
+            return
+
+        other_player.rank = PlayerRank[rank]
+        self.send_game(green + bold + other_player.name + "'s rank has been changed to: %s" + other_player.rank.name)
+
+    ####################################################################
+    def handle_reload(self, data, first_word, db):
+        if self.player.rank < PlayerRank.ADMIN:
+            logger.warn("player %s tried to use the reload command, but doesn't have permission to do so", self.player.name)
+            return
+
+        if db == "items":
+            ItemDatabase.load()
+            self.send(bold + cyan + "Item Database Reloaded!")
+
+    ####################################################################
+    def handle_shutdown(self, data, first_word, rest):
+        if self.player.rank < PlayerRank.ADMIN:
+            logger.warn("player %s tried to use the shutdown command, but doesn't have permission to do so", self.player.name)
+            return
+        self.announce("SYSTEM IS SHUTTING DOWN")
+        GameHandler.running = False
+
 
     ####################################################################
     def goto_train(self):
@@ -123,14 +242,22 @@ class GameHandler(telnet.MudTelnetHandler):
     def leave(self):
         self.player.active = False
         if self.protocol.closed:
-            PlayerDatabase.load().logout(self.player.id)
+            player_database.logout(self.player.id)
 
     ####################################################################
     def hung_up(self):
+        """
+        This notifies the handler that a connection has unexpectedly
+        hung up.
+        """
         self.logout_message("%s has suddenly disappeared from the realm." % self.player.name)
 
     ####################################################################
     def flooded(self):
+        """
+        This notifies the handler that a connection is being kicked
+        due to flooding the server.
+        """
         self.logout_message("%s has been kicked out for flooding!" % self.player.name)
 
     ####################################################################
@@ -139,26 +266,37 @@ class GameHandler(telnet.MudTelnetHandler):
     ####################################################################
     @staticmethod
     def send_global(text):
-        raise NotImplementedError
+        """Sends a string to everyone connected."""
+        for player in player_database.all_logged_in():
+            player.send_string(text)
 
     ####################################################################
     @staticmethod
     def send_game(text):
-        raise NotImplementedError
+        """Sends a string to everyone 'within the game'"""
+        for player in player_database.all_active():
+            player.send_string(text)
 
     ####################################################################
     @staticmethod
     def logout_message(reason):
-        raise NotImplementedError
+        """Sends a logout message"""
+        GameHandler.send_game(red + bold + reason)
 
     ####################################################################
     @staticmethod
     def announce(announcement):
-        raise NotImplementedError
+        """Sends a system announcement"""
+        GameHandler.send_global(cyan + bold + "System Announcement: " + announcement)
 
     ####################################################################
-    def whisper(self, message, player):
-        raise NotImplementedError
+    def whisper(self, message, player_name):
+        """Sends a whisper string to the requested player"""
+        other_player = player_database.find_active(player_name)
+        if other_player is None:
+            self.send(red + bold + "Error, cannot find user.")
+        else:
+            other_player.send_string(yellow + self.player.name + " whispers to you: " + reset + message)
 
     ####################################################################
     # various status-printing methods                                ###
@@ -166,24 +304,84 @@ class GameHandler(telnet.MudTelnetHandler):
     ####################################################################
     @staticmethod
     def who_list(who):
-        raise NotImplementedError
+        """This prints up the who-list for the realm."""
+        if who == "all":
+            players = player_database.all()
+        else:
+            players = player_database.all_logged_in()
+
+        message = [white, bold]
+        message.append("-" * 80)
+        message.append("\r\n")
+        message.append(" Name             | Level     | Activity | Rank\r\n")
+        message.append("-" * 80)
+        message.append("\r\n")
+
+        for player in players:
+            message.append(player.who_text())
+
+        message.append("-" * 80)
+        message.append("\r\n")
+        return "".join(message)
 
     ####################################################################
     @staticmethod
     def print_help(player_rank=PlayerRank.REGULAR):
-        raise NotImplementedError
+        """Prints out a help listing based on a user's rank."""
+        help_text = [HELP]
+        if player_rank >= PlayerRank.MODERATOR:
+            help_text.append(MODERATOR_HELP)
+        if player_rank >= PlayerRank.ADMIN:
+            help_text.append(ADMIN_HELP)
+        help_text.append(HELP_END)
+        return "".join(help_text)
 
     ####################################################################
     def print_stats(self):
-        raise NotImplementedError
+        """This prints up the stats of the player"""
+        stats = [bold, white]
+        stats.append("--------------------------------- Your Stats ----------------------------------\r\n")
+        stats.append("Name:        %s\r\n" % self.player.name)
+        stats.append("Rank:        %s\r\n" % self.player.rank.name)
+        stats.append("HP/Max:      %s/%s     (%s%%)\r\n" % (self.player.hit_points, self.player.attributes.MAX_HIT_POINTS, 100 * self.player.hit_points // self.player.attributes.MAX_HIT_POINTS))
+        stats.append(self.print_experience())
+        stats.append("Strength:    {:<5} Accuracy:       {}\r\n".format(self.player.attributes.STRENGTH, self.player.attributes.ACCURACY))
+        stats.append("Health:      {:<5} Dodging:        {}\r\n".format(self.player.attributes.HEALTH, self.player.attributes.DODGING))
+        stats.append("Agility:     {:<5} Strike Damage:  {}\r\n".format(self.player.attributes.AGILITY, self.player.attributes.STRIKE_DAMAGE))
+        stats.append("StatPoints:  {:<5} Damage Absorb:  {}\r\n".format(self.player.stat_points, self.player.attributes.DAMAGE_ABSORB))
+        return "".join(stats)
 
     ####################################################################
     def print_experience(self):
-        raise NotImplementedError
+        """This prints up the experience of the player"""
+        need_for_next_level = self.player.need_for_next_level()
+        percentage = 100 * self.player.experience // need_for_next_level
+
+        experience_text = [bold, white]
+        experience_text.append("Level:       {}\r\n".format(self.player.level))
+        experience_text.append("Experience:  {}/{} ({}%%)\r\n".format(need_for_next_level, percentage))
+        return "".join(experience_text)
 
     ####################################################################
     def print_inventory(self):
-        raise NotImplementedError
+        inventory_text = [white, bold]
+        inventory_text.append("-------------------------------- Your Inventory --------------------------------\r\n")
+        inventory_text.append(" Items:  ")
+        inventory_text.append(", ".join([item.name for item in self.player.inventory]))
+        inventory_text.append("\r\n")
+        inventory_text.append(" Weapon: ")
+        if self.player.weapon:
+            inventory_text.append(self.player.weapon.name)
+        else:
+            inventory_text.append("NONE!")
+        inventory_text.append("\r\n Armor:  ")
+        if self.player.armor:
+            inventory_text.append(self.player.armor.name)
+        else:
+            inventory_text.append("NONE!")
+        inventory_text.append("\r\n Money:  ${}".format(self.player.money))
+        inventory_text.append("\r\n--------------------------------------------------------------------------------")
+        return "".join(inventory_text)
 
     ####################################################################
     def print_products(self):
@@ -199,10 +397,6 @@ class GameHandler(telnet.MudTelnetHandler):
 
     ####################################################################
     def print_item_stats(self, item_name):
-        raise NotImplementedError
-
-    ####################################################################
-    def print_skills(self, player_rank):
         raise NotImplementedError
 
     ####################################################################

@@ -42,6 +42,7 @@ newline = "\r\n\x1B[0m"
 class MudTelnetHandler(object):
     state_enum = []
     initial_state = None
+    state = None
 
     ####################################################################
     def __init__(self, protocol):
@@ -50,14 +51,14 @@ class MudTelnetHandler(object):
 
     ####################################################################
     def send(self, data):
-        self.protocol.send(data)
+        self.protocol.send(str(data))
 
     ####################################################################
     def get_remote_address(self):
-        if self.protocol:
-            return self.protocol.get_remote_address()
-        # if self.protocol and self.protocol.transport:
-        #     return self.protocol.transport.getPeer()
+        # if self.protocol:
+        #     return self.protocol.get_remote_address()
+        if self.protocol and self.protocol.transport:
+            return self.protocol.transport.getPeer()
         else:
             return "<unknown address>"
 
@@ -83,11 +84,20 @@ class MudTelnetHandler(object):
 
     ####################################################################
     def handle(self, data):
-        first_word, rest = data.split(None, 1)
+        if data:
+            split = data.split(None, 1)
+            first_word = data.split(None, 1)[0]
+            if len(split) > 1:
+                rest = split[1]
+            else:
+                rest = ""
 
-        for predicate, handler in self.data_handlers:
-            if self.check_predicate(predicate, first_word):
-                handler(data, first_word, rest)
+            for predicate, handler in self.data_handlers:
+                if self.check_predicate(predicate, first_word):
+                    handler(data, first_word, rest)
+                    if predicate != "/":
+                        self.last_command = data
+                    return
 
     ####################################################################
     def check_predicate(self, predicate, data):
@@ -95,6 +105,8 @@ class MudTelnetHandler(object):
             return predicate == data
         elif isinstance(predicate, list) or isinstance(predicate, tuple):
             return data in predicate
+        elif isinstance(predicate, bool):
+            return predicate
         elif isinstance(predicate, re._pattern_type):
             if predicate.match(data):
                 return True
@@ -126,8 +138,18 @@ class MudTelnetProtocol(TelnetProtocol):
         self.handlers.append(self.handler_class(self))
 
     ####################################################################
+    def get_remote_address(self):
+        if self.transport:
+            return self.transport.getPeer()
+        else:
+            return "<unknown address>"
+
+    ####################################################################
     def add_handler(self, handler):
+        if self.handler:
+            self.handler.leave()
         self.handlers.append(handler)
+        self.handler.enter()
 
     ####################################################################
     def drop_connection(self):
@@ -169,9 +191,9 @@ class MudTelnetProtocol(TelnetProtocol):
     ####################################################################
     def dataReceived(self, data):
         data = data.strip()
-        self.send("I received %r from you while in state %s\r\n" % (data, self.handler.state_enum(self.handler.state).name))
 
         if self.handler.state in self.handler.state_enum:
+            self.send("I received %s from you while in state %s\r\n" % (data, self.handler.state_enum(self.handler.state).name))
             method_name = ("handle_%s" % self.handler.state_enum(self.handler.state).name).lower()
             logger.info("Received '%s', passing it to handler %s", data, method_name)
             getattr(self.handler, method_name)(data)

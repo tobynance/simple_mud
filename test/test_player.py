@@ -21,14 +21,41 @@ class PlayerTest(unittest.TestCase):
         self.player.rank = PlayerRank.MODERATOR
         self.player.room = 3
         self.player.stat_points = 16
-        self.player.attributes.AGILITY = 3
-        self.player.attributes.MAX_HIT_POINTS = 12
-        self.player.attributes.STRIKE_DAMAGE = 2
+        self.player.attributes.BASE_AGILITY = 3
+        self.player.attributes.BASE_MAX_HIT_POINTS = 12
+        self.player.attributes.MODIFIER_STRIKE_DAMAGE = 2
+        self.player.attributes.MODIFIER_HEALTH = 11
+        self.player.attributes.MODIFIER_AGILITY = -8
 
         self.player_data = {"id": 1,
                             "armor": None,
-                            "attributes": {1: 0, 2: 0, 3: 3, 4: 12, 5: 0, 6: 0, 7: 2, 8: 0, 9: 1},
-                            "base_attributes": {1: 1, 2: 1, 3: 1, 4: 0, 5: 0, 6: 0, 7: 0, 8: 0, 9: 0},
+                            "attributes": {"ACCURACY": 3,
+                                           "AGILITY": 1,
+                                           "BASE_ACCURACY": 0,
+                                           "BASE_AGILITY": 3,
+                                           "BASE_DAMAGE_ABSORB": 0,
+                                           "BASE_DODGING": 0,
+                                           "BASE_HEALTH": 1,
+                                           "BASE_HP_REGEN": 0,
+                                           "BASE_MAX_HIT_POINTS": 12,
+                                           "BASE_STRENGTH": 1,
+                                           "BASE_STRIKE_DAMAGE": 0,
+                                           "DAMAGE_ABSORB": 0,
+                                           "DODGING": 3,
+                                           "HEALTH": 12,
+                                           "HP_REGEN": 3,
+                                           "MAX_HIT_POINTS": 30,
+                                           "MODIFIER_ACCURACY": 3,
+                                           "MODIFIER_AGILITY": -8,
+                                           "MODIFIER_DAMAGE_ABSORB": 0,
+                                           "MODIFIER_DODGING": 3,
+                                           "MODIFIER_HEALTH": 11,
+                                           "MODIFIER_HP_REGEN": 3,
+                                           "MODIFIER_MAX_HIT_POINTS": 18,
+                                           "MODIFIER_STRENGTH": 0,
+                                           "MODIFIER_STRIKE_DAMAGE": 0,
+                                           "STRENGTH": 1,
+                                           "STRIKE_DAMAGE": 0},
                             "experience": 17,
                             "inventory": [],
                             "level": 1,
@@ -68,25 +95,36 @@ class PlayerTest(unittest.TestCase):
         self.assertEqual(test_player.stat_points, 16)
         self.assertEqual(test_player.armor, None)
         self.assertEqual(test_player.weapon, None)
-        self.assertEqual(test_player.attributes.STRENGTH, 0)
-        self.assertEqual(test_player.attributes.HEALTH, 0)
-        self.assertEqual(test_player.attributes.AGILITY, 3)
-        self.assertEqual(test_player.attributes.MAX_HIT_POINTS, 12)
-        self.assertEqual(test_player.attributes.ACCURACY, 0)
-        self.assertEqual(test_player.attributes.DODGING, 0)
-        self.assertEqual(test_player.attributes.STRIKE_DAMAGE, 2)
-        self.assertEqual(test_player.attributes.DAMAGE_ABSORB, 0)
-        self.assertEqual(test_player.attributes.HP_REGEN, 1)
 
-        self.assertEqual(test_player.base_attributes.STRENGTH, 1)
-        self.assertEqual(test_player.base_attributes.HEALTH, 1)
-        self.assertEqual(test_player.base_attributes.AGILITY, 1)
-        self.assertEqual(test_player.base_attributes.MAX_HIT_POINTS, 0)
-        self.assertEqual(test_player.base_attributes.ACCURACY, 0)
-        self.assertEqual(test_player.base_attributes.DODGING, 0)
-        self.assertEqual(test_player.base_attributes.STRIKE_DAMAGE, 0)
-        self.assertEqual(test_player.base_attributes.DAMAGE_ABSORB, 0)
-        self.assertEqual(test_player.base_attributes.HP_REGEN, 0)
+        self.assertEqual(test_player.attributes.BASE_STRENGTH, 1)
+        self.assertEqual(test_player.attributes.BASE_HEALTH, 1)
+        self.assertEqual(test_player.attributes.BASE_AGILITY, 3)
+        self.assertEqual(test_player.attributes.BASE_MAX_HIT_POINTS, 12)
+        self.assertEqual(test_player.attributes.BASE_ACCURACY, 0)
+        self.assertEqual(test_player.attributes.BASE_DODGING, 0)
+        self.assertEqual(test_player.attributes.BASE_STRIKE_DAMAGE, 0)
+        self.assertEqual(test_player.attributes.BASE_DAMAGE_ABSORB, 0)
+        self.assertEqual(test_player.attributes.BASE_HP_REGEN, 0)
+
+        self.assertEqual(test_player.attributes.MODIFIER_STRENGTH, 0)
+        self.assertEqual(test_player.attributes.MODIFIER_HEALTH, 11)
+        self.assertEqual(test_player.attributes.MODIFIER_AGILITY, -8)
+        self.assertEqual(test_player.attributes.MODIFIER_MAX_HIT_POINTS, 18)
+        self.assertEqual(test_player.attributes.MODIFIER_ACCURACY, 3)
+        self.assertEqual(test_player.attributes.MODIFIER_DODGING, 3)
+        self.assertEqual(test_player.attributes.MODIFIER_STRIKE_DAMAGE, 0)
+        self.assertEqual(test_player.attributes.MODIFIER_DAMAGE_ABSORB, 0)
+        self.assertEqual(test_player.attributes.MODIFIER_HP_REGEN, 3)
+
+        self.assertEqual(test_player.attributes.STRENGTH, 1)
+        self.assertEqual(test_player.attributes.HEALTH, 12)
+        self.assertEqual(test_player.attributes.AGILITY, 1)
+        self.assertEqual(test_player.attributes.MAX_HIT_POINTS, 30)
+        self.assertEqual(test_player.attributes.ACCURACY, 3)
+        self.assertEqual(test_player.attributes.DODGING, 3)
+        self.assertEqual(test_player.attributes.STRIKE_DAMAGE, 0)
+        self.assertEqual(test_player.attributes.DAMAGE_ABSORB, 0)
+        self.assertEqual(test_player.attributes.HP_REGEN, 3)
 
 
 ########################################################################

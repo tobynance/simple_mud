@@ -1,5 +1,5 @@
 import logging
-from attributes import Attributes
+from attributes import Attributes, PlayerAttributes
 from player import player_database
 import telnet
 from telnet import bold, white, reset, red, clearscreen, magenta, dim
@@ -23,12 +23,17 @@ class TrainingHandler(telnet.MudTelnetHandler):
             self.player.protocol.handler.enter()
             return
         if data in ["1", "2", "3"]:
-            data = int(data)
             if self.player.stat_points > 0:
                 self.player.stat_points -= 1
-                self.player.add_to_base_attr(data, 1)
+                if data == "1":
+                    self.player.attributes.BASE_STRENGTH += 1
+                elif data == "2":
+                    self.player.attributes.BASE_HEALTH += 1
+                else:
+                    self.player.attributes.BASE_AGILITY += 1
             self.print_stats(True)
         else:
+            print "unknown command:", data
             self.send(reset + clearscreen + red + "Unknown Command '%s'" % data)
             self.print_stats(False)
 
@@ -64,9 +69,9 @@ class TrainingHandler(telnet.MudTelnetHandler):
         message.append(dim)
         message.append("Player: %s\r\n" % self.player.name)
         message.append("Stat Points Left: %s\r\n" % self.player.stat_points)
-        message.append("1) Strength: %s\r\n" % self.player.attributes[Attributes.STRENGH])
-        message.append("2) Health: %s\r\n" % self.player.attributes[Attributes.HEALTH])
-        message.append("3) Agility: %s\r\n" % self.player.attributes[Attributes.AGILITY])
+        message.append("1) Strength: %s\r\n" % self.player.attributes.STRENGTH)
+        message.append("2) Health: %s\r\n" % self.player.attributes.HEALTH)
+        message.append("3) Agility: %s\r\n" % self.player.attributes.AGILITY)
         message.append(bold)
         message.append("--------------------------------------------------------\r\n")
         message.append("Enter 1, 2, or 3 to add a stat point, or \"quit\" to go back: ")

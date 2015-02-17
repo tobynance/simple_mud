@@ -3,12 +3,12 @@ import time
 import math
 import logging
 import json
-from attributes import PlayerRank, Attributes, AttributeSet
+from attributes import PlayerRank, PlayerAttributes, PlayerAttributeSet
 from entity import Entity
 from entity_database import EntityDatabase
 from item import ItemDatabase
 from utils import clamp, double_find_by_name
-from telnet import green, white, yellow, red
+from telnet import green, white, yellow, red, newline, bold, clearline, reset
 
 base = os.path.dirname(__file__)
 data_file = os.path.join(base, "..", "data", "players.json")
@@ -33,23 +33,23 @@ class Player(Entity):
         self.room = 0
         self.money = 0
         self.next_attack_time = 0
-        self.attributes = AttributeSet()
-        self.base_attributes = AttributeSet()
-        self.base_attributes[Attributes.STRENGTH] = 1
-        self.base_attributes[Attributes.HEALTH] = 1
-        self.base_attributes[Attributes.AGILITY] = 1
+        self.hit_points = 0
 
         self.inventory = []
         self.weapon = None
         self.armor = None
-        self.hit_points = self.attributes.MAX_HIT_POINTS
 
         self.protocol = None
-        self.logged_in = None
-        self.active = None
-        self.newbie = None
+        self.logged_in = False
+        self.active = False
+        self.newbie = True
+        self.attributes = PlayerAttributeSet(self)
+        self.attributes.BASE_STRENGTH = 1
+        self.attributes.BASE_HEALTH = 1
+        self.attributes.BASE_AGILITY = 1
 
         self.recalculate_stats()
+        self.hit_points = self.attributes.MAX_HIT_POINTS
 
     ####################################################################
     def get_remote_address(self):
@@ -77,7 +77,7 @@ class Player(Entity):
     def train(self):
         if self.need_for_next_level() <= 0:
             self.stat_points += 2
-            self.base_attributes[Attributes.MAX_HIT_POINTS] += self.level
+            self.attributes.BASE_MAX_HIT_POINTS += self.level
             self.level += 1
             self.recalculate_stats()
             return True
@@ -85,37 +85,19 @@ class Player(Entity):
 
     ####################################################################
     def recalculate_stats(self):
-        self.attributes.MAX_HIT_POINTS = int(10 + (self.level * self.attributes.HEALTH / 1.5))
-        self.attributes.HP_REGEN = (self.attributes.HEALTH / 5) + self.level
-        self.attributes.ACCURACY = self.attributes.AGILITY * 3
-        self.attributes.DODGING = self.attributes.AGILITY * 3
-        self.attributes.DAMAGE_ABSORB = self.attributes.STRENGTH / 5
-        self.attributes.STRIKE_DAMAGE = self.attributes.STRENGTH / 5
-        # make sure the hit points don't overflow if your max goes down
-        if self.hit_points > self.attributes.MAX_HIT_POINTS:
-            self.hit_points = self.attributes.MAX_HIT_POINTS
-
-        if self.weapon:
-            self.add_dynamic_bonuses(self.weapon)
-        if self.armor:
-            self.add_dynamic_bonuses(self.armor)
+        self.attributes.recalculate_stats()
 
     ####################################################################
     def add_dynamic_bonuses(self, item):
-        if item:
-            for attr in Attributes:
-                self.attributes[attr] += item.attributes[attr]
-            self.recalculate_stats()
+        self.attributes.add_dynamic_bonuses(item)
 
     ####################################################################
     def set_base_attr(self, attr, val):
-        self.base_attributes[attr] = val
-        self.recalculate_stats()
+        self.attributes.set_base_attr(attr, val)
 
     ####################################################################
     def add_to_base_attr(self, attr, val):
-        self.base_attributes[attr] += val
-        self.recalculate_stats()
+        raise NotImplementedError
 
     ####################################################################
     def add_hit_points(self, hit_points):
@@ -149,10 +131,7 @@ class Player(Entity):
 
     ####################################################################
     def add_bonuses(self, item):
-        if item:
-            for attr in Attributes:
-                self.base_attributes += item.attributes[attr]
-            self.recalculate_stats()
+        self.attributes.add_bonuses(item)
 
     ####################################################################
     def remove_weapon(self):
@@ -194,13 +173,26 @@ class Player(Entity):
             logger.error("Trying to send string to player %s but player is not connected." % self.name)
             return
 
-        self.protocol.protocol.send_string(text + "\n")
+        text = str(text)
+        # print "text:", text
+        # print "text type:", type(text)
+        self.protocol.send(text + newline)
         if self.active:
             self.print_status_bar()
 
     ####################################################################
     def print_status_bar(self):
-        raise NotImplementedError
+        status_bar = clearline + "\r" + white + bold + "["
+        ratio = 100 * self.hit_points // self.attributes.MAX_HIT_POINTS
+        if ratio < 33:
+            status_bar += red
+        elif ratio < 67:
+            status_bar += yellow
+        else:
+            status_bar += green
+        status_bar += "{hit_points}{white}/{max_hit_points}] {reset}".format(hit_points=self.hit_points, white=white, max_hit_points=self.attributes.MAX_HIT_POINTS, reset=reset)
+        # print "status_bar:", status_bar
+        self.protocol.send(status_bar)
 
     ####################################################################
     def serialize_to_dict(self):
@@ -208,7 +200,6 @@ class Player(Entity):
         for field in SIMPLE_FIELDS:
             output[field] = getattr(self, field)
         output["rank"] = self.rank.value
-        output["base_attributes"] = self.base_attributes.serialize_to_dict()
         output["attributes"] = self.attributes.serialize_to_dict()
         output["inventory"] = [item.id for item in self.inventory]
 
@@ -226,7 +217,7 @@ class Player(Entity):
     ####################################################################
     def who_text(self):
         """Return a string describing the player"""
-        text = [" {:<17}| {:<10}| "]
+        text = [" {:<17}| {:<10}| ".format(self.name, self.level)]
         if self.active:
             text.append(green + "Online  " + white)
         elif self.logged_in:
@@ -261,8 +252,7 @@ class Player(Entity):
 
         player.rank = PlayerRank(data_dict["rank"])
 
-        player.base_attributes = AttributeSet.deserialize_from_dict(data_dict["base_attributes"])
-        player.attributes = AttributeSet.deserialize_from_dict(data_dict["attributes"])
+        player.attributes = PlayerAttributeSet.deserialize_from_dict(data_dict["attributes"])
         player.inventory = []
         for item_id in data_dict["inventory"]:
             player.inventory.append(item_db[item_id])
@@ -270,6 +260,7 @@ class Player(Entity):
             player.weapon = item_db[data_dict["weapon"]]
         if data_dict["armor"]:
             player.weapon = item_db[data_dict["armor"]]
+        player.attributes.set_player(player)
         return player
 
 

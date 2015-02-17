@@ -1,5 +1,5 @@
 import unittest
-from attributes import AttributeSet, Attributes
+from attributes import AttributeSet, Attributes, PlayerAttributeSet
 
 
 ########################################################################
@@ -60,3 +60,19 @@ class AttributeSetTest(unittest.TestCase):
         self.assertEqual(attr_set[Attributes.STRIKE_DAMAGE], 5)
         self.assertEqual(attr_set[Attributes.HP_REGEN], 7)
         self.assertEqual(attr_set[Attributes.DAMAGE_ABSORB], 0)
+
+
+########################################################################
+class PlayerAttributeSetTest(unittest.TestCase):
+    ####################################################################
+    def setUp(self):
+        self.attr_set = PlayerAttributeSet()
+        self.attr_set.BASE_AGILITY = 3
+        self.attr_set.BASE_MAX_HIT_POINTS = 12
+        self.attr_set.MODIFIER_STRIKE_DAMAGE = 2
+        self.attr_set.MODIFIER_HEALTH = 11
+        self.attr_set.MODIFIER_AGILITY = -8
+
+    ####################################################################
+    def test_add_to_base_attr(self):
+        self.attr_set.add_to_base_attr("")

@@ -1,10 +1,12 @@
 import logging
 import datetime
-from attributes import PlayerRank
+import random
+from attributes import PlayerRank, ItemType
 from item import ItemDatabase
 from player import player_database
 import telnet
 from telnet import bold, white, reset, green, cyan, red, yellow
+from training_handler import TrainingHandler
 
 logger = logging.getLogger(__name__)
 
@@ -32,14 +34,7 @@ HELP = white + bold + \
        " buy <item name / id>         - Buys an item from the store\r\n" + \
        " sell <item name>             - Sells an item to the store\r\n" + \
        " inspect <item name>          - Shows stats of an item\r\n" + \
-       " map                          - Shows the map\r\n" + \
-       " team <team name>             - Creates a team with a team name\r\n" + \
-       " invite <who>                 - Invites a player to join your team\r\n" + \
-       " confirm <team name>          - Confirms to a team invitation\r\n" + \
-       " leave                        - Leaves the team\r\n" + \
-       " tellteam <msg>               - Talks to your teammates\r\n" + \
-       " listteam                     - Shows a list of your team members\r\n" + \
-       " skill                        - Shows your skill list\r\n"
+       " map                          - Shows the map\r\n"
 
 MODERATOR_HELP = yellow + bold + \
                  "------------------------------ Moderator Commands ------------------------------\r\n" + \
@@ -82,6 +77,7 @@ class GameHandler(telnet.MudTelnetHandler):
         self._register_data_handler("changerank", self.handle_change_rank)
         self._register_data_handler("reload", self.handle_reload)
         self._register_data_handler("shutdown", self.handle_shutdown)
+        self._register_data_handler("train", self.handle_train)
         self._register_data_handler(True, lambda d, fw, r: self.handle_chat(d, fw, d))  # send whole message to chat
 
     ####################################################################
@@ -93,24 +89,24 @@ class GameHandler(telnet.MudTelnetHandler):
 
     ####################################################################
     def handle_chat(self, data, first_word, text):
-        message = "".join([white, bold, self.player.get_name(), " chats: ", text])
+        message = "".join([white, bold, self.player.name, " chats: ", text])
         self.send_game(message)
 
     ####################################################################
     def handle_experience(self, data, first_word, rest):
-        self.send(self.print_experience())
+        self.player.send_string(self.print_experience())
 
     ####################################################################
     def handle_help(self, data, first_word, rest):
-        self.send(self.print_help(self.player.rank))
+        self.player.send_string(self.print_help(self.player.rank))
 
     ####################################################################
     def handle_inventory(self, data, first_word, rest):
-        self.send(self.print_inventory())
+        self.player.send_string(self.print_inventory())
 
     ####################################################################
     def handle_stats(self, data, first_word, rest):
-        self.send(self.print_stats())
+        self.player.send_string(self.print_stats())
 
     ####################################################################
     def handle_quit(self, data, first_word, rest):
@@ -135,7 +131,7 @@ class GameHandler(telnet.MudTelnetHandler):
         total_minutes = up_time.seconds // 60
         hours, minutes = divmod(total_minutes, 60)
         message = message % (now_string, hours, minutes)
-        self.send(bold + cyan + message)
+        self.player.send_string(bold + cyan + message)
 
     ####################################################################
     def handle_whisper(self, data, first_word, rest):
@@ -148,7 +144,7 @@ class GameHandler(telnet.MudTelnetHandler):
             who = rest.split(None, 1)[0]
         else:
             who = None
-        self.send(self.who_list(who))
+        self.player.send_string(self.who_list(who))
 
     ####################################################################
     # Moderator Methods                                              ###
@@ -160,10 +156,10 @@ class GameHandler(telnet.MudTelnetHandler):
             return
         kicked_player = player_database.find_logged_in(player_name)
         if kicked_player is None:
-            self.send(red + bold + "Player could not be found.")
+            self.player.send_string(red + bold + "Player could not be found.")
             return
         if kicked_player.rank > self.player.rank:
-            self.send(red + bold + "You can't kick that player!")
+            self.player.send_string(red + bold + "You can't kick that player!")
             return
 
         kicked_player.protocol.drop_connection()
@@ -187,16 +183,16 @@ class GameHandler(telnet.MudTelnetHandler):
             return
         rest = rest.split()
         if len(rest) != 2:
-            self.send(red + bold + "Error: Bad Command")
+            self.player.send_string(red + bold + "Error: Bad Command")
             return
         name, rank = rest
         other_player = player_database.find(name)
         if other_player is None:
-            self.send(red + bold + "Error: Could not find user " + name)
+            self.player.send_string(red + bold + "Error: Could not find user " + name)
             return
 
         if not hasattr(PlayerRank, rank):
-            self.send(red + bold + "Error: Cannot understand rank '%s'" % rank)
+            self.player.send_string(red + bold + "Error: Cannot understand rank '%s'" % rank)
             return
 
         other_player.rank = PlayerRank[rank]
@@ -210,7 +206,7 @@ class GameHandler(telnet.MudTelnetHandler):
 
         if db == "items":
             ItemDatabase.load()
-            self.send(bold + cyan + "Item Database Reloaded!")
+            self.player.send_string(bold + cyan + "Item Database Reloaded!")
 
     ####################################################################
     def handle_shutdown(self, data, first_word, rest):
@@ -220,10 +216,15 @@ class GameHandler(telnet.MudTelnetHandler):
         self.announce("SYSTEM IS SHUTTING DOWN")
         GameHandler.running = False
 
+    ####################################################################
+    def handle_train(self, data, first_word, rest):
+        self.goto_train()
 
     ####################################################################
     def goto_train(self):
-        raise NotImplementedError
+        self.player.active = False
+        self.protocol.add_handler(TrainingHandler(self.protocol, self.player))
+        self.logout_message("%s leaves to edit stats" % self.player.name)
 
     ####################################################################
     # Base Handler Methods                                           ###
@@ -294,7 +295,7 @@ class GameHandler(telnet.MudTelnetHandler):
         """Sends a whisper string to the requested player"""
         other_player = player_database.find_active(player_name)
         if other_player is None:
-            self.send(red + bold + "Error, cannot find user.")
+            self.player.send_string(red + bold + "Error, cannot find user.")
         else:
             other_player.send_string(yellow + self.player.name + " whispers to you: " + reset + message)
 
@@ -359,7 +360,7 @@ class GameHandler(telnet.MudTelnetHandler):
 
         experience_text = [bold, white]
         experience_text.append("Level:       {}\r\n".format(self.player.level))
-        experience_text.append("Experience:  {}/{} ({}%%)\r\n".format(need_for_next_level, percentage))
+        experience_text.append("Experience:  {}/{} ({}%)\r\n".format(self.player.experience, need_for_next_level, percentage))
         return "".join(experience_text)
 
     ####################################################################
@@ -408,11 +409,34 @@ class GameHandler(telnet.MudTelnetHandler):
     ####################################################################
     ####################################################################
     def use_item(self, item_name):
-        raise NotImplementedError
+        for item in self.player.inventory:
+            if item.name == item_name:
+                if item.type == ItemType.WEAPON:
+                    self.player.use_weapon(item)
+                    return True
+                elif item.type == ItemType.ARMOR:
+                    self.player.use_armor(item)
+                    return True
+                elif item.type == ItemType.HEALING:
+                    self.player.add_bonuses(item)
+                    self.player.add_hit_points(random.randint(item.min, item.max))
+                    self.player.drop_item(item)
+                    return True
+        self.player.send_string(red + bold + "Could not find that item!")
+        return False
 
     ####################################################################
     def remove_item(self, item_name):
-        raise NotImplementedError
+        if item_name == "weapon":
+            if self.player.weapon:
+                self.player.remove_weapon()
+                return True
+        elif item_name == "armor":
+            if self.player.armor:
+                self.player.remove_armor()
+                return True
+        self.player.send_string(red + bold + "Could not remove item!")
+        return False
 
     ####################################################################
     # Accessors                                                      ###

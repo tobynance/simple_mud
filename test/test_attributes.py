@@ -48,7 +48,7 @@ class AttributeSetTest(unittest.TestCase):
         self.assertEqual(self.attr_set[Attributes.HEALTH], 17)
 
     ####################################################################
-    def test_saving(self):
+    def test_setting(self):
         attr_set = AttributeSet()
         attr_set[Attributes.STRENGTH] = 1
         attr_set[Attributes.HEALTH] = 3
@@ -60,6 +60,14 @@ class AttributeSetTest(unittest.TestCase):
         self.assertEqual(attr_set[Attributes.STRIKE_DAMAGE], 5)
         self.assertEqual(attr_set[Attributes.HP_REGEN], 7)
         self.assertEqual(attr_set[Attributes.DAMAGE_ABSORB], 0)
+
+    ####################################################################
+    def test_serialize_to_dict(self):
+        self.fail()
+
+    ####################################################################
+    def test_deserialize_from_dict(self):
+        self.fail()
 
 
 ########################################################################
@@ -74,5 +82,49 @@ class PlayerAttributeSetTest(unittest.TestCase):
         self.attr_set.MODIFIER_AGILITY = -8
 
     ####################################################################
-    def test_add_to_base_attr(self):
-        self.attr_set.add_to_base_attr("")
+    def test_recalculate_stats(self):
+        self.fail()
+
+    ####################################################################
+    def test_set_field(self):
+        self.fail()
+
+    ####################################################################
+    def test_add_dynamic_bonuses(self):
+        self.fail()
+
+    ####################################################################
+    def test_set_base_attr(self):
+        self.fail()
+
+    ####################################################################
+    def test_add_bonuses(self):
+        self.fail()
+
+    ####################################################################
+    def test_serialize_to_dict(self):
+        self.fail()
+
+    ####################################################################
+    def test_deserialize_from_dict(self):
+        self.fail()
+
+    ####################################################################
+    def test_use_enum_for_key(self):
+        self.fail()
+
+    ####################################################################
+    def test_use_int_for_key(self):
+        self.fail()
+
+    ####################################################################
+    def test_use_string_for_key(self):
+        self.fail()
+
+    ####################################################################
+    def test_use_attributes_directly(self):
+        self.fail()
+
+    ####################################################################
+    def test_setting(self):
+        self.fail()

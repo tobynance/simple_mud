@@ -51,7 +51,7 @@ class MudTelnetHandler(object):
 
     ####################################################################
     def send(self, data):
-        self.protocol.send(str(data))
+        self.protocol.send(data)
 
     ####################################################################
     def get_remote_address(self):
@@ -186,7 +186,7 @@ class MudTelnetProtocol(TelnetProtocol):
 
     ####################################################################
     def send(self, data):
-        self.transport.write(data)
+        self.transport.write(str(data))
 
     ####################################################################
     def dataReceived(self, data):

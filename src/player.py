@@ -273,7 +273,7 @@ class PlayerDatabase(EntityDatabase):
     def load():
         if PlayerDatabase.db is None:
             db = PlayerDatabase()
-            if os.path.exists(data_file):
+            if os.environ.get("SIMPLE_MUD_LOAD_PLAYERS", "true") == "true" and os.path.exists(data_file):
                 players_data = json.load(open(data_file))
             else:
                 players_data = []

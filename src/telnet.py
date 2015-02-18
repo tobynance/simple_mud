@@ -37,13 +37,47 @@ concealed = "\x1B[8m"
 
 newline = "\r\n\x1B[0m"
 
+TELNET_REPLACEMENTS = dict(reset=reset,
+                           bold=bold,
+                           dim=dim,
+                           under=under,
+                           reverse=reverse,
+                           hide=hide,
+                           clearscreen=clearscreen,
+                           clearline=clearline,
+                           black=black,
+                           red=red,
+                           green=green,
+                           yellow=yellow,
+                           blue=blue,
+                           magenta=magenta,
+                           cyan=cyan,
+                           white=white,
+                           bblack=bblack,
+                           bred=bred,
+                           bgreen=bgreen,
+                           byellow=byellow,
+                           bblue=bblue,
+                           bmagenta=bmagenta,
+                           bcyan=bcyan,
+                           bwhite=bwhite,
+                           concealed=concealed,
+                           newline=newline)
+
+
+########################################################################
+def tf(text):
+    """
+    Replace the telnet tags with the telnet escape values.
+    """
+    text = str(text)
+    for key, value in TELNET_REPLACEMENTS.items():
+        text = text.replace("<" + key + ">", value)
+    return text
+
 
 ########################################################################
 class MudTelnetHandler(object):
-    state_enum = []
-    initial_state = None
-    state = None
-
     ####################################################################
     def __init__(self, protocol):
         self.protocol = protocol
@@ -117,6 +151,18 @@ class MudTelnetHandler(object):
 
 
 ########################################################################
+class BaseCommandDispatchHandler(MudTelnetHandler):
+    initial_state = None
+    state = None
+
+    ####################################################################
+    def handle(self, data):
+        method_name = ("handle_%s" % self.state.name).lower()
+        logger.info("Received '%s', passing it to handler %s", data, method_name)
+        getattr(self, method_name)(data)
+
+
+########################################################################
 class MudTelnetProtocol(TelnetProtocol):
     handler_class = None
     closed = False
@@ -186,20 +232,13 @@ class MudTelnetProtocol(TelnetProtocol):
 
     ####################################################################
     def send(self, data):
-        self.transport.write(str(data))
+        data = tf(data)
+        self.transport.write(data)
 
     ####################################################################
     def dataReceived(self, data):
         data = data.strip()
-
-        if self.handler.state in self.handler.state_enum:
-            self.send("I received %s from you while in state %s\r\n" % (data, self.handler.state_enum(self.handler.state).name))
-            method_name = ("handle_%s" % self.handler.state_enum(self.handler.state).name).lower()
-            logger.info("Received '%s', passing it to handler %s", data, method_name)
-            getattr(self.handler, method_name)(data)
-        else:
-            logger.warn("In unknown state '%s', using generic handler", self.handler.state)
-            self.handler.handle(data)
+        self.handler.handle(data)
 
     ####################################################################
     def connectionMade(self):
@@ -219,6 +258,6 @@ def run():
     initialize_logger(logging.INFO)
     factory = ServerFactory()
     factory.protocol = lambda: TelnetTransport(MudTelnetProtocol)
-
+    print "running on port 8023..."
     endpoints.serverFromString(reactor, "tcp:8023").listen(factory)
     reactor.run()

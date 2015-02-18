@@ -7,10 +7,14 @@ class EntityDatabase(object):
 
     ####################################################################
     def find_full(self, name):
+        if name is None:
+            return None
         return self.by_name.get(name.lower())
 
     ####################################################################
     def find(self, name_or_id):
+        if name_or_id is None:
+            return None
         if isinstance(name_or_id, int):
             return self.by_id.get(name_or_id)
         else:

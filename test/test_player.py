@@ -76,7 +76,8 @@ class PlayerTest(unittest.TestCase):
 
     ####################################################################
     def test_who_text(self):
-        self.fail()
+        m = ' jerry_john       | 1         | <red>Offline <white> | <yellow>MODERATOR<white>\r\n'
+        self.assertEqual(self.player.who_text(), m)
 
     ####################################################################
     def test_serialize_to_dict(self):

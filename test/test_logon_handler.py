@@ -1,30 +1,15 @@
 import unittest
 import os
+os.environ["SIMPLE_MUD_LOAD_PLAYERS"] = "false"
 import mock
 from attributes import PlayerRank
 from game_handler import GameHandler
-from test_utils import MockProtocol
+from test_utils import MockProtocol, welcome_message, stats_message
 from training_handler import TrainingHandler
 
-os.environ["SIMPLE_MUD_LOAD_PLAYERS"] = "false"
 import logon_handler
 from logon_handler import LogonHandler, LogonState
 from player import PlayerDatabase, Player
-
-welcome_message = """\
-<magenta><bold>Welcome to SimpleMUD, jerry!\r
-You must train your character with your desired stats,\r
-before you enter the realm.\r\n\r\n"""
-
-stats_message = """\
-<white><bold>---------------------- Your Stats ----------------------\r
-<dim>Player: jerry\r
-Stat Points Left: 18\r
-1) Strength: 1\r
-2) Health: 1\r
-3) Agility: 1\r
-<bold>--------------------------------------------------------\r
-Enter 1, 2, or 3 to add a stat point, or "quit" to go back: """
 
 
 ########################################################################

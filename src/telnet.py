@@ -111,6 +111,27 @@ class MudTelnetHandler(object):
         logger.warn("%s - flooded in %s", self.get_remote_address(), self.__class__.__name__)
 
     ####################################################################
+    def handle(self, data):
+        raise NotImplementedError
+
+
+########################################################################
+class BaseStateDispatchHandler(MudTelnetHandler):
+    initial_state = None
+    state = None
+
+    ####################################################################
+    def handle(self, data):
+        method_name = ("handle_%s" % self.state.name).lower()
+        logger.info("Received '%s', passing it to handler %s", data, method_name)
+        getattr(self, method_name)(data)
+
+
+########################################################################
+class BaseCommandDispatchHandler(MudTelnetHandler):
+    last_command = None
+
+    ####################################################################
     def _register_data_handler(self, predicate, handler):
         self.data_handlers.append((predicate, handler))
 
@@ -146,18 +167,6 @@ class MudTelnetHandler(object):
                 return False
         else:
             raise ValueError("I don't know how to use the predicate '%s' of type '%s'" % predicate, type(predicate))
-
-
-########################################################################
-class BaseCommandDispatchHandler(MudTelnetHandler):
-    initial_state = None
-    state = None
-
-    ####################################################################
-    def handle(self, data):
-        method_name = ("handle_%s" % self.state.name).lower()
-        logger.info("Received '%s', passing it to handler %s", data, method_name)
-        getattr(self, method_name)(data)
 
 
 ########################################################################

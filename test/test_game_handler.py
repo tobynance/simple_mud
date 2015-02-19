@@ -1,13 +1,31 @@
 import unittest
-from game_handler import GameHandler
-import mock
+import os
+os.environ["SIMPLE_MUD_LOAD_PLAYERS"] = "false"
+from player import PlayerDatabase, Player
+import game_handler
+from logon_handler import LogonHandler
+from test_utils import MockProtocol, stats_message
 
 
 ########################################################################
 class GameHandlerTest(unittest.TestCase):
     ####################################################################
     def setUp(self):
-        pass
+        MockProtocol.set_handler_class(handler_class=LogonHandler)
+        self.protocol = MockProtocol()
+        PlayerDatabase.db = None
+        game_handler.player_database = PlayerDatabase.load()
+        self.player = Player(28)
+        self.player.name = "jerry"
+        game_handler.player_database.add_player(self.player)
+
+        self.protocol.remove_handler()
+        self.player.protocol = self.protocol
+        self.protocol.add_handler(game_handler.GameHandler(self.protocol, self.player))
+        self.handler = self.protocol.handler
+        self.assertEqual(len(list(game_handler.player_database.all())), 1)
+        self.protocol.send_data = []
+        self.maxDiff = None
 
     ####################################################################
     def test_handle_last_command(self):

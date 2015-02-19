@@ -219,21 +219,21 @@ class Player(Entity):
         """Return a string describing the player"""
         text = [" {:<17}| {:<10}| ".format(self.name, self.level)]
         if self.active:
-            text.append(green + "Online  " + white)
+            text.append("<green>Online  <white>")
         elif self.logged_in:
-            text.append(yellow + "Inactive" + white)
+            text.append("<yellow>Inactive<white>")
         else:
-            text.append(red + "Offline " + white)
+            text.append("<red>Offline <white>")
 
         text.append(" | ")
         if self.rank == PlayerRank.REGULAR:
-            text.append(white)
+            text.append("<white>")
         elif self.rank == PlayerRank.ADMIN:
-            text.append(green)
+            text.append("<green>")
         else:
-            text.append(yellow)
+            text.append("<yellow>")
         text.append(self.rank.name)
-        text.append(white + "\r\n")
+        text.append("<white>\r\n")
         return "".join(text)
 
     ####################################################################

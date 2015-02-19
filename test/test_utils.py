@@ -66,3 +66,19 @@ class MockProtocol(object):
     ####################################################################
     def connectionLost(self, reason=None):
         self.closed = True
+
+
+welcome_message = """\
+<magenta><bold>Welcome to SimpleMUD, jerry!\r
+You must train your character with your desired stats,\r
+before you enter the realm.\r\n\r\n"""
+
+stats_message = """\
+<white><bold>---------------------- Your Stats ----------------------\r
+<dim>Player: jerry\r
+Stat Points Left: 18\r
+1) Strength: 1\r
+2) Health: 1\r
+3) Agility: 1\r
+<bold>--------------------------------------------------------\r
+Enter 1, 2, or 3 to add a stat point, or "quit" to go back: """

@@ -51,7 +51,7 @@ HELP_END = white + bold + ("-" * 80) + "\r\n"
 
 
 ########################################################################
-class GameHandler(telnet.MudTelnetHandler):
+class GameHandler(telnet.BaseCommandDispatchHandler):
     system_start_time = datetime.datetime.now()
     running = False
 
@@ -153,6 +153,7 @@ class GameHandler(telnet.MudTelnetHandler):
     def handle_kick(self, data, first_word, player_name):
         if self.player.rank < PlayerRank.MODERATOR:
             logger.warn("player %s tried to use the kick command, but doesn't have permission to do so", self.player.name)
+            self.player.send_string("<red>You do not have permission to do so<newline>")
             return
         kicked_player = player_database.find_logged_in(player_name)
         if kicked_player is None:
@@ -173,6 +174,7 @@ class GameHandler(telnet.MudTelnetHandler):
     def handle_announce(self, data, first_word, announcement):
         if self.player.rank < PlayerRank.ADMIN:
             logger.warn("player %s tried to use the announce command, but doesn't have permission to do so", self.player.name)
+            self.player.send_string("<red>You do not have permission to do so<newline>")
             return
         self.announce(announcement)
 
@@ -180,6 +182,7 @@ class GameHandler(telnet.MudTelnetHandler):
     def handle_change_rank(self, data, first_word, rest):
         if self.player.rank < PlayerRank.ADMIN:
             logger.warn("player %s tried to use the changerank command, but doesn't have permission to do so", self.player.name)
+            self.player.send_string("<red>You do not have permission to do so<newline>")
             return
         rest = rest.split()
         if len(rest) != 2:
@@ -202,6 +205,7 @@ class GameHandler(telnet.MudTelnetHandler):
     def handle_reload(self, data, first_word, db):
         if self.player.rank < PlayerRank.ADMIN:
             logger.warn("player %s tried to use the reload command, but doesn't have permission to do so", self.player.name)
+            self.player.send_string("<red>You do not have permission to do so<newline>")
             return
 
         if db == "items":
@@ -212,6 +216,7 @@ class GameHandler(telnet.MudTelnetHandler):
     def handle_shutdown(self, data, first_word, rest):
         if self.player.rank < PlayerRank.ADMIN:
             logger.warn("player %s tried to use the shutdown command, but doesn't have permission to do so", self.player.name)
+            self.player.send_string("<red>You do not have permission to do so<newline>")
             return
         self.announce("SYSTEM IS SHUTTING DOWN")
         GameHandler.running = False

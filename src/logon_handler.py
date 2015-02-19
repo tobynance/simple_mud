@@ -12,7 +12,7 @@ LogonState = Enum("LogonState", "NEW_CONNECTION NEW_USER ENTER_NEW_PASSWORD ENTE
 
 
 ########################################################################
-class LogonHandler(telnet.BaseCommandDispatchHandler):
+class LogonHandler(telnet.BaseStateDispatchHandler):
     state_enum = LogonState
     initial_state = LogonState.NEW_CONNECTION
     login_prompt = '<white>Please enter your name, or "new" if you are a new user: <reset>'

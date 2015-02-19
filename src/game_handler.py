@@ -231,7 +231,7 @@ class GameHandler(telnet.MudTelnetHandler):
     ####################################################################
     ####################################################################
     def enter(self):
-        logger.info("%s - enter called in %s", self.protocol.transport.getPeer(), self.__class__.__name__)
+        logger.info("%s - enter called in %s", self.protocol.get_remote_address(), self.__class__.__name__)
         self.last_command = ""
         self.player.active = True
         self.player.logged_in = True

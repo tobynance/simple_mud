@@ -89,10 +89,8 @@ class MudTelnetHandler(object):
 
     ####################################################################
     def get_remote_address(self):
-        # if self.protocol:
-        #     return self.protocol.get_remote_address()
-        if self.protocol and self.protocol.transport:
-            return self.protocol.transport.getPeer()
+        if self.protocol:
+            return self.protocol.get_remote_address()
         else:
             return "<unknown address>"
 
@@ -168,6 +166,11 @@ class MudTelnetProtocol(TelnetProtocol):
     closed = False
 
     ####################################################################
+    def __init__(self):
+        self.handlers = []
+        self.handlers.append(self.handler_class(self))
+
+    ####################################################################
     @classmethod
     def set_handler_class(cls, handler_class):
         cls.handler_class = handler_class
@@ -177,11 +180,6 @@ class MudTelnetProtocol(TelnetProtocol):
     def handler(self):
         if self.handlers:
             return self.handlers[-1]
-
-    ####################################################################
-    def __init__(self):
-        self.handlers = []
-        self.handlers.append(self.handler_class(self))
 
     ####################################################################
     def get_remote_address(self):
@@ -247,6 +245,7 @@ class MudTelnetProtocol(TelnetProtocol):
     ####################################################################
     def connectionLost(self, reason=None):
         self.closed = True
+
 
 ########################################################################
 def initialize_logger(logging_level=logging.INFO):

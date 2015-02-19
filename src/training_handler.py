@@ -2,7 +2,6 @@ import logging
 from attributes import Attributes, PlayerAttributes
 from player import player_database
 import telnet
-from telnet import bold, white, reset, red, clearscreen, magenta, dim
 
 logger = logging.getLogger(__name__)
 
@@ -34,17 +33,16 @@ class TrainingHandler(telnet.MudTelnetHandler):
             self.print_stats(True)
         else:
             print "unknown command:", data
-            self.send(reset + clearscreen + red + "Unknown Command '%s'" % data)
+            self.send("<reset><clearscreen><red>Unknown Command '%s'" % data)
             self.print_stats(False)
 
     ####################################################################
     def enter(self):
         self.player.active = False
         if self.player.newbie:
-            self.send("".join([magenta, bold, "Welcome to SimpleMUD, ",
-                               self.player.name, "!\r\n",
-                               "You must train your character with your desired stats,\r\n",
-                               "before you enter the realm.\r\n\r\n"]))
+            self.send(("<magenta><bold>Welcome to SimpleMUD, %s!\r\n" +
+                       "You must train your character with your desired stats,\r\n" +
+                       "before you enter the realm.\r\n\r\n") % self.player.name)
             self.player.newbie = False
         self.print_stats(False)
 
@@ -62,17 +60,17 @@ class TrainingHandler(telnet.MudTelnetHandler):
     def print_stats(self, clear_screen=True):
         message = []
         if clear_screen:
-            message.append(clearscreen)
+            message.append("<clearscreen>")
 
-        message += [white, bold]
+        message += ["<white><bold>"]
         message.append("---------------------- Your Stats ----------------------\r\n")
-        message.append(dim)
+        message.append("<dim>")
         message.append("Player: %s\r\n" % self.player.name)
         message.append("Stat Points Left: %s\r\n" % self.player.stat_points)
         message.append("1) Strength: %s\r\n" % self.player.attributes.STRENGTH)
         message.append("2) Health: %s\r\n" % self.player.attributes.HEALTH)
         message.append("3) Agility: %s\r\n" % self.player.attributes.AGILITY)
-        message.append(bold)
+        message.append("<bold>")
         message.append("--------------------------------------------------------\r\n")
         message.append("Enter 1, 2, or 3 to add a stat point, or \"quit\" to go back: ")
         self.send("".join(message))

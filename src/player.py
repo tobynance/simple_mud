@@ -3,7 +3,8 @@ import time
 import math
 import logging
 import json
-from attributes import PlayerRank, PlayerAttributes, PlayerAttributeSet
+from enum import Enum
+from attributes import PlayerRank, attribute_string, Attributes, primary_attribute_list, attribute_string_list
 from entity import Entity
 from entity_database import EntityDatabase
 from item import ItemDatabase
@@ -17,6 +18,158 @@ MAX_PLAYER_ITEMS = 16
 logger = logging.getLogger(__name__)
 
 SIMPLE_FIELDS = ["name", "password", "stat_points", "experience", "level", "room", "money", "next_attack_time"]
+
+player_attribute_strings = []
+for attr in attribute_string.split():
+    player_attribute_strings.append("BASE_" + attr)
+    player_attribute_strings.append("MODIFIER_" + attr)
+    player_attribute_strings.append(attr)
+
+PlayerAttributes = Enum("PlayerAttributes", " ".join(player_attribute_strings))
+
+
+########################################################################
+class PlayerAttributeSet(dict):
+    ####################################################################
+    def __init__(self, player=None):
+        super(PlayerAttributeSet, self).__init__()
+        self.player = player
+        self.recalculating = False
+        for attr in PlayerAttributes:
+            self.__set_field(attr, 0)
+
+    ####################################################################
+    def set_player(self, player):
+        self.player = player
+        self.recalculate_stats()
+
+    ####################################################################
+    def __get_attribute(self, item):
+        if isinstance(item, basestring):
+            item = PlayerAttributes[item]
+        elif isinstance(item, int):
+            item = PlayerAttributes(item)
+        return item
+
+    ####################################################################
+    def __getitem__(self, item):
+        item = self.__get_attribute(item)
+        return super(PlayerAttributeSet, self).__getitem__(item)
+
+    ####################################################################
+    def __set_field(self, key, value):
+        item = self.__get_attribute(key)
+        return super(PlayerAttributeSet, self).__setitem__(item, value)
+
+    ####################################################################
+    def __setitem__(self, key, value):
+        logger.debug("setitem: %s %s", key, value)
+        item = self.__get_attribute(key)
+        read_only_fields = [
+            "MODIFIER_MAX_HIT_POINTS",
+            "MODIFIER_HP_REGEN",
+            "MODIFIER_ACCURACY",
+            "MODIFIER_DODGING",
+            "MODIFIER_DAMAGE_ABSORB",
+            "MODIFIER_STRIKE_DAMAGE"] + attribute_string_list
+
+        if item.name in read_only_fields:
+            raise AttributeError("%s is a read-only field" % item.name)
+        elif item.name.startswith("BASE_") or item.name.startswith("MODIFIER_"):
+            result = self.__set_field(item, value)
+            self.recalculate_stats()
+            return result
+        else:
+            raise AttributeError("%s is a read-only field" % item.name)
+
+    ####################################################################
+    def recalculate_stats(self):
+        if self.recalculating:
+            return
+        try:
+            self.recalculating = True
+            self._recalculate_stats()
+        finally:
+            self.recalculating = False
+
+    ####################################################################
+    def _recalculate_stats(self):
+        logger.debug("Recalculating...")
+        if self.player is None:
+            logger.warn("Cannot recalculate player attributes: player is None")
+            return
+        for attr in primary_attribute_list:
+            value = self["BASE_" + attr] + self["MODIFIER_" + attr]
+            value = max(1, value)
+            self.__set_field(attr, value)
+
+        self.__set_field("MODIFIER_MAX_HIT_POINTS", int(10 + (self.player.level * self.HEALTH / 1.5)))
+        self.__set_field("MODIFIER_HP_REGEN", (self.HEALTH // 5) + self.player.level)
+        self.__set_field("MODIFIER_ACCURACY", self.AGILITY * 3)
+        self.__set_field("MODIFIER_DODGING", self.AGILITY * 3)
+        self.__set_field("MODIFIER_DAMAGE_ABSORB", self.STRENGTH // 5)
+        self.__set_field("MODIFIER_STRIKE_DAMAGE", self.STRENGTH // 5)
+        # make sure the hit points don't overflow if your max goes down
+        if self.player.hit_points > self.MAX_HIT_POINTS:
+            self.player.hit_points = self.MAX_HIT_POINTS
+
+        if self.player.weapon:
+            self.add_dynamic_bonuses(self.player.weapon)
+        if self.player.armor:
+            self.add_dynamic_bonuses(self.player.armor)
+
+        for attr in attribute_string.split():
+            value = self["BASE_" + attr] + self["MODIFIER_" + attr]
+            if attr in primary_attribute_list:
+                value = max(1, value)
+            self.__set_field(attr, value)
+
+    ####################################################################
+    def add_dynamic_bonuses(self, item):
+        if item:
+            for attr in Attributes:
+                self["MODIFIER_" + attr.name] += item.attributes[attr]
+
+    ####################################################################
+    def set_base_attr(self, attr, val):
+        self["BASE_" + attr.name] = val
+
+    ####################################################################
+    def add_bonuses(self, item):
+        if item:
+            for attr in Attributes:
+                self["BASE_" + attr.name] += item.attributes[attr]
+
+    ####################################################################
+    def __getattr__(self, name):
+        if name in player_attribute_strings:
+            return self[name]
+        else:
+            return super(PlayerAttributeSet, self).__getattribute__(name)
+
+    ####################################################################
+    def __setattr__(self, name, value):
+        if name in player_attribute_strings:
+            self[name] = value
+        else:
+            super(PlayerAttributeSet, self).__setattr__(name, value)
+
+    ####################################################################
+    def serialize_to_dict(self):
+        return {key.name: value for key, value in self.items()}
+
+    ####################################################################
+    @staticmethod
+    def deserialize_from_dict(data_dict):
+        attr_set = PlayerAttributeSet()
+        attr_set.recalculating = True
+
+        calculated_attributes = attribute_string.split()
+        for key, value in data_dict.items():
+            if key not in calculated_attributes:
+                attr_set[PlayerAttributes[key]] = value
+        attr_set.recalculating = False
+        return attr_set
 
 
 ########################################################################

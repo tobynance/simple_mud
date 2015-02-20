@@ -1,5 +1,5 @@
 import unittest
-from attributes import AttributeSet, Attributes, PlayerAttributeSet
+from attributes import AttributeSet, Attributes
 
 
 ########################################################################
@@ -63,68 +63,45 @@ class AttributeSetTest(unittest.TestCase):
 
     ####################################################################
     def test_serialize_to_dict(self):
-        self.fail()
+        attr_set = AttributeSet()
+        attr_set[Attributes.STRENGTH] = 1
+        attr_set[Attributes.HEALTH] = 3
+        attr_set[Attributes.STRIKE_DAMAGE] = 5
+        attr_set[Attributes.HP_REGEN] = 7
+        serialized = attr_set.serialize_to_dict()
+        expected = {"ACCURACY": 0,
+                    "AGILITY": 0,
+                    "DAMAGE_ABSORB": 0,
+                    "DODGING": 0,
+                    "HEALTH": 3,
+                    "HP_REGEN": 7,
+                    "MAX_HIT_POINTS": 0,
+                    "STRENGTH": 1,
+                    "STRIKE_DAMAGE": 5}
+        self.assertEqual(expected, serialized)
 
     ####################################################################
     def test_deserialize_from_dict(self):
-        self.fail()
+        data = {"ACCURACY": 0,
+                "AGILITY": 0,
+                "DAMAGE_ABSORB": 0,
+                "DODGING": 0,
+                "HEALTH": 3,
+                "HP_REGEN": 7,
+                "MAX_HIT_POINTS": 0,
+                "STRENGTH": 1,
+                "STRIKE_DAMAGE": 5}
+        attr_set = AttributeSet.deserialize_from_dict(data)
+        self.assertEqual(attr_set[Attributes.ACCURACY], 0)
+        self.assertEqual(attr_set[Attributes.STRENGTH], 1)
+        self.assertEqual(attr_set[Attributes.HEALTH], 3)
+        self.assertEqual(attr_set[Attributes.STRIKE_DAMAGE], 5)
+        self.assertEqual(attr_set[Attributes.HP_REGEN], 7)
+        self.assertEqual(attr_set[Attributes.DAMAGE_ABSORB], 0)
 
-
-########################################################################
-class PlayerAttributeSetTest(unittest.TestCase):
-    ####################################################################
-    def setUp(self):
-        self.attr_set = PlayerAttributeSet()
-        self.attr_set.BASE_AGILITY = 3
-        self.attr_set.BASE_MAX_HIT_POINTS = 12
-        self.attr_set.MODIFIER_STRIKE_DAMAGE = 2
-        self.attr_set.MODIFIER_HEALTH = 11
-        self.attr_set.MODIFIER_AGILITY = -8
-
-    ####################################################################
-    def test_recalculate_stats(self):
-        self.fail()
-
-    ####################################################################
-    def test_set_field(self):
-        self.fail()
-
-    ####################################################################
-    def test_add_dynamic_bonuses(self):
-        self.fail()
-
-    ####################################################################
-    def test_set_base_attr(self):
-        self.fail()
-
-    ####################################################################
-    def test_add_bonuses(self):
-        self.fail()
-
-    ####################################################################
-    def test_serialize_to_dict(self):
-        self.fail()
-
-    ####################################################################
-    def test_deserialize_from_dict(self):
-        self.fail()
-
-    ####################################################################
-    def test_use_enum_for_key(self):
-        self.fail()
-
-    ####################################################################
-    def test_use_int_for_key(self):
-        self.fail()
-
-    ####################################################################
-    def test_use_string_for_key(self):
-        self.fail()
-
-    ####################################################################
-    def test_use_attributes_directly(self):
-        self.fail()
-
-    ####################################################################
-    def test_setting(self):
-        self.fail()
+        self.assertEqual(attr_set.ACCURACY, 0)
+        self.assertEqual(attr_set.STRENGTH, 1)
+        self.assertEqual(attr_set.HEALTH, 3)
+        self.assertEqual(attr_set.STRIKE_DAMAGE, 5)
+        self.assertEqual(attr_set.HP_REGEN, 7)
+        self.assertEqual(attr_set.DAMAGE_ABSORB, 0)

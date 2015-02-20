@@ -4,6 +4,7 @@ import unittest
 from attributes import PlayerRank
 from player import Player, PlayerDatabase
 import player
+from player import PlayerAttributes, PlayerAttributeSet
 
 base = os.path.dirname(__file__)
 data_folder = os.path.join(base, "data")
@@ -142,6 +143,7 @@ class PlayerDatabaseTest(unittest.TestCase):
         self.temp_data_file.write(self.player_data)
         self.temp_data_file.flush()
         player.data_file = self.temp_data_file.name
+        player.player_database = PlayerDatabase()
 
     ####################################################################
     def tearDown(self):
@@ -209,13 +211,128 @@ class PlayerDatabaseTest(unittest.TestCase):
         self.assertEqual(player_database.find_logged_in("user"), None)
 
     ####################################################################
+    def add_players(self):
+        player_database = player.player_database
+        p = Player()
+        p.name = "a"
+        p.logged_in = True
+        p.active = True
+        player_database.add_player(p)
+
+        p = Player()
+        p.name = "b"
+        p.logged_in = False
+        p.active = True
+        player_database.add_player(p)
+
+        p = Player()
+        p.name = "c"
+        p.logged_in = True
+        p.active = False
+        player_database.add_player(p)
+
+        p = Player()
+        p.name = "d"
+        p.logged_in = False
+        p.active = False
+        player_database.add_player(p)
+        return player_database
+
+    ####################################################################
     def test_all(self):
-        self.fail()
+        player_database = self.add_players()
+        all = player_database.all()
+        self.assertEqual(len(all), 4)
+        names = set([p.name for p in all])
+        self.assertEqual(names, {"a", "b", "c", "d"})
 
     ####################################################################
     def test_all_logged_in(self):
-        self.fail()
+        player_database = self.add_players()
+        all = list(player_database.all_logged_in())
+        self.assertEqual(len(all), 2)
+        names = set([p.name for p in all])
+        self.assertEqual(names, {"a", "c"})
 
     ####################################################################
     def test_all_active(self):
+        player_database = self.add_players()
+        all = list(player_database.all_active())
+        self.assertEqual(len(all), 2)
+        names = set([p.name for p in all])
+        self.assertEqual(names, {"a", "b"})
+
+
+########################################################################
+class PlayerAttributeSetTest(unittest.TestCase):
+    ####################################################################
+    def setUp(self):
+        p = Player()
+        self.attr_set = p.attributes
+        self.attr_set.BASE_AGILITY = 3
+        self.attr_set.BASE_MAX_HIT_POINTS = 12
+        self.attr_set.MODIFIER_STRIKE_DAMAGE = 2
+        self.attr_set.MODIFIER_HEALTH = 11
+        self.attr_set.MODIFIER_AGILITY = -8
+        self.attr_set.MODIFIER_MAX_HIT_POINTS = -15
+
+    ####################################################################
+    def test_recalculate_stats(self):
+        self.fail()
+
+    ####################################################################
+    def test_set_field(self):
+        self.fail()
+
+    ####################################################################
+    def test_add_dynamic_bonuses(self):
+        self.fail()
+
+    ####################################################################
+    def test_set_base_attr(self):
+        self.fail()
+
+    ####################################################################
+    def test_add_bonuses(self):
+        self.fail()
+
+    ####################################################################
+    def test_serialize_to_dict(self):
+        self.fail()
+
+    ####################################################################
+    def test_deserialize_from_dict(self):
+        self.fail()
+
+    ####################################################################
+    def test_use_enum_for_key(self):
+        self.assertEqual(self.attr_set[PlayerAttributes.BASE_AGILITY], 3)
+        self.assertEqual(self.attr_set[PlayerAttributes.BASE_MAX_HIT_POINTS], 12)
+        self.assertEqual(self.attr_set[PlayerAttributes.MODIFIER_STRIKE_DAMAGE], 0)  # Changed, since this is a calculated value
+        self.assertEqual(self.attr_set[PlayerAttributes.MODIFIER_HEALTH], 11)
+        self.assertEqual(self.attr_set[PlayerAttributes.MODIFIER_AGILITY], -8)
+        self.assertEqual(self.attr_set[PlayerAttributes.MODIFIER_MAX_HIT_POINTS], -15)
+
+        self.assertEqual(self.attr_set[PlayerAttributes.BASE_STRIKE_DAMAGE], 0)
+        self.assertEqual(self.attr_set[PlayerAttributes.BASE_HEALTH], 0)
+
+        self.assertEqual(self.attr_set[PlayerAttributes.AGILITY], 1)
+        self.assertEqual(self.attr_set[PlayerAttributes.MAX_HIT_POINTS], -3)
+        self.assertEqual(self.attr_set[PlayerAttributes.STRIKE_DAMAGE], 2)
+        self.assertEqual(self.attr_set[PlayerAttributes.HEALTH], 11)
+
+    ####################################################################
+    def test_use_int_for_key(self):
+        self.fail()
+
+    ####################################################################
+    def test_use_string_for_key(self):
+        self.fail()
+
+    ####################################################################
+    def test_use_attributes_directly(self):
+        self.fail()
+
+    ####################################################################
+    def test_setting(self):
         self.fail()

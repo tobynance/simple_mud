@@ -2,6 +2,7 @@ import os
 import tempfile
 import unittest
 from attributes import PlayerRank
+from item import ItemDatabase
 from player import Player, PlayerDatabase
 import player
 from player import PlayerAttributes, PlayerAttributeSet
@@ -272,17 +273,16 @@ class PlayerAttributeSetTest(unittest.TestCase):
         self.attr_set.BASE_MAX_HIT_POINTS = 12
         self.attr_set.MODIFIER_HEALTH = 11
         self.attr_set.MODIFIER_AGILITY = -8
-
-    ####################################################################
-    def test_read_only_fields_are_read_only(self):
-        with self.assertRaises(AttributeError):
-            self.attr_set.MODIFIER_STRIKE_DAMAGE = 2
-        with self.assertRaises(AttributeError):
-            self.attr_set.MODIFIER_MAX_HIT_POINTS = -15
+        self.attr_set.MODIFIER_STRIKE_DAMAGE = 2
+        self.attr_set.MODIFIER_MAX_HIT_POINTS = -15
 
     ####################################################################
     def test_recalculate_stats(self):
         self.fail()
+
+    ####################################################################
+    def test_add_and_remove_item(self):
+        self.fail("Make sure that if you add an item, you see your stats change, and if you then remove the item, they go back to where they were")
 
     ####################################################################
     def test_set_field(self):
@@ -290,7 +290,49 @@ class PlayerAttributeSetTest(unittest.TestCase):
 
     ####################################################################
     def test_add_dynamic_bonuses(self):
-        self.fail()
+        item_db = ItemDatabase.load()
+        item = item_db.find(55)
+        self.assertEqual(item.attributes.STRENGTH, 0)
+        self.assertEqual(item.attributes.HEALTH, 0)
+        self.assertEqual(item.attributes.AGILITY, 0)
+        self.assertEqual(item.attributes.MAX_HIT_POINTS, 0)
+        self.assertEqual(item.attributes.ACCURACY, 10)
+        self.assertEqual(item.attributes.DODGING, 60)
+        self.assertEqual(item.attributes.STRIKE_DAMAGE, 10)
+        self.assertEqual(item.attributes.DAMAGE_ABSORB, 5)
+        self.assertEqual(item.attributes.HP_REGEN, 0)
+
+        self.attr_set.add_dynamic_bonuses(item)
+        serialized = self.attr_set.serialize_to_dict()
+        self.maxDiff = None
+        attribute_data = {"ACCURACY": 13,
+                          "AGILITY": 1,
+                          "BASE_ACCURACY": 0,
+                          "BASE_AGILITY": 3,
+                          "BASE_DAMAGE_ABSORB": 0,
+                          "BASE_DODGING": 0,
+                          "BASE_HEALTH": 1,
+                          "BASE_HP_REGEN": 0,
+                          "BASE_MAX_HIT_POINTS": 12,
+                          "BASE_STRENGTH": 1,
+                          "BASE_STRIKE_DAMAGE": 0,
+                          "DAMAGE_ABSORB": 5,
+                          "DODGING": 63,
+                          "HEALTH": 12,
+                          "HP_REGEN": 3,
+                          "MAX_HIT_POINTS": 15,
+                          "MODIFIER_ACCURACY": 10,
+                          "MODIFIER_AGILITY": -8,
+                          "MODIFIER_DAMAGE_ABSORB": 5,
+                          "MODIFIER_DODGING": 60,
+                          "MODIFIER_HEALTH": 11,
+                          "MODIFIER_HP_REGEN": 0,
+                          "MODIFIER_MAX_HIT_POINTS": -15,
+                          "MODIFIER_STRENGTH": 0,
+                          "MODIFIER_STRIKE_DAMAGE": 12,
+                          "STRENGTH": 1,
+                          "STRIKE_DAMAGE": 12}
+        self.assertEqual(attribute_data, serialized)
 
     ####################################################################
     def test_set_base_attr(self):
@@ -298,26 +340,82 @@ class PlayerAttributeSetTest(unittest.TestCase):
 
     ####################################################################
     def test_add_bonuses(self):
-        self.fail()
+        item_db = ItemDatabase.load()
+        item = item_db.find(55)
+        self.assertEqual(item.attributes.STRENGTH, 0)
+        self.assertEqual(item.attributes.HEALTH, 0)
+        self.assertEqual(item.attributes.AGILITY, 0)
+        self.assertEqual(item.attributes.MAX_HIT_POINTS, 0)
+        self.assertEqual(item.attributes.ACCURACY, 10)
+        self.assertEqual(item.attributes.DODGING, 60)
+        self.assertEqual(item.attributes.STRIKE_DAMAGE, 10)
+        self.assertEqual(item.attributes.DAMAGE_ABSORB, 5)
+        self.assertEqual(item.attributes.HP_REGEN, 0)
+
+        self.attr_set.add_bonuses(item)
+        serialized = self.attr_set.serialize_to_dict()
+        self.maxDiff = None
+        attribute_data = {"ACCURACY": 13,
+                          "AGILITY": 1,
+                          "BASE_ACCURACY": 10,
+                          "BASE_AGILITY": 3,
+                          "BASE_DAMAGE_ABSORB": 5,
+                          "BASE_DODGING": 60,
+                          "BASE_HEALTH": 1,
+                          "BASE_HP_REGEN": 0,
+                          "BASE_MAX_HIT_POINTS": 12,
+                          "BASE_STRENGTH": 1,
+                          "BASE_STRIKE_DAMAGE": 10,
+                          "DAMAGE_ABSORB": 5,
+                          "DODGING": 63,
+                          "HEALTH": 12,
+                          "HP_REGEN": 3,
+                          "MAX_HIT_POINTS": 15,
+                          "MODIFIER_ACCURACY": 0,
+                          "MODIFIER_AGILITY": -8,
+                          "MODIFIER_DAMAGE_ABSORB": 0,
+                          "MODIFIER_DODGING": 0,
+                          "MODIFIER_HEALTH": 11,
+                          "MODIFIER_HP_REGEN": 0,
+                          "MODIFIER_MAX_HIT_POINTS": -15,
+                          "MODIFIER_STRENGTH": 0,
+                          "MODIFIER_STRIKE_DAMAGE": 2,
+                          "STRENGTH": 1,
+                          "STRIKE_DAMAGE": 12}
+        self.assertEqual(attribute_data, serialized)
 
     ####################################################################
     def test_serialize_to_dict(self):
-        attr_set = PlayerAttributeSet()
-        attr_set[PlayerAttributes.STRENGTH] = 1
-        attr_set[PlayerAttributes.HEALTH] = 3
-        attr_set[PlayerAttributes.STRIKE_DAMAGE] = 5
-        attr_set[PlayerAttributes.HP_REGEN] = 7
-        serialized = attr_set.serialize_to_dict()
-        expected = {"ACCURACY": 0,
-                    "AGILITY": 0,
-                    "DAMAGE_ABSORB": 0,
-                    "DODGING": 0,
-                    "HEALTH": 3,
-                    "HP_REGEN": 7,
-                    "MAX_HIT_POINTS": 0,
-                    "STRENGTH": 1,
-                    "STRIKE_DAMAGE": 5}
-        self.assertEqual(expected, serialized)
+        serialized = self.attr_set.serialize_to_dict()
+        attribute_data = {"ACCURACY": 3,
+                          "AGILITY": 1,
+                          "BASE_ACCURACY": 0,
+                          "BASE_AGILITY": 3,
+                          "BASE_DAMAGE_ABSORB": 0,
+                          "BASE_DODGING": 0,
+                          "BASE_HEALTH": 1,
+                          "BASE_HP_REGEN": 0,
+                          "BASE_MAX_HIT_POINTS": 12,
+                          "BASE_STRENGTH": 1,
+                          "BASE_STRIKE_DAMAGE": 0,
+                          "DAMAGE_ABSORB": 0,
+                          "DODGING": 3,
+                          "HEALTH": 12,
+                          "HP_REGEN": 3,
+                          "MAX_HIT_POINTS": 15,
+                          "MODIFIER_ACCURACY": 0,
+                          "MODIFIER_AGILITY": -8,
+                          "MODIFIER_DAMAGE_ABSORB": 0,
+                          "MODIFIER_DODGING": 0,
+                          "MODIFIER_HEALTH": 11,
+                          "MODIFIER_HP_REGEN": 0,
+                          "MODIFIER_MAX_HIT_POINTS": -15,
+                          "MODIFIER_STRENGTH": 0,
+                          "MODIFIER_STRIKE_DAMAGE": 2,
+                          "STRENGTH": 1,
+                          "STRIKE_DAMAGE": 2}
+        self.maxDiff = None
+        self.assertEqual(attribute_data, serialized)
 
     ####################################################################
     def test_deserialize_from_dict(self):
@@ -336,18 +434,18 @@ class PlayerAttributeSetTest(unittest.TestCase):
                           "DODGING": 3,
                           "HEALTH": 12,
                           "HP_REGEN": 3,
-                          "MAX_HIT_POINTS": 30,
-                          "MODIFIER_ACCURACY": 3,
+                          "MAX_HIT_POINTS": 15,
+                          "MODIFIER_ACCURACY": 0,
                           "MODIFIER_AGILITY": -8,
                           "MODIFIER_DAMAGE_ABSORB": 0,
-                          "MODIFIER_DODGING": 3,
+                          "MODIFIER_DODGING": 0,
                           "MODIFIER_HEALTH": 11,
-                          "MODIFIER_HP_REGEN": 3,
-                          "MODIFIER_MAX_HIT_POINTS": 18,
+                          "MODIFIER_HP_REGEN": 0,
+                          "MODIFIER_MAX_HIT_POINTS": -15,
                           "MODIFIER_STRENGTH": 0,
-                          "MODIFIER_STRIKE_DAMAGE": 0,
+                          "MODIFIER_STRIKE_DAMAGE": 2,
                           "STRENGTH": 1,
-                          "STRIKE_DAMAGE": 0}
+                          "STRIKE_DAMAGE": 2}
 
         p = Player()
         attr_set = PlayerAttributeSet.deserialize_from_dict(attribute_data, player=p)
@@ -365,20 +463,20 @@ class PlayerAttributeSetTest(unittest.TestCase):
         self.assertEqual(attr_set.MODIFIER_STRENGTH, 0)
         self.assertEqual(attr_set.MODIFIER_HEALTH, 11)
         self.assertEqual(attr_set.MODIFIER_AGILITY, -8)
-        self.assertEqual(attr_set.MODIFIER_MAX_HIT_POINTS, 18)
-        self.assertEqual(attr_set.MODIFIER_ACCURACY, 3)
-        self.assertEqual(attr_set.MODIFIER_DODGING, 3)
-        self.assertEqual(attr_set.MODIFIER_STRIKE_DAMAGE, 0)
+        self.assertEqual(attr_set.MODIFIER_MAX_HIT_POINTS, -15)
+        self.assertEqual(attr_set.MODIFIER_ACCURACY, 0)
+        self.assertEqual(attr_set.MODIFIER_DODGING, 0)
+        self.assertEqual(attr_set.MODIFIER_STRIKE_DAMAGE, 2)
         self.assertEqual(attr_set.MODIFIER_DAMAGE_ABSORB, 0)
-        self.assertEqual(attr_set.MODIFIER_HP_REGEN, 3)
+        self.assertEqual(attr_set.MODIFIER_HP_REGEN, 0)
 
         self.assertEqual(attr_set.STRENGTH, 1)
         self.assertEqual(attr_set.HEALTH, 12)
         self.assertEqual(attr_set.AGILITY, 1)
-        self.assertEqual(attr_set.MAX_HIT_POINTS, 30)
+        self.assertEqual(attr_set.MAX_HIT_POINTS, 15)
         self.assertEqual(attr_set.ACCURACY, 3)
         self.assertEqual(attr_set.DODGING, 3)
-        self.assertEqual(attr_set.STRIKE_DAMAGE, 0)
+        self.assertEqual(attr_set.STRIKE_DAMAGE, 2)
         self.assertEqual(attr_set.DAMAGE_ABSORB, 0)
         self.assertEqual(attr_set.HP_REGEN, 3)
 
@@ -386,68 +484,68 @@ class PlayerAttributeSetTest(unittest.TestCase):
     def test_use_enum_for_key(self):
         self.assertEqual(self.attr_set[PlayerAttributes.BASE_AGILITY], 3)
         self.assertEqual(self.attr_set[PlayerAttributes.BASE_MAX_HIT_POINTS], 12)
-        self.assertEqual(self.attr_set[PlayerAttributes.MODIFIER_STRIKE_DAMAGE], 0)
+        self.assertEqual(self.attr_set[PlayerAttributes.MODIFIER_STRIKE_DAMAGE], 2)
         self.assertEqual(self.attr_set[PlayerAttributes.MODIFIER_HEALTH], 11)
         self.assertEqual(self.attr_set[PlayerAttributes.MODIFIER_AGILITY], -8)
-        self.assertEqual(self.attr_set[PlayerAttributes.MODIFIER_MAX_HIT_POINTS], 18)
+        self.assertEqual(self.attr_set[PlayerAttributes.MODIFIER_MAX_HIT_POINTS], -15)
 
         self.assertEqual(self.attr_set[PlayerAttributes.BASE_STRIKE_DAMAGE], 0)
         self.assertEqual(self.attr_set[PlayerAttributes.BASE_HEALTH], 1)
 
         self.assertEqual(self.attr_set[PlayerAttributes.AGILITY], 1)
-        self.assertEqual(self.attr_set[PlayerAttributes.MAX_HIT_POINTS], 30)
-        self.assertEqual(self.attr_set[PlayerAttributes.STRIKE_DAMAGE], 0)
+        self.assertEqual(self.attr_set[PlayerAttributes.MAX_HIT_POINTS], 15)
+        self.assertEqual(self.attr_set[PlayerAttributes.STRIKE_DAMAGE], 2)
         self.assertEqual(self.attr_set[PlayerAttributes.HEALTH], 12)
 
     ####################################################################
     def test_use_int_for_key(self):
         self.assertEqual(self.attr_set[PlayerAttributes.BASE_AGILITY.value], 3)
         self.assertEqual(self.attr_set[PlayerAttributes.BASE_MAX_HIT_POINTS.value], 12)
-        self.assertEqual(self.attr_set[PlayerAttributes.MODIFIER_STRIKE_DAMAGE.value], 0)
+        self.assertEqual(self.attr_set[PlayerAttributes.MODIFIER_STRIKE_DAMAGE.value], 2)
         self.assertEqual(self.attr_set[PlayerAttributes.MODIFIER_HEALTH.value], 11)
         self.assertEqual(self.attr_set[PlayerAttributes.MODIFIER_AGILITY.value], -8)
-        self.assertEqual(self.attr_set[PlayerAttributes.MODIFIER_MAX_HIT_POINTS.value], 18)
+        self.assertEqual(self.attr_set[PlayerAttributes.MODIFIER_MAX_HIT_POINTS.value], -15)
 
         self.assertEqual(self.attr_set[PlayerAttributes.BASE_STRIKE_DAMAGE.value], 0)
         self.assertEqual(self.attr_set[PlayerAttributes.BASE_HEALTH.value], 1)
 
         self.assertEqual(self.attr_set[PlayerAttributes.AGILITY.value], 1)
-        self.assertEqual(self.attr_set[PlayerAttributes.MAX_HIT_POINTS.value], 30)
-        self.assertEqual(self.attr_set[PlayerAttributes.STRIKE_DAMAGE.value], 0)
+        self.assertEqual(self.attr_set[PlayerAttributes.MAX_HIT_POINTS.value], 15)
+        self.assertEqual(self.attr_set[PlayerAttributes.STRIKE_DAMAGE.value], 2)
         self.assertEqual(self.attr_set[PlayerAttributes.HEALTH.value], 12)
 
     ####################################################################
     def test_use_string_for_key(self):
         self.assertEqual(self.attr_set["BASE_AGILITY"], 3)
         self.assertEqual(self.attr_set["BASE_MAX_HIT_POINTS"], 12)
-        self.assertEqual(self.attr_set["MODIFIER_STRIKE_DAMAGE"], 0)
+        self.assertEqual(self.attr_set["MODIFIER_STRIKE_DAMAGE"], 2)
         self.assertEqual(self.attr_set["MODIFIER_HEALTH"], 11)
         self.assertEqual(self.attr_set["MODIFIER_AGILITY"], -8)
-        self.assertEqual(self.attr_set["MODIFIER_MAX_HIT_POINTS"], 18)
+        self.assertEqual(self.attr_set["MODIFIER_MAX_HIT_POINTS"], -15)
 
         self.assertEqual(self.attr_set["BASE_STRIKE_DAMAGE"], 0)
         self.assertEqual(self.attr_set["BASE_HEALTH"], 1)
 
         self.assertEqual(self.attr_set["AGILITY"], 1)
-        self.assertEqual(self.attr_set["MAX_HIT_POINTS"], 30)
-        self.assertEqual(self.attr_set["STRIKE_DAMAGE"], 0)
+        self.assertEqual(self.attr_set["MAX_HIT_POINTS"], 15)
+        self.assertEqual(self.attr_set["STRIKE_DAMAGE"], 2)
         self.assertEqual(self.attr_set["HEALTH"], 12)
 
     ####################################################################
     def test_use_attributes_directly(self):
         self.assertEqual(self.attr_set.BASE_AGILITY, 3)
         self.assertEqual(self.attr_set.BASE_MAX_HIT_POINTS, 12)
-        self.assertEqual(self.attr_set.MODIFIER_STRIKE_DAMAGE, 0)
+        self.assertEqual(self.attr_set.MODIFIER_STRIKE_DAMAGE, 2)
         self.assertEqual(self.attr_set.MODIFIER_HEALTH, 11)
         self.assertEqual(self.attr_set.MODIFIER_AGILITY, -8)
-        self.assertEqual(self.attr_set.MODIFIER_MAX_HIT_POINTS, 18)
+        self.assertEqual(self.attr_set.MODIFIER_MAX_HIT_POINTS, -15)
 
         self.assertEqual(self.attr_set.BASE_STRIKE_DAMAGE, 0)
         self.assertEqual(self.attr_set.BASE_HEALTH, 1)
 
         self.assertEqual(self.attr_set.AGILITY, 1)
-        self.assertEqual(self.attr_set.MAX_HIT_POINTS, 30)
-        self.assertEqual(self.attr_set.STRIKE_DAMAGE, 0)
+        self.assertEqual(self.attr_set.MAX_HIT_POINTS, 15)
+        self.assertEqual(self.attr_set.STRIKE_DAMAGE, 2)
         self.assertEqual(self.attr_set.HEALTH, 12)
 
         self.attr_set.BASE_HEALTH = 3
@@ -457,13 +555,16 @@ class PlayerAttributeSetTest(unittest.TestCase):
 
     ####################################################################
     def test_setting(self):
-        attr_set = PlayerAttributeSet()
+        p = Player()
+        attr_set = p.attributes
         attr_set[PlayerAttributes.BASE_STRENGTH] = 1
         attr_set[PlayerAttributes.MODIFIER_HEALTH] = 3
+        attr_set[PlayerAttributes.MODIFIER_STRIKE_DAMAGE] = 3
         attr_set[PlayerAttributes.BASE_STRIKE_DAMAGE] = 5
         attr_set[PlayerAttributes.BASE_HP_REGEN] = 7
 
         self.assertEqual(attr_set[PlayerAttributes.BASE_STRENGTH], 1)
+        self.assertEqual(attr_set[PlayerAttributes.STRIKE_DAMAGE], 8)
         self.assertEqual(attr_set[PlayerAttributes.MODIFIER_HEALTH], 3)
         self.assertEqual(attr_set[PlayerAttributes.BASE_STRIKE_DAMAGE], 5)
         self.assertEqual(attr_set[PlayerAttributes.BASE_HP_REGEN], 7)

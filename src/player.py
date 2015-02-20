@@ -19,16 +19,8 @@ logger = logging.getLogger(__name__)
 
 SIMPLE_FIELDS = ["name", "password", "stat_points", "experience", "level", "room", "money", "next_attack_time"]
 
-READ_ONLY_ATTRIBUTES = ["MODIFIER_MAX_HIT_POINTS",
-                        "MODIFIER_HP_REGEN",
-                        "MODIFIER_ACCURACY",
-                        "MODIFIER_DODGING",
-                        "MODIFIER_DAMAGE_ABSORB",
-                        "MODIFIER_STRIKE_DAMAGE"] + attribute_string_list
-
-
 player_attribute_strings = []
-for attr in attribute_string.split():
+for attr in attribute_string_list:
     player_attribute_strings.append("BASE_" + attr)
     player_attribute_strings.append("MODIFIER_" + attr)
     player_attribute_strings.append(attr)
@@ -74,9 +66,7 @@ class PlayerAttributeSet(dict):
         logger.debug("setitem: %s %s", key, value)
         item = self.__get_attribute(key)
 
-        if item.name in READ_ONLY_ATTRIBUTES:
-            raise AttributeError("%s is a read-only field" % item.name)
-        elif item.name.startswith("BASE_") or item.name.startswith("MODIFIER_"):
+        if item.name.startswith("BASE_") or item.name.startswith("MODIFIER_"):
             result = self.__set_field(item, value)
             self.recalculate_stats()
             return result
@@ -104,32 +94,27 @@ class PlayerAttributeSet(dict):
             value = max(1, value)
             self.__set_field(attr, value)
 
-        self.__set_field("MODIFIER_MAX_HIT_POINTS", int(10 + (self.player.level * self.HEALTH / 1.5)))
-        self.__set_field("MODIFIER_HP_REGEN", (self.HEALTH // 5) + self.player.level)
-        self.__set_field("MODIFIER_ACCURACY", self.AGILITY * 3)
-        self.__set_field("MODIFIER_DODGING", self.AGILITY * 3)
-        self.__set_field("MODIFIER_DAMAGE_ABSORB", self.STRENGTH // 5)
-        self.__set_field("MODIFIER_STRIKE_DAMAGE", self.STRENGTH // 5)
-        # make sure the hit points don't overflow if your max goes down
-        if self.player.hit_points > self.MAX_HIT_POINTS:
-            self.player.hit_points = self.MAX_HIT_POINTS
-
         if self.player.weapon:
             self.add_dynamic_bonuses(self.player.weapon)
         if self.player.armor:
             self.add_dynamic_bonuses(self.player.armor)
 
-        for attr in attribute_string.split():
-            value = self["BASE_" + attr] + self["MODIFIER_" + attr]
-            if attr in primary_attribute_list:
-                value = max(1, value)
-            self.__set_field(attr, value)
+        self.__set_field("MAX_HIT_POINTS", int(10 + (self.player.level * self.HEALTH / 1.5)) + self.MODIFIER_MAX_HIT_POINTS + self.BASE_MAX_HIT_POINTS)
+        self.__set_field("HP_REGEN", (self.HEALTH // 5) + self.player.level + self.MODIFIER_HP_REGEN + self.BASE_HP_REGEN)
+        self.__set_field("ACCURACY", self.AGILITY * 3 + self.MODIFIER_ACCURACY + self.BASE_ACCURACY)
+        self.__set_field("DODGING", self.AGILITY * 3 + self.MODIFIER_DODGING + self.BASE_DODGING)
+        self.__set_field("DAMAGE_ABSORB", (self.STRENGTH // 5) + self.MODIFIER_DAMAGE_ABSORB + self.BASE_DAMAGE_ABSORB)
+        self.__set_field("STRIKE_DAMAGE", (self.STRENGTH // 5) + self.MODIFIER_STRIKE_DAMAGE + self.BASE_STRIKE_DAMAGE)
+        # make sure the hit points don't overflow if your max goes down
+        if self.player.hit_points > self.MAX_HIT_POINTS:
+            self.player.hit_points = self.MAX_HIT_POINTS
 
     ####################################################################
     def add_dynamic_bonuses(self, item):
         if item:
             for attr in Attributes:
-                self["MODIFIER_" + attr.name] += item.attributes[attr]
+                self.__set_field("MODIFIER_" + attr.name, self["MODIFIER_" + attr.name] + item.attributes[attr])
+            self.recalculate_stats()
 
     ####################################################################
     def set_base_attr(self, attr, val):
@@ -139,7 +124,8 @@ class PlayerAttributeSet(dict):
     def add_bonuses(self, item):
         if item:
             for attr in Attributes:
-                self["BASE_" + attr.name] += item.attributes[attr]
+                self.__set_field("BASE_" + attr.name, self["BASE_" + attr.name] + item.attributes[attr])
+            self.recalculate_stats()
 
     ####################################################################
     def __getattr__(self, name):
@@ -167,7 +153,7 @@ class PlayerAttributeSet(dict):
         attr_set.player = player
 
         for key, value in data_dict.items():
-            if key not in READ_ONLY_ATTRIBUTES:
+            if key not in attribute_string_list:
                 attr_set[PlayerAttributes[key]] = value
         attr_set.recalculating = False
         attr_set.recalculate_stats()

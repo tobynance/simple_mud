@@ -22,6 +22,7 @@ class Direction(Enum):
 attribute_string = "STRENGTH HEALTH AGILITY MAX_HIT_POINTS ACCURACY DODGING STRIKE_DAMAGE DAMAGE_ABSORB HP_REGEN"
 attribute_string_list = attribute_string.split()
 primary_attribute_list = ["STRENGTH", "HEALTH", "AGILITY"]
+secondary_attribute_list = ["MAX_HIT_POINTS", "ACCURACY", "DODGING", "STRIKE_DAMAGE", "DAMAGE_ABSORB", "HP_REGEN"]
 
 Attributes = Enum("Attributes", attribute_string)
 

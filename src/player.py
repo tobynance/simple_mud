@@ -19,6 +19,14 @@ logger = logging.getLogger(__name__)
 
 SIMPLE_FIELDS = ["name", "password", "stat_points", "experience", "level", "room", "money", "next_attack_time"]
 
+READ_ONLY_ATTRIBUTES = ["MODIFIER_MAX_HIT_POINTS",
+                        "MODIFIER_HP_REGEN",
+                        "MODIFIER_ACCURACY",
+                        "MODIFIER_DODGING",
+                        "MODIFIER_DAMAGE_ABSORB",
+                        "MODIFIER_STRIKE_DAMAGE"] + attribute_string_list
+
+
 player_attribute_strings = []
 for attr in attribute_string.split():
     player_attribute_strings.append("BASE_" + attr)
@@ -65,15 +73,8 @@ class PlayerAttributeSet(dict):
     def __setitem__(self, key, value):
         logger.debug("setitem: %s %s", key, value)
         item = self.__get_attribute(key)
-        read_only_fields = [
-            "MODIFIER_MAX_HIT_POINTS",
-            "MODIFIER_HP_REGEN",
-            "MODIFIER_ACCURACY",
-            "MODIFIER_DODGING",
-            "MODIFIER_DAMAGE_ABSORB",
-            "MODIFIER_STRIKE_DAMAGE"] + attribute_string_list
 
-        if item.name in read_only_fields:
+        if item.name in READ_ONLY_ATTRIBUTES:
             raise AttributeError("%s is a read-only field" % item.name)
         elif item.name.startswith("BASE_") or item.name.startswith("MODIFIER_"):
             result = self.__set_field(item, value)
@@ -160,15 +161,16 @@ class PlayerAttributeSet(dict):
 
     ####################################################################
     @staticmethod
-    def deserialize_from_dict(data_dict):
+    def deserialize_from_dict(data_dict, player=None):
         attr_set = PlayerAttributeSet()
         attr_set.recalculating = True
+        attr_set.player = player
 
-        calculated_attributes = attribute_string.split()
         for key, value in data_dict.items():
-            if key not in calculated_attributes:
+            if key not in READ_ONLY_ATTRIBUTES:
                 attr_set[PlayerAttributes[key]] = value
         attr_set.recalculating = False
+        attr_set.recalculate_stats()
         return attr_set
 
 

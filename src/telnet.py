@@ -210,10 +210,11 @@ class MudTelnetProtocol(TelnetProtocol):
 
     ####################################################################
     def remove_handler(self):
-        self.handler.leave()
-        self.handlers.pop(-1)
         if self.handler:
-            self.handler.enter()
+            self.handler.leave()
+            self.handlers.pop(-1)
+            if self.handler:
+                self.handler.enter()
 
     ####################################################################
     def clear_handlers(self):

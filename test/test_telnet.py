@@ -50,10 +50,6 @@ class MudTelnetProtocolTest(unittest.TestCase):
         self.fail()
 
     ####################################################################
-    def test_get_remote_address(self):
-        self.fail()
-
-    ####################################################################
     def test_add_handler(self):
         self.fail()
 

@@ -4,7 +4,7 @@ import math
 import logging
 import json
 from enum import Enum
-from attributes import PlayerRank, attribute_string, Attributes, primary_attribute_list, attribute_string_list
+from attributes import PlayerRank, Attributes, primary_attribute_list, attribute_string_list
 from entity import Entity
 from entity_database import EntityDatabase
 from item import ItemDatabase
@@ -89,15 +89,19 @@ class PlayerAttributeSet(dict):
         if self.player is None:
             logger.warn("Cannot recalculate player attributes: player is None")
             return
-        for attr in primary_attribute_list:
-            value = self["BASE_" + attr] + self["MODIFIER_" + attr]
-            value = max(1, value)
-            self.__set_field(attr, value)
+
+        for attr in attribute_string_list:
+            self.__set_field("MODIFIER_" + attr, 0)
 
         if self.player.weapon:
             self.add_dynamic_bonuses(self.player.weapon)
         if self.player.armor:
             self.add_dynamic_bonuses(self.player.armor)
+
+        for attr in primary_attribute_list:
+            value = self["BASE_" + attr] + self["MODIFIER_" + attr]
+            value = max(1, value)
+            self.__set_field(attr, value)
 
         self.__set_field("MAX_HIT_POINTS", int(10 + (self.player.level * self.HEALTH / 1.5)) + self.MODIFIER_MAX_HIT_POINTS + self.BASE_MAX_HIT_POINTS)
         self.__set_field("HP_REGEN", (self.HEALTH // 5) + self.player.level + self.MODIFIER_HP_REGEN + self.BASE_HP_REGEN)
@@ -115,10 +119,6 @@ class PlayerAttributeSet(dict):
             for attr in Attributes:
                 self.__set_field("MODIFIER_" + attr.name, self["MODIFIER_" + attr.name] + item.attributes[attr])
             self.recalculate_stats()
-
-    ####################################################################
-    def set_base_attr(self, attr, val):
-        self["BASE_" + attr.name] = val
 
     ####################################################################
     def add_bonuses(self, item):
@@ -143,7 +143,7 @@ class PlayerAttributeSet(dict):
 
     ####################################################################
     def serialize_to_dict(self):
-        return {key.name: value for key, value in self.items()}
+        return {key.name: value for key, value in self.items() if key.name.startswith("BASE_")}
 
     ####################################################################
     @staticmethod
@@ -231,10 +231,6 @@ class Player(Entity):
     ####################################################################
     def add_dynamic_bonuses(self, item):
         self.attributes.add_dynamic_bonuses(item)
-
-    ####################################################################
-    def set_base_attr(self, attr, val):
-        self.attributes.set_base_attr(attr, val)
 
     ####################################################################
     def add_to_base_attr(self, attr, val):
@@ -411,19 +407,23 @@ class PlayerDatabase(EntityDatabase):
 
     ####################################################################
     @staticmethod
-    def load():
+    def load(path=None):
+        if path is None:
+            path = data_file
         if PlayerDatabase.db is None:
             db = PlayerDatabase()
-            if os.environ.get("SIMPLE_MUD_LOAD_PLAYERS", "true") == "true" and os.path.exists(data_file):
-                players_data = json.load(open(data_file))
-            else:
-                players_data = []
-            for player_data in players_data:
-                player = Player.deserialize_from_dict(player_data)
-                db.by_id[player.id] = player
-                db.by_name[player.name.lower()] = player
+            if os.environ.get("SIMPLE_MUD_LOAD_PLAYERS", "true") == "true" and os.path.exists(path):
+                db.load_from_string(open(path).read())
             PlayerDatabase.db = db
         return PlayerDatabase.db
+
+    ####################################################################
+    def load_from_string(self, text):
+        players_data = json.loads(text)
+        for player_data in players_data:
+            player = Player.deserialize_from_dict(player_data)
+            self.by_id[player.id] = player
+            self.by_name[player.name.lower()] = player
 
     ####################################################################
     @classmethod
@@ -447,13 +447,21 @@ class PlayerDatabase(EntityDatabase):
                 yield player
 
     ####################################################################
-    def save(self):
+    def save(self, path=None):
+        if path is None:
+            path = data_file
+        player_text = self.save_to_string()
+        if os.environ.get("SIMPLE_MUD_LOAD_PLAYERS", "true") == "true":
+            with open(path, "w") as out_file:
+                out_file.write(player_text)
+
+    ####################################################################
+    def save_to_string(self):
         players = []
         for player in self.by_id.values():
             players.append(player.serialize_to_dict())
         player_text = json.dumps(players, indent=4)
-        with open(data_file, "w") as out_file:
-            out_file.write(player_text)
+        return player_text
 
     ####################################################################
     def add_player(self, player):

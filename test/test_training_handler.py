@@ -15,8 +15,7 @@ class TrainingHandlerTest(unittest.TestCase):
     def setUp(self):
         MockProtocol.set_handler_class(handler_class=LogonHandler)
         self.protocol = MockProtocol()
-        PlayerDatabase.db = None
-        training_handler.player_database = PlayerDatabase.load()
+        training_handler.player_database = PlayerDatabase()
         self.player = Player(28)
         self.player.name = "jerry"
         training_handler.player_database.add_player(self.player)
@@ -160,7 +159,7 @@ class TrainingHandlerTest(unittest.TestCase):
         self.assertEqual(self.player.attributes.AGILITY, 1)
         self.assertEqual(self.player.attributes.BASE_AGILITY, 1)
         self.assertEqual(self.player.attributes.MODIFIER_AGILITY, 0)
-        self.assertEqual(self.protocol.send_data, ["<reset><clearscreen><red>Unknown Command 'beep'", stats_message])
+        self.assertEqual(self.protocol.send_data, ["<reset><clearscreen><red>Unknown Command 'beep'<newline>", stats_message])
 
     ####################################################################
     def test_enter(self):

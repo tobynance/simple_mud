@@ -110,8 +110,8 @@ class GameHandler(telnet.BaseCommandDispatchHandler):
     ####################################################################
     def handle_quit(self, data, first_word, rest):
         self.protocol.drop_connection()
-        self.logout_message("%s has left the realm." % self.player.name)
         player_database.logout(self.player.id)
+        self.logout_message("%s has left the realm." % self.player.name)
 
     ####################################################################
     def handle_remove(self, data, first_word, remove_target):
@@ -358,12 +358,12 @@ class GameHandler(telnet.BaseCommandDispatchHandler):
     ####################################################################
     def print_experience(self):
         """This prints up the experience of the player"""
-        need_for_next_level = self.player.need_for_next_level()
-        percentage = 100 * self.player.experience // need_for_next_level
+        need_for_level = self.player.need_for_level()
+        percentage = 100 * self.player.experience // need_for_level
 
         experience_text = ["<bold><white>"]
         experience_text.append("Level:       {}<newline>".format(self.player.level))
-        experience_text.append("Experience:  {}/{} ({}%)<newline>".format(self.player.experience, need_for_next_level, percentage))
+        experience_text.append("Experience:  {}/{} ({}%)<newline>".format(self.player.experience, need_for_level, percentage))
         return "".join(experience_text)
 
     ####################################################################

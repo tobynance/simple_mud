@@ -1,6 +1,7 @@
 import unittest
 import os
 from attributes import PlayerRank
+from item import ItemDatabase
 
 os.environ["SIMPLE_MUD_LOAD_PLAYERS"] = "false"
 from player import PlayerDatabase, Player
@@ -52,27 +53,102 @@ class GameHandlerTest(unittest.TestCase):
 
     ####################################################################
     def test_handle_chat(self):
-        self.fail()
+        self.handler.handle("chat hello there")
+        self.assertEqual(self.protocol.send_data, ["<white><bold>jerry chats: hello there<newline>",
+                                                   self.status_line])
+
+        self.assertEqual(self.other_protocol.send_data, ["<white><bold>jerry chats: hello there<newline>",
+                                                         self.status_line])
 
     ####################################################################
     def test_handle_experience(self):
-        self.fail()
+        self.handler.handle("experience")
+        self.assertEqual(self.protocol.send_data, ["<bold><white>Level:       1<newline>Experience:  0/139 (0%)<newline>",
+                                                   self.status_line])
 
-    ####################################################################
-    def test_handle_help(self):
-        self.fail()
+        self.assertEqual(self.other_protocol.send_data, [])
+        self.player.experience = 20
+
+        self.protocol.send_data = []
+        self.handler.handle("exp")
+        self.assertEqual(self.protocol.send_data, ["<bold><white>Level:       1<newline>Experience:  20/139 (14%)<newline>",
+                                                   self.status_line])
 
     ####################################################################
     def test_handle_inventory(self):
-        self.fail()
+        self.handler.handle("inventory")
+        self.assertEqual(self.protocol.send_data, ["<bold><white>-------------------------------- Your Inventory --------------------------------<newline>"
+                                                   " Items:  <newline>"
+                                                   " Weapon: NONE!<newline>"
+                                                   " Armor:  NONE!<newline>"
+                                                   " Money:  $0<newline>"
+                                                   "--------------------------------------------------------------------------------<newline>",
+                                                   self.status_line])
+
+        self.assertEqual(self.other_protocol.send_data, [])
+
+        item_db = ItemDatabase.load()
+        item = item_db.find(55)
+        self.player.use_armor(item)
+
+
+        self.protocol.send_data = []
+        self.handler.handle("i")
+        self.assertEqual(self.protocol.send_data, ["<bold><white>-------------------------------- Your Inventory --------------------------------<newline>"
+                                                   " Items:  <newline>"
+                                                   " Weapon: NONE!<newline>"
+                                                   " Armor:  Platemail Armor of Power<newline>"
+                                                   " Money:  $0<newline>"
+                                                   "--------------------------------------------------------------------------------<newline>",
+                                                   self.status_line])
 
     ####################################################################
     def test_handle_stats(self):
-        self.fail()
+        self.handler.handle("stats")
+        self.assertEqual(self.protocol.send_data, ["<bold><white>--------------------------------- Your Stats ----------------------------------<newline>"
+                                                   "Name:        jerry<newline>"
+                                                   "Rank:        REGULAR<newline>"
+                                                   "HP/Max:      10/10     (100%)<newline>"
+                                                   "<bold><white>Level:       1<newline>"
+                                                   "Experience:  0/139 (0%)<newline>"
+                                                   "Strength:    1     Accuracy:       3<newline>"
+                                                   "Health:      1     Dodging:        3<newline>"
+                                                   "Agility:     1     Strike Damage:  0<newline>"
+                                                   "StatPoints:  18    Damage Absorb:  0<newline>",
+                                                   self.status_line])
+
+        self.assertEqual(self.other_protocol.send_data, [])
+
+        item_db = ItemDatabase.load()
+        item = item_db.find(55)
+        self.player.use_armor(item)
+        self.player.experience = 110
+
+
+        self.protocol.send_data = []
+        self.handler.handle("st")
+        self.assertEqual(self.protocol.send_data, ["<bold><white>--------------------------------- Your Stats ----------------------------------<newline>"
+                                                   "Name:        jerry<newline>"
+                                                   "Rank:        REGULAR<newline>"
+                                                   "HP/Max:      10/10     (100%)<newline>"
+                                                   "<bold><white>Level:       1<newline>"
+                                                   "Experience:  110/139 (79%)<newline>"
+                                                   "Strength:    1     Accuracy:       13<newline>"
+                                                   "Health:      1     Dodging:        63<newline>"
+                                                   "Agility:     1     Strike Damage:  10<newline>"
+                                                   "StatPoints:  18    Damage Absorb:  5<newline>",
+                                                   self.status_line])
 
     ####################################################################
     def test_handle_quit(self):
-        self.fail()
+        self.player.active = True
+        self.player.logged_in = True
+        self.handler.handle("quit")
+        self.assertEqual(self.player.active, False)
+        self.assertEqual(self.player.logged_in, False)
+        self.assertEqual(self.player.protocol, None)
+        self.assertEqual(self.protocol.send_data, [])
+        self.assertEqual(self.other_protocol.send_data, ["<red><bold>jerry has left the realm.<newline>", self.status_line])
 
     ####################################################################
     def test_handle_remove(self):
@@ -80,10 +156,6 @@ class GameHandlerTest(unittest.TestCase):
 
     ####################################################################
     def test_handle_use(self):
-        self.fail()
-
-    ####################################################################
-    def test_handle_time(self):
         self.fail()
 
     ####################################################################

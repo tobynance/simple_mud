@@ -206,7 +206,9 @@ class Player(Entity):
         raise NotImplementedError
 
     ####################################################################
-    def need_for_level(self, level):
+    def need_for_level(self, level=None):
+        if level is None:
+            level = self.level + 1
         return int(100 * math.pow(1.4, level - 1) - 1)
 
     ####################################################################

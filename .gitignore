@@ -58,3 +58,4 @@ target/
 *.iml
 
 /data/players.json
+/src/db.sqlite3

@@ -40,8 +40,8 @@ class ItemDatabase(EntityDatabase):
 
     ####################################################################
     @staticmethod
-    def load():
-        if ItemDatabase.db is None:
+    def load(force=False):
+        if ItemDatabase.db is None or force:
             db = ItemDatabase()
             items_data = json.load(open(data_file))
             for item_data in items_data:

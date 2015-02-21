@@ -207,7 +207,7 @@ class GameHandler(telnet.BaseCommandDispatchHandler):
             return
 
         if db == "items":
-            ItemDatabase.load()
+            ItemDatabase.load(force=True)
             self.player.send_string("<bold><cyan>Item Database Reloaded!")
 
     ####################################################################

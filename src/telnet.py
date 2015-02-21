@@ -35,7 +35,8 @@ bcyan = "\x1B[46m"
 bwhite = "\x1B[47m"
 concealed = "\x1B[8m"
 
-newline = "\r\n\x1B[0m"
+newline = "\r\n"
+carriage_return = "\r"
 
 TELNET_REPLACEMENTS = dict(reset=reset,
                            bold=bold,
@@ -62,7 +63,8 @@ TELNET_REPLACEMENTS = dict(reset=reset,
                            bcyan=bcyan,
                            bwhite=bwhite,
                            concealed=concealed,
-                           newline=newline)
+                           newline=newline,
+                           carriage_return=carriage_return)
 
 
 ########################################################################

@@ -5,49 +5,48 @@ from attributes import PlayerRank, ItemType
 from item import ItemDatabase
 from player import player_database
 import telnet
-from telnet import bold, white, reset, green, cyan, red, yellow
 from training_handler import TrainingHandler
 
 logger = logging.getLogger(__name__)
 
-HELP = white + bold + \
-       "--------------------------------- Command List ---------------------------------\r\n" + \
-       " /                            - Repeats your last command exactly.\r\n" + \
-       " chat <msg>                   - Sends message to everyone in the game\r\n" + \
-       " experience                   - Shows your experience statistics\r\n" + \
-       " help                         - Shows this menu\r\n" + \
-       " inventory                    - Shows a list of your items\r\n" + \
-       " quit                         - Allows you to leave the realm.\r\n" + \
-       " remove <'weapon'/'armor'>    - Removes your weapon or armor\r\n" + \
-       " stats                        - Shows all of your statistics\r\n" + \
-       " train                        - Go to train using StatPoints\r\n" + \
-       " time                         - Shows the current system time.\r\n" + \
-       " use <item>                   - Use an item in your inventory\r\n" + \
-       " whisper <who> <msg>          - Sends message to one person\r\n" + \
-       " who                          - Shows a list of everyone online\r\n" + \
-       " who all                      - Shows a list of everyone\r\n" + \
-       " look                         - Shows you the contents of a room\r\n" + \
-       " north/east/south/west        - Moves in a direction\r\n" + \
-       " get/drop <item>              - Picks up or drops an item on the ground\r\n" + \
-       " attack <enemy>               - Attacks an enemy\r\n" + \
-       " talk                         - Talks to NPC's in the room\r\n" + \
-       " buy <item name / id>         - Buys an item from the store\r\n" + \
-       " sell <item name>             - Sells an item to the store\r\n" + \
-       " inspect <item name>          - Shows stats of an item\r\n" + \
-       " map                          - Shows the map\r\n"
+HELP = "<white><bold>" + \
+       "--------------------------------- Command List ---------------------------------<newline>" + \
+       " /                            - Repeats your last command exactly.<newline>" + \
+       " chat <msg>                   - Sends message to everyone in the game<newline>" + \
+       " experience                   - Shows your experience statistics<newline>" + \
+       " help                         - Shows this menu<newline>" + \
+       " inventory                    - Shows a list of your items<newline>" + \
+       " quit                         - Allows you to leave the realm.<newline>" + \
+       " remove <'weapon'/'armor'>    - Removes your weapon or armor<newline>" + \
+       " stats                        - Shows all of your statistics<newline>" + \
+       " train                        - Go to train using StatPoints<newline>" + \
+       " time                         - Shows the current system time.<newline>" + \
+       " use <item>                   - Use an item in your inventory<newline>" + \
+       " whisper <who> <msg>          - Sends message to one person<newline>" + \
+       " who                          - Shows a list of everyone online<newline>" + \
+       " who all                      - Shows a list of everyone<newline>" + \
+       " look                         - Shows you the contents of a room<newline>" + \
+       " north/east/south/west        - Moves in a direction<newline>" + \
+       " get/drop <item>              - Picks up or drops an item on the ground<newline>" + \
+       " attack <enemy>               - Attacks an enemy<newline>" + \
+       " talk                         - Talks to NPC's in the room<newline>" + \
+       " buy <item name / id>         - Buys an item from the store<newline>" + \
+       " sell <item name>             - Sells an item to the store<newline>" + \
+       " inspect <item name>          - Shows stats of an item<newline>" + \
+       " map                          - Shows the map<newline>"
 
-MODERATOR_HELP = yellow + bold + \
-                 "------------------------------ Moderator Commands ------------------------------\r\n" + \
-                 " kick <who>                   - Kicks a user from the realm\r\n"
+MODERATOR_HELP = "<yellow><bold>" + \
+                 "------------------------------ Moderator Commands ------------------------------<newline>" + \
+                 " kick <who>                   - Kicks a user from the realm<newline>"
 
-ADMIN_HELP = green + bold + \
-             "-------------------------------- Admin Commands --------------------------------\r\n" + \
-             " kick <who>                   - Kicks a user from the realm\r\n" + \
-             " announce <msg>               - Makes a global system announcement\r\n" + \
-             " changerank <who> <rank>      - Changes the rank of a player\r\n" + \
-             " reload <db>                  - Reloads the requested database\r\n" + \
-             " shutdown                     - Shuts the server down\r\n"
-HELP_END = white + bold + ("-" * 80) + "\r\n"
+ADMIN_HELP = "<green><bold>" + \
+             "-------------------------------- Admin Commands --------------------------------<newline>" + \
+             " kick <who>                   - Kicks a user from the realm<newline>" + \
+             " announce <msg>               - Makes a global system announcement<newline>" + \
+             " changerank <who> <rank>      - Changes the rank of a player<newline>" + \
+             " reload <db>                  - Reloads the requested database<newline>" + \
+             " shutdown                     - Shuts the server down<newline>"
+HELP_END = "<white><bold>%s<newline>" % ("-" * 80)
 
 
 ########################################################################
@@ -89,7 +88,7 @@ class GameHandler(telnet.BaseCommandDispatchHandler):
 
     ####################################################################
     def handle_chat(self, data, first_word, text):
-        message = "".join([white, bold, self.player.name, " chats: ", text])
+        message = "<white><bold>{name} chats: {text}".format(name=self.player.name, text=text)
         self.send_game(message)
 
     ####################################################################
@@ -124,14 +123,14 @@ class GameHandler(telnet.BaseCommandDispatchHandler):
 
     ####################################################################
     def handle_time(self, data, first_word, rest):
-        message = "The current system time is %s\r\nSystem uptime: %02d:%02d"
+        message = "The current system time is %s<newline>System uptime: %02d:%02d"
         now = datetime.datetime.now()
         now_string = now.strftime("%Y-%m-%d %I:%M:%S %p")
         up_time = now - self.system_start_time
         total_minutes = up_time.seconds // 60
         hours, minutes = divmod(total_minutes, 60)
         message = message % (now_string, hours, minutes)
-        self.player.send_string(bold + cyan + message)
+        self.player.send_string("<bold><cyan>" + message)
 
     ####################################################################
     def handle_whisper(self, data, first_word, rest):
@@ -157,15 +156,14 @@ class GameHandler(telnet.BaseCommandDispatchHandler):
             return
         kicked_player = player_database.find_logged_in(player_name)
         if kicked_player is None:
-            self.player.send_string(red + bold + "Player could not be found.")
+            self.player.send_string("<red><bold>Player could not be found.")
             return
         if kicked_player.rank > self.player.rank:
-            self.player.send_string(red + bold + "You can't kick that player!")
+            self.player.send_string("<red><bold>You can't kick that player!")
             return
 
-        kicked_player.protocol.drop_connection()
-        self.logout_message("%s has been kicked by %s!!!" % (kicked_player.name, self.player.name))
         player_database.logout(kicked_player.id)
+        self.logout_message("%s has been kicked by %s!!!" % (kicked_player.name, self.player.name))
 
     ####################################################################
     # Admin Methods                                                  ###
@@ -186,20 +184,20 @@ class GameHandler(telnet.BaseCommandDispatchHandler):
             return
         rest = rest.split()
         if len(rest) != 2:
-            self.player.send_string(red + bold + "Error: Bad Command")
+            self.player.send_string("<red><bold>Error: Bad Command")
             return
         name, rank = rest
         other_player = player_database.find(name)
         if other_player is None:
-            self.player.send_string(red + bold + "Error: Could not find user " + name)
+            self.player.send_string("<red><bold>Error: Could not find user " + name)
             return
 
         if not hasattr(PlayerRank, rank):
-            self.player.send_string(red + bold + "Error: Cannot understand rank '%s'" % rank)
+            self.player.send_string("<red><bold>Error: Cannot understand rank '%s'" % rank)
             return
 
         other_player.rank = PlayerRank[rank]
-        self.send_game(green + bold + other_player.name + "'s rank has been changed to: %s" + other_player.rank.name)
+        self.send_game("<green><bold>{name}'s rank has been changed to: {rank}".format(name=other_player.name, rank=other_player.rank.name))
 
     ####################################################################
     def handle_reload(self, data, first_word, db):
@@ -210,7 +208,7 @@ class GameHandler(telnet.BaseCommandDispatchHandler):
 
         if db == "items":
             ItemDatabase.load()
-            self.player.send_string(bold + cyan + "Item Database Reloaded!")
+            self.player.send_string("<bold><cyan>Item Database Reloaded!")
 
     ####################################################################
     def handle_shutdown(self, data, first_word, rest):
@@ -240,7 +238,7 @@ class GameHandler(telnet.BaseCommandDispatchHandler):
         self.last_command = ""
         self.player.active = True
         self.player.logged_in = True
-        self.send_game(bold + green + self.player.name + " has entered the realm.")
+        self.send_game("<bold><green>{} has entered the realm.".format(self.player.name))
         if self.player.newbie:
             self.goto_train()
 
@@ -249,6 +247,7 @@ class GameHandler(telnet.BaseCommandDispatchHandler):
         self.player.active = False
         if self.protocol.closed:
             player_database.logout(self.player.id)
+        self.send_game("<bold><green>{} has left the realm.".format(self.player.name))
 
     ####################################################################
     def hung_up(self):
@@ -256,6 +255,7 @@ class GameHandler(telnet.BaseCommandDispatchHandler):
         This notifies the handler that a connection has unexpectedly
         hung up.
         """
+        player_database.logout(self.player.id)
         self.logout_message("%s has suddenly disappeared from the realm." % self.player.name)
 
     ####################################################################
@@ -264,6 +264,7 @@ class GameHandler(telnet.BaseCommandDispatchHandler):
         This notifies the handler that a connection is being kicked
         due to flooding the server.
         """
+        player_database.logout(self.player.id)
         self.logout_message("%s has been kicked out for flooding!" % self.player.name)
 
     ####################################################################
@@ -287,22 +288,22 @@ class GameHandler(telnet.BaseCommandDispatchHandler):
     @staticmethod
     def logout_message(reason):
         """Sends a logout message"""
-        GameHandler.send_game(red + bold + reason)
+        GameHandler.send_game("<red><bold>%s" % reason)
 
     ####################################################################
     @staticmethod
     def announce(announcement):
         """Sends a system announcement"""
-        GameHandler.send_global(cyan + bold + "System Announcement: " + announcement)
+        GameHandler.send_global("<cyan><bold>System Announcement: %s<newline>" % announcement)
 
     ####################################################################
     def whisper(self, message, player_name):
         """Sends a whisper string to the requested player"""
         other_player = player_database.find_active(player_name)
         if other_player is None:
-            self.player.send_string(red + bold + "Error, cannot find user.")
+            self.player.send_string("<red><bold>" + "Error, cannot find user.")
         else:
-            other_player.send_string(yellow + self.player.name + " whispers to you: " + reset + message)
+            other_player.send_string("<yellow>{} whispers to you: <reset>{}".format(self.player.name, message))
 
     ####################################################################
     # various status-printing methods                                ###
@@ -316,18 +317,15 @@ class GameHandler(telnet.BaseCommandDispatchHandler):
         else:
             players = player_database.all_logged_in()
 
-        message = [white, bold]
-        message.append("-" * 80)
-        message.append("\r\n")
-        message.append(" Name             | Level     | Activity | Rank\r\n")
-        message.append("-" * 80)
-        message.append("\r\n")
+        message = ["<white><bold>{}<newline>".format("-" * 80),
+                   " Name             | Level     | Activity | Rank<newline>",
+                   "-" * 80, "<newline>"]
 
         for player in players:
             message.append(player.who_text())
 
         message.append("-" * 80)
-        message.append("\r\n")
+        message.append("<newline>")
         return "".join(message)
 
     ####################################################################
@@ -345,16 +343,16 @@ class GameHandler(telnet.BaseCommandDispatchHandler):
     ####################################################################
     def print_stats(self):
         """This prints up the stats of the player"""
-        stats = [bold, white]
-        stats.append("--------------------------------- Your Stats ----------------------------------\r\n")
-        stats.append("Name:        %s\r\n" % self.player.name)
-        stats.append("Rank:        %s\r\n" % self.player.rank.name)
-        stats.append("HP/Max:      %s/%s     (%s%%)\r\n" % (self.player.hit_points, self.player.attributes.MAX_HIT_POINTS, 100 * self.player.hit_points // self.player.attributes.MAX_HIT_POINTS))
+        stats = ["<bold><white>"]
+        stats.append("--------------------------------- Your Stats ----------------------------------<newline>")
+        stats.append("Name:        %s<newline>" % self.player.name)
+        stats.append("Rank:        %s<newline>" % self.player.rank.name)
+        stats.append("HP/Max:      %s/%s     (%s%%)<newline>" % (self.player.hit_points, self.player.attributes.MAX_HIT_POINTS, 100 * self.player.hit_points // self.player.attributes.MAX_HIT_POINTS))
         stats.append(self.print_experience())
-        stats.append("Strength:    {:<5} Accuracy:       {}\r\n".format(self.player.attributes.STRENGTH, self.player.attributes.ACCURACY))
-        stats.append("Health:      {:<5} Dodging:        {}\r\n".format(self.player.attributes.HEALTH, self.player.attributes.DODGING))
-        stats.append("Agility:     {:<5} Strike Damage:  {}\r\n".format(self.player.attributes.AGILITY, self.player.attributes.STRIKE_DAMAGE))
-        stats.append("StatPoints:  {:<5} Damage Absorb:  {}\r\n".format(self.player.stat_points, self.player.attributes.DAMAGE_ABSORB))
+        stats.append("Strength:    {:<5} Accuracy:       {}<newline>".format(self.player.attributes.STRENGTH, self.player.attributes.ACCURACY))
+        stats.append("Health:      {:<5} Dodging:        {}<newline>".format(self.player.attributes.HEALTH, self.player.attributes.DODGING))
+        stats.append("Agility:     {:<5} Strike Damage:  {}<newline>".format(self.player.attributes.AGILITY, self.player.attributes.STRIKE_DAMAGE))
+        stats.append("StatPoints:  {:<5} Damage Absorb:  {}<newline>".format(self.player.stat_points, self.player.attributes.DAMAGE_ABSORB))
         return "".join(stats)
 
     ####################################################################
@@ -363,30 +361,30 @@ class GameHandler(telnet.BaseCommandDispatchHandler):
         need_for_next_level = self.player.need_for_next_level()
         percentage = 100 * self.player.experience // need_for_next_level
 
-        experience_text = [bold, white]
-        experience_text.append("Level:       {}\r\n".format(self.player.level))
-        experience_text.append("Experience:  {}/{} ({}%)\r\n".format(self.player.experience, need_for_next_level, percentage))
+        experience_text = ["<bold><white>"]
+        experience_text.append("Level:       {}<newline>".format(self.player.level))
+        experience_text.append("Experience:  {}/{} ({}%)<newline>".format(self.player.experience, need_for_next_level, percentage))
         return "".join(experience_text)
 
     ####################################################################
     def print_inventory(self):
-        inventory_text = [white, bold]
-        inventory_text.append("-------------------------------- Your Inventory --------------------------------\r\n")
+        inventory_text = ["<bold><white>"]
+        inventory_text.append("-------------------------------- Your Inventory --------------------------------<newline>")
         inventory_text.append(" Items:  ")
         inventory_text.append(", ".join([item.name for item in self.player.inventory]))
-        inventory_text.append("\r\n")
+        inventory_text.append("<newline>")
         inventory_text.append(" Weapon: ")
         if self.player.weapon:
             inventory_text.append(self.player.weapon.name)
         else:
             inventory_text.append("NONE!")
-        inventory_text.append("\r\n Armor:  ")
+        inventory_text.append("<newline> Armor:  ")
         if self.player.armor:
             inventory_text.append(self.player.armor.name)
         else:
             inventory_text.append("NONE!")
-        inventory_text.append("\r\n Money:  ${}".format(self.player.money))
-        inventory_text.append("\r\n--------------------------------------------------------------------------------")
+        inventory_text.append("<newline> Money:  ${}".format(self.player.money))
+        inventory_text.append("<newline>--------------------------------------------------------------------------------")
         return "".join(inventory_text)
 
     ####################################################################
@@ -427,7 +425,7 @@ class GameHandler(telnet.BaseCommandDispatchHandler):
                     self.player.add_hit_points(random.randint(item.min, item.max))
                     self.player.drop_item(item)
                     return True
-        self.player.send_string(red + bold + "Could not find that item!")
+        self.player.send_string("<red><bold>" + "Could not find that item!")
         return False
 
     ####################################################################
@@ -440,7 +438,7 @@ class GameHandler(telnet.BaseCommandDispatchHandler):
             if self.player.armor:
                 self.player.remove_armor()
                 return True
-        self.player.send_string(red + bold + "Could not remove item!")
+        self.player.send_string("<red><bold>" + "Could not remove item!")
         return False
 
     ####################################################################

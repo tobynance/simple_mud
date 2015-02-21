@@ -9,7 +9,6 @@ from entity import Entity
 from entity_database import EntityDatabase
 from item import ItemDatabase
 from utils import clamp, double_find_by_name
-from telnet import green, white, yellow, red, newline, bold, clearline, reset
 
 base = os.path.dirname(__file__)
 data_file = os.path.join(base, "..", "data", "players.json")
@@ -183,7 +182,7 @@ class Player(Entity):
         self.protocol = None
         self.logged_in = False
         self.active = False
-        self.newbie = True
+        self.newbie = False
         self.attributes = PlayerAttributeSet(self)
         self.attributes.BASE_STRENGTH = 1
         self.attributes.BASE_HEALTH = 1
@@ -310,24 +309,24 @@ class Player(Entity):
             logger.error("Trying to send string to player %s but player is not connected." % self.name)
             return
 
-        text = str(text)
-        # print "text:", text
-        # print "text type:", type(text)
-        self.protocol.send(text + newline)
+        if not text.endswith("<newline>"):
+            text += "<newline>"
+        self.protocol.send(text)
         if self.active:
             self.print_status_bar()
 
     ####################################################################
     def print_status_bar(self):
-        status_bar = clearline + "\r" + white + bold + "["
+        status_bar = "<clearline><carriage_return><white><bold>["
         ratio = 100 * self.hit_points // self.attributes.MAX_HIT_POINTS
         if ratio < 33:
-            status_bar += red
+            status_bar += "<red>"
         elif ratio < 67:
-            status_bar += yellow
+            status_bar += "<yellow>"
         else:
-            status_bar += green
-        status_bar += "{hit_points}{white}/{max_hit_points}] {reset}".format(hit_points=self.hit_points, white=white, max_hit_points=self.attributes.MAX_HIT_POINTS, reset=reset)
+            status_bar += "<green>"
+        status_bar += "{hit_points}<white>/{max_hit_points}] <reset>".format(hit_points=self.hit_points,
+                                                                             max_hit_points=self.attributes.MAX_HIT_POINTS)
         # print "status_bar:", status_bar
         self.protocol.send(status_bar)
 

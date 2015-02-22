@@ -59,3 +59,4 @@ target/
 
 /data/players.json
 /data/room_data.json
+*.sqlite3

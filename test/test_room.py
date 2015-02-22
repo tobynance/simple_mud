@@ -1,6 +1,7 @@
 import unittest
 from attributes import Direction
 import item
+import player
 from room import Room, RoomDatabase, RoomType
 import room
 
@@ -79,30 +80,57 @@ class RoomTest(unittest.TestCase):
 
     ####################################################################
     def test_add_player(self):
-        self.fail()
-        # self.players.add(player)
+        self.assertEqual(self.room.players, set())
+        p = player.Player(22)
+        p.name = "jerry"
+        player.player_database.add_player(p)
+        self.room.add_player(p)
+        self.assertEqual(self.room.players, {p})
 
     ####################################################################
     def test_remove_player(self):
-        self.fail()
-        # self.players.remove(player)
+        p = player.Player(22)
+        p.name = "jerry"
+        player.player_database.add_player(p)
+        self.room.add_player(p)
+        self.assertEqual(self.room.players, {p})
+
+        self.room.remove_player(p)
+        self.assertEqual(self.room.players, set())
 
     ####################################################################
     def test_find_item(self):
-        self.fail()
-        # return utils.double_find_by_name(item_name, self.items)
+        power_armor = item.item_database.find(55)
+        darkness_armor = item.item_database.find(54)
+        self.room.add_item(power_armor)
+        self.room.add_item(darkness_armor)
+        self.assertEqual(self.room.find_item("darkness"), darkness_armor)
+        self.assertEqual(self.room.find_item("power"), power_armor)
+        self.assertEqual(self.room.find_item("armor"), power_armor)
 
     ####################################################################
     def test_add_item(self):
-        self.fail()
-        # while len(self.items) >= MAX_ITEMS:
-        #     self.items.pop(0)
-        # self.items.append(item)
+        armor = item.item_database.find(55)
+        self.assertEqual(self.room.items, [])
+        self.room.add_item(armor)
+        self.assertEqual(self.room.items, [armor])
+
+        self.room.remove_item(armor)
+
+        # Test MAX_ITEMS limit
+        for i in range(1, room.MAX_ITEMS + 3):
+            self.room.add_item(item.item_database.find(i))
+
+        items_ids_left = [x.id for x in self.room.items]
+        self.assertEqual(items_ids_left, range(3, room.MAX_ITEMS + 3))
 
     ####################################################################
     def test_remove_item(self):
-        self.fail()
-        # self.items.remove(item)
+        armor = item.item_database.find(55)
+        self.room.add_item(armor)
+        self.assertEqual(self.room.items, [armor])
+        self.room.remove_item(armor)
+        self.assertEqual(self.room.items, [])
 
     ####################################################################
     def test_find_enemy(self):
@@ -124,47 +152,40 @@ class RoomTest(unittest.TestCase):
 class RoomDatabaseTest(unittest.TestCase):
     ####################################################################
     def test_load(self):
-        item.item_database = ItemDatabase.load(force=True)
-        self.assertEqual(len(item.item_database.by_id), 72)
-        self.assertEqual(len(item.item_database.by_name), 72)
+        room.room_database = RoomDatabase.load(force=True, room_data_path="some_random_place")
+        self.assertEqual(len(room.room_database.by_id), 57)
+        self.assertEqual(len(room.room_database.by_name), 38)
 
-        self.assertEqual(item.item_database.find(40).name, "Rusty Knife")
-        self.assertEqual(item.item_database.find_full("Dagger").id, 42)
-        self.assertEqual(item.item_database.find("Rusty").id, 40)
-        self.assertEqual(item.item_database.find("Short").id, 2)
+        self.assertEqual(room.room_database.find(40).name, "Rusty Knife")
+        self.assertEqual(room.room_database.find_full("Dagger").id, 42)
+        self.assertEqual(room.room_database.find("Rusty").id, 40)
+        self.assertEqual(room.room_database.find("Short").id, 2)
 
-        this_item = item.item_database.find(1)
-        self.assertEqual(this_item.id, 1)
-        self.assertEqual(this_item.name, "LIES!!!@~")
-        self.assertEqual(this_item.type, ItemType.HEALING)
-        self.assertEqual(this_item.min, 0)
-        self.assertEqual(this_item.max, 0)
-        self.assertEqual(this_item.price, 1)
-        self.assertEqual(this_item.speed, 0)
-        self.assertEqual(this_item.attributes.STRENGTH, 0)
-        self.assertEqual(this_item.attributes.HEALTH, 0)
-        self.assertEqual(this_item.attributes.AGILITY, 0)
-        self.assertEqual(this_item.attributes.MAX_HIT_POINTS, 0)
-        self.assertEqual(this_item.attributes.ACCURACY, 0)
-        self.assertEqual(this_item.attributes.DODGING, 0)
-        self.assertEqual(this_item.attributes.STRIKE_DAMAGE, 0)
-        self.assertEqual(this_item.attributes.DAMAGE_ABSORB, 0)
-        self.assertEqual(this_item.attributes.HP_REGEN, 0)
+        this_room = room.room_database.find(1)
+        self.assertEqual(this_room.id, 1)
+        self.assertEqual(this_room.name, "Town Square")
+        self.assertEqual(this_room.description, "You are in the town square. This is the central meeting place for the realm.")
+        self.assertEqual(this_room.type, RoomType.PLAIN_ROOM)
+        self.assertEqual(this_room.connecting_rooms, {Direction.NORTH: 2, Direction.EAST: 25, Direction.SOUTH: 4, Direction.WEST: 5})
+        self.assertEqual(this_room.spawn_which_enemy, None)
+        self.assertEqual(this_room.max_enemies, 0)
+        self.assertEqual(this_room.items, 0)
+        self.assertEqual(this_room.money, 0)
 
-        this_item = item.item_database.find("Platemail armor of power")
-        self.assertEqual(this_item.id, 55)
-        self.assertEqual(this_item.name, "Platemail Armor of Power")
-        self.assertEqual(this_item.type, ItemType.ARMOR)
-        self.assertEqual(this_item.min, 0)
-        self.assertEqual(this_item.max, 0)
-        self.assertEqual(this_item.price, 15000)
-        self.assertEqual(this_item.speed, 0)
-        self.assertEqual(this_item.attributes.STRENGTH, 0)
-        self.assertEqual(this_item.attributes.HEALTH, 0)
-        self.assertEqual(this_item.attributes.AGILITY, 0)
-        self.assertEqual(this_item.attributes.MAX_HIT_POINTS, 0)
-        self.assertEqual(this_item.attributes.ACCURACY, 10)
-        self.assertEqual(this_item.attributes.DODGING, 60)
-        self.assertEqual(this_item.attributes.STRIKE_DAMAGE, 10)
-        self.assertEqual(this_item.attributes.DAMAGE_ABSORB, 5)
-        self.assertEqual(this_item.attributes.HP_REGEN, 0)
+        this_room = room.room_database.find("Platemail armor of power")
+        self.assertEqual(this_room.id, 55)
+        self.assertEqual(this_room.name, "Platemail Armor of Power")
+        self.assertEqual(this_room.type, RoomType.ARMOR)
+        self.assertEqual(this_room.min, 0)
+        self.assertEqual(this_room.max, 0)
+        self.assertEqual(this_room.price, 15000)
+        self.assertEqual(this_room.speed, 0)
+        self.assertEqual(this_room.attributes.STRENGTH, 0)
+        self.assertEqual(this_room.attributes.HEALTH, 0)
+        self.assertEqual(this_room.attributes.AGILITY, 0)
+        self.assertEqual(this_room.attributes.MAX_HIT_POINTS, 0)
+        self.assertEqual(this_room.attributes.ACCURACY, 10)
+        self.assertEqual(this_room.attributes.DODGING, 60)
+        self.assertEqual(this_room.attributes.STRIKE_DAMAGE, 10)
+        self.assertEqual(this_room.attributes.DAMAGE_ABSORB, 5)
+        self.assertEqual(this_room.attributes.HP_REGEN, 0)

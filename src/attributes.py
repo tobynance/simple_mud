@@ -4,8 +4,6 @@ ItemType = Enum("ItemType", "WEAPON ARMOR HEALING")
 
 PlayerRank = IntEnum("PlayerRank", "REGULAR MODERATOR ADMIN")
 
-RoomType = Enum("RoomType", "PLAIN_ROOM TRAINING_ROOM STORE")
-
 
 ########################################################################
 class Direction(Enum):

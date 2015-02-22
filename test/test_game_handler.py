@@ -14,8 +14,7 @@ from test_utils import MockProtocol, stats_message
 class GameHandlerTest(unittest.TestCase):
     ####################################################################
     def setUp(self):
-        PlayerDatabase.db = None
-        game_handler.player_database = PlayerDatabase.load()
+        game_handler.player_database = PlayerDatabase()
         MockProtocol.set_handler_class(handler_class=LogonHandler)
 
         self.protocol = MockProtocol()

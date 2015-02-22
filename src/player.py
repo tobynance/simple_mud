@@ -26,6 +26,8 @@ for attr in attribute_string_list:
 
 PlayerAttributes = Enum("PlayerAttributes", " ".join(player_attribute_strings))
 
+player_database = None
+
 
 ########################################################################
 class PlayerAttributeSet(dict):
@@ -404,19 +406,23 @@ class Player(Entity):
 
 ########################################################################
 class PlayerDatabase(EntityDatabase):
-    db = None
+    ####################################################################
+    def __init__(self):
+        super(PlayerDatabase, self).__init__()
+        global player_database
+        player_database = self
 
     ####################################################################
     @staticmethod
-    def load(path=None):
-        if path is None:
-            path = data_file
-        if PlayerDatabase.db is None:
-            db = PlayerDatabase()
+    def load(path=None, force=False):
+        global player_database
+        if player_database is None or force:
+            if path is None:
+                path = data_file
+            player_database = PlayerDatabase()
             if os.environ.get("SIMPLE_MUD_LOAD_PLAYERS", "true") == "true" and os.path.exists(path):
-                db.load_from_string(open(path).read())
-            PlayerDatabase.db = db
-        return PlayerDatabase.db
+                player_database.load_from_string(open(path).read())
+        return player_database
 
     ####################################################################
     def load_from_string(self, text):

@@ -20,7 +20,7 @@ class LogonHandlerTest(unittest.TestCase):
         self.protocol = MockProtocol()
         self.handler = self.protocol.handler
         PlayerDatabase.db = None
-        logon_handler.player_database = PlayerDatabase.load()
+        logon_handler.player_database = PlayerDatabase()
         self.assertEqual(len(list(logon_handler.player_database.all())), 0)
 
     ####################################################################

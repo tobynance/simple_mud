@@ -6,6 +6,11 @@ class EntityDatabase(object):
         self.by_id = {}
 
     ####################################################################
+    def clear(self):
+        self.by_name.clear()
+        self.by_id.clear()
+
+    ####################################################################
     def find_full(self, name):
         if name is None:
             return None

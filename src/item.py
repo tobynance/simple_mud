@@ -7,6 +7,8 @@ from entity_database import EntityDatabase
 base = os.path.dirname(__file__)
 data_file = os.path.join(base, "..", "data", "items.json")
 
+item_database = None
+
 
 ########################################################################
 class Item(Entity):
@@ -36,17 +38,23 @@ class Item(Entity):
 
 ########################################################################
 class ItemDatabase(EntityDatabase):
-    db = None
+    ####################################################################
+    def __init__(self):
+        super(ItemDatabase, self).__init__()
+        global item_database
+        item_database = self
 
     ####################################################################
     @staticmethod
     def load(force=False):
-        if ItemDatabase.db is None or force:
-            db = ItemDatabase()
+        global item_database
+        if item_database is None or force:
+            item_database = ItemDatabase()
             items_data = json.load(open(data_file))
             for item_data in items_data:
                 item = Item.deserialize_from_dict(item_data)
-                db.by_id[item.id] = item
-                db.by_name[item.name.lower()] = item
-            ItemDatabase.db = db
-        return ItemDatabase.db
+                item_database.by_id[item.id] = item
+                item_database.by_name[item.name.lower()] = item
+        return item_database
+
+item_database = ItemDatabase.load()

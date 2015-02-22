@@ -129,20 +129,18 @@ class PlayerDatabaseTest(unittest.TestCase):
 
     ####################################################################
     def test_load_from_string(self):
-        pass
+        self.fail()
 
     ####################################################################
     def test_load(self):
-        PlayerDatabase.db = None
-        self.assertEqual(PlayerDatabase.db, None)
-        player_database = PlayerDatabase.load()
+        player_database = PlayerDatabase.load(self.player_data, force=True)
         db_id = id(player_database)
         player_database = PlayerDatabase.load()
         self.assertEqual(db_id, id(player_database))
 
     ####################################################################
     def test_save_to_string(self):
-        pass
+        self.fail()
 
     ####################################################################
     def test_save(self):
@@ -155,12 +153,12 @@ class PlayerDatabaseTest(unittest.TestCase):
                 user_player.stat_points = 7
                 self.player_database.save(file_path)
 
-                PlayerDatabase.db = None
-                player_database = PlayerDatabase.load(file_path)
+                player_database = PlayerDatabase.load(file_path, force=True)
                 user_player = player_database.find(user_player.id)
                 self.assertEqual(user_player.stat_points, 7)
         finally:
             os.environ["SIMPLE_MUD_LOAD_PLAYERS"] = "false"
+
     ####################################################################
     def test_add_player(self):
         user_player = self.player_database.by_id.values()[0]
@@ -197,7 +195,7 @@ class PlayerDatabaseTest(unittest.TestCase):
 
     ####################################################################
     def add_players(self):
-        player_database = player.player_database
+        player_database = player.PlayerDatabase()
         p = Player()
         p.name = "a"
         p.logged_in = True
@@ -227,7 +225,6 @@ class PlayerDatabaseTest(unittest.TestCase):
     def test_all(self):
         player_database = self.add_players()
         all = player_database.all()
-        self.assertEqual(len(all), 4)
         names = set([p.name for p in all])
         self.assertEqual(names, {"a", "b", "c", "d"})
 
@@ -235,7 +232,6 @@ class PlayerDatabaseTest(unittest.TestCase):
     def test_all_logged_in(self):
         player_database = self.add_players()
         all = list(player_database.all_logged_in())
-        self.assertEqual(len(all), 2)
         names = set([p.name for p in all])
         self.assertEqual(names, {"a", "c"})
 
@@ -243,7 +239,6 @@ class PlayerDatabaseTest(unittest.TestCase):
     def test_all_active(self):
         player_database = self.add_players()
         all = list(player_database.all_active())
-        self.assertEqual(len(all), 2)
         names = set([p.name for p in all])
         self.assertEqual(names, {"a", "b"})
 

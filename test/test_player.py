@@ -1,9 +1,8 @@
 import os
 os.environ["SIMPLE_MUD_LOAD_PLAYERS"] = "false"
 import unittest
-from attributes import PlayerRank
 from item import ItemDatabase
-from player import Player, PlayerDatabase
+from player import Player, PlayerDatabase, PlayerRank
 import player
 from player import PlayerAttributes, PlayerAttributeSet
 import test_utils

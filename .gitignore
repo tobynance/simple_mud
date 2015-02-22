@@ -58,3 +58,4 @@ target/
 *.iml
 
 /data/players.json
+/data/room_data.json

@@ -1,16 +1,18 @@
 import os
 import json
 from enum import Enum
-from attributes import ItemType, Direction
+from attributes import Direction
 from entity import Entity
+from entity_database import EntityDatabase
 from item import ItemDatabase
 import utils
 
 base = os.path.dirname(__file__)
-data_file = os.path.join(base, "..", "data", "items.json")
 
 RoomType = Enum("RoomType", "PLAIN_ROOM TRAINING_ROOM STORE")
 MAX_ITEMS = 32
+
+room_database = None
 
 
 ########################################################################
@@ -33,6 +35,7 @@ class Room(Entity):
     ####################################################################
     @staticmethod
     def deserialize_from_dict(room_template_data, room_volatile_data):
+        item_db = ItemDatabase.load()
         room = Room()
         for field, value in room_template_data.items():
             if field in ["id", "name", "description", "spawn_which_enemy", "max_enemies"]:
@@ -44,29 +47,39 @@ class Room(Entity):
                     room.connecting_rooms[Direction.NORTH] = value
             elif field == "south":
                 if value:
-                    room.connecting_rooms[Direction.NORTH] = value
+                    room.connecting_rooms[Direction.SOUTH] = value
             elif field == "east":
                 if value:
-                    room.connecting_rooms[Direction.NORTH] = value
+                    room.connecting_rooms[Direction.EAST] = value
             elif field == "west":
                 if value:
-                    room.connecting_rooms[Direction.NORTH] = value
+                    room.connecting_rooms[Direction.WEST] = value
             elif field == "data":
                 pass  # TODO: Not implemented yet
-
-        for field, value in room_volatile_data.items():
-            if field == "items":
-                item_db = ItemDatabase.load()
+            elif field == "starting_items":
                 for item_id in value:
                     item = item_db.find(item_id)
                     room.items.append(item)
-            elif field == "money":
+            elif field == "starting_money":
                 room.money = value
+
+        if room_volatile_data:
+            for field, value in room_volatile_data.items():
+                if field == "items":
+                    room.items = []
+                    for item_id in value:
+                        item = item_db.find(item_id)
+                        room.items.append(item)
+                elif field == "money":
+                    room.money = value
         return room
 
     ####################################################################
     def serialize_to_dict(self):
-        raise NotImplementedError
+        output = {"items": [], "money": self.money}
+        for item in self.items:
+            output["items"].append(item.id)
+        return output
 
     ####################################################################
     def get_adjacent_room(self, direction):
@@ -106,30 +119,40 @@ class Room(Entity):
     def remove_enemy(self, enemy):
         self.enemies.remove(enemy)
 
+
+########################################################################
+class RoomDatabase(EntityDatabase):
+    room_data_path = os.path.join(base, "..", "data", "room_data.json")
+    room_templates_path = os.path.join(base, "..", "data", "room_templates.json")
+
     ####################################################################
-    def load_template(self, data):
-        raise NotImplementedError
-#
-#
-# out_file = open("room_templates.json", "w")
-#
-# def convert_line(line):
-#     if line.startswith("["):
-#         tag, value = line[1:].split("]", 1)
-#         if tag == "ID":
-#             text = '{\n  "%s": %s,\n'
-#         elif tag == "MAXENEMIES":
-#             text = '  "%s": %s\n},\n'
-#         elif tag in ["DATA", "NORTH", "EAST", "SOUTH", "WEST", "ENEMY"]:
-#             text = '  "%s": %s,\n'
-#         else:
-#             text = '  "%s": "%s",\n'
-#         out_file.write(text % (tag.lower(), value.strip()))
-#     else:
-#         out_file.write("\n")
-#
-#
-# for line in lines:
-#     convert_line(line)
-#
-# out_file.close()
+    def save(self, room_data_path=None):
+        if room_data_path is None:
+            room_data_path = self.room_data_path
+        room_data = {room.id: room.serialize_to_dict() for room in self.by_id.values()}
+        with open(room_data_path, "w") as out_file:
+            json.dump(room_data, out_file, indent=4, sort_keys=True)
+
+    ####################################################################
+    @classmethod
+    def load(cls, room_data_path=None, room_templates_path=None, force=False):
+        global room_database
+        if room_database is None or force:
+            room_database = RoomDatabase()
+            if room_data_path is None:
+                room_data_path = cls.room_data_path
+            if room_templates_path is None:
+                room_templates_path = cls.room_templates_path
+
+            template_data = json.load(open(room_templates_path))
+            if os.path.exists(room_data_path):
+                room_data = json.load(open(room_data_path))
+            else:
+                room_data = {}
+            for room_template_data in template_data:
+                room = Room.deserialize_from_dict(room_template_data, room_data.get(room_template_data["id"]))
+                room_database.by_id[room.id] = room
+                room_database.by_name[room.name.lower()] = room
+            return room_database
+
+room_database = RoomDatabase.load()

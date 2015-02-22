@@ -1,9 +1,8 @@
 import logging
 import datetime
 import random
-from attributes import PlayerRank, ItemType
-from item import ItemDatabase
-from player import player_database
+from item import ItemDatabase, ItemType
+from player import player_database, PlayerRank
 import telnet
 from training_handler import TrainingHandler
 

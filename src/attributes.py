@@ -1,8 +1,4 @@
-from enum import Enum, IntEnum
-
-ItemType = Enum("ItemType", "WEAPON ARMOR HEALING")
-
-PlayerRank = IntEnum("PlayerRank", "REGULAR MODERATOR ADMIN")
+from enum import Enum
 
 
 ########################################################################

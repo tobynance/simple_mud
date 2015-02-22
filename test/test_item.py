@@ -1,6 +1,5 @@
 import unittest
-from attributes import ItemType
-from item import Item, ItemDatabase
+from item import Item, ItemDatabase, ItemType
 import item
 
 

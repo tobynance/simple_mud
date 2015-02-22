@@ -1,13 +1,12 @@
 import unittest
 import os
-from attributes import PlayerRank
 from item import ItemDatabase
 
 os.environ["SIMPLE_MUD_LOAD_PLAYERS"] = "false"
-from player import PlayerDatabase, Player
+from player import PlayerDatabase, Player, PlayerRank
 import game_handler
 from logon_handler import LogonHandler
-from test_utils import MockProtocol, stats_message
+from test_utils import MockProtocol
 
 
 ########################################################################

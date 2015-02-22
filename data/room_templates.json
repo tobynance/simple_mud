@@ -10,7 +10,9 @@
   "south": 4,
   "west": 5,
   "spawn_which_enemy": 0,
-  "max_enemies": 0
+  "max_enemies": 0,
+  "starting_items": [],
+  "starting_money": 0
 },
 {
   "id": 2,
@@ -23,7 +25,9 @@
   "south": 1,
   "west": 18,
   "spawn_which_enemy": 0,
-  "max_enemies": 0
+  "max_enemies": 0,
+  "starting_items": [],
+  "starting_money": 0
 },
 {
   "id": 3,
@@ -36,7 +40,9 @@
   "south": 0,
   "west": 0,
   "spawn_which_enemy": 0,
-  "max_enemies": 0
+  "max_enemies": 0,
+  "starting_items": [],
+  "starting_money": 0
 },
 {
   "id": 4,
@@ -49,7 +55,9 @@
   "south": 0,
   "west": 0,
   "spawn_which_enemy": 0,
-  "max_enemies": 0
+  "max_enemies": 0,
+  "starting_items": [],
+  "starting_money": 0
 },
 {
   "id": 5,
@@ -62,7 +70,9 @@
   "south": 7,
   "west": 6,
   "spawn_which_enemy": 1,
-  "max_enemies": 1
+  "max_enemies": 1,
+  "starting_items": [],
+  "starting_money": 0
 },
 {
   "id": 6,
@@ -75,10 +85,10 @@
   "south": 0,
   "west": 15,
   "spawn_which_enemy": 2,
-  "max_enemies": 1
+  "max_enemies": 1,
+  "starting_items": [],
+  "starting_money": 0
 },
-
-
 {
   "id": 7,
   "name": "Alley",
@@ -90,10 +100,10 @@
   "south": 8,
   "west": 0,
   "spawn_which_enemy": 1,
-  "max_enemies": 3
+  "max_enemies": 3,
+  "starting_items": [],
+  "starting_money": 0
 },
-
-
 {
   "id": 8,
   "name": "Sloping Alley",
@@ -105,10 +115,10 @@
   "south": 9,
   "west": 0,
   "spawn_which_enemy": 3,
-  "max_enemies": 1
+  "max_enemies": 1,
+  "starting_items": [],
+  "starting_money": 0
 },
-
-
 {
   "id": 9,
   "name": "Sewage Trench",
@@ -120,10 +130,10 @@
   "south": 0,
   "west": 51,
   "spawn_which_enemy": 4,
-  "max_enemies": 1
+  "max_enemies": 1,
+  "starting_items": [],
+  "starting_money": 0
 },
-
-
 {
   "id": 10,
   "name": "Sewer",
@@ -135,10 +145,10 @@
   "south": 0,
   "west": 9,
   "spawn_which_enemy": 5,
-  "max_enemies": 1
+  "max_enemies": 1,
+  "starting_items": [],
+  "starting_money": 0
 },
-
-
 {
   "id": 11,
   "name": "Town Gates",
@@ -150,10 +160,10 @@
   "south": 2,
   "west": 0,
   "spawn_which_enemy": 0,
-  "max_enemies": 0
+  "max_enemies": 0,
+  "starting_items": [],
+  "starting_money": 0
 },
-
-
 {
   "id": 12,
   "name": "Dark Forest Entrance",
@@ -165,10 +175,10 @@
   "south": 11,
   "west": 13,
   "spawn_which_enemy": 6,
-  "max_enemies": 1
+  "max_enemies": 1,
+  "starting_items": [],
+  "starting_money": 0
 },
-
-
 {
   "id": 13,
   "name": "Dark Forest Path",
@@ -180,7 +190,9 @@
   "south": 0,
   "west": 0,
   "spawn_which_enemy": 6,
-  "max_enemies": 3
+  "max_enemies": 3,
+  "starting_items": [],
+  "starting_money": 0
 },
 {
   "id": 14,
@@ -193,7 +205,9 @@
   "south": 0,
   "west": 12,
   "spawn_which_enemy": 6,
-  "max_enemies": 3
+  "max_enemies": 3,
+  "starting_items": [],
+  "starting_money": 0
 },
 {
   "id": 15,
@@ -206,7 +220,9 @@
   "south": 35,
   "west": 0,
   "spawn_which_enemy": 7,
-  "max_enemies": 1
+  "max_enemies": 1,
+  "starting_items": [],
+  "starting_money": 0
 },
 {
   "id": 16,
@@ -219,10 +235,10 @@
   "south": 12,
   "west": 0,
   "spawn_which_enemy": 8,
-  "max_enemies": 1
+  "max_enemies": 1,
+  "starting_items": [],
+  "starting_money": 0
 },
-
-
 {
   "id": 17,
   "name": "Samuels Armorsmith",
@@ -234,7 +250,9 @@
   "south": 0,
   "west": 2,
   "spawn_which_enemy": 0,
-  "max_enemies": 0
+  "max_enemies": 0,
+  "starting_items": [],
+  "starting_money": 0
 },
 {
   "id": 18,
@@ -247,7 +265,9 @@
   "south": 0,
   "west": 0,
   "spawn_which_enemy": 0,
-  "max_enemies": 0
+  "max_enemies": 0,
+  "starting_items": [],
+  "starting_money": 0
 },
 {
   "id": 19,
@@ -260,7 +280,9 @@
   "south": 0,
   "west": 10,
   "spawn_which_enemy": 5,
-  "max_enemies": 2
+  "max_enemies": 2,
+  "starting_items": [],
+  "starting_money": 0
 },
 {
   "id": 20,
@@ -273,7 +295,9 @@
   "south": 0,
   "west": 19,
   "spawn_which_enemy": 4,
-  "max_enemies": 3
+  "max_enemies": 3,
+  "starting_items": [],
+  "starting_money": 0
 },
 {
   "id": 21,
@@ -286,7 +310,9 @@
   "south": 0,
   "west": 20,
   "spawn_which_enemy": 9,
-  "max_enemies": 3
+  "max_enemies": 3,
+  "starting_items": [],
+  "starting_money": 0
 },
 {
   "id": 22,
@@ -299,7 +325,9 @@
   "south": 20,
   "west": 0,
   "spawn_which_enemy": 9,
-  "max_enemies": 2
+  "max_enemies": 2,
+  "starting_items": [],
+  "starting_money": 0
 },
 {
   "id": 23,
@@ -312,7 +340,9 @@
   "south": 21,
   "west": 22,
   "spawn_which_enemy": 9,
-  "max_enemies": 1
+  "max_enemies": 1,
+  "starting_items": [],
+  "starting_money": 0
 },
 {
   "id": 24,
@@ -325,7 +355,9 @@
   "south": 23,
   "west": 0,
   "spawn_which_enemy": 0,
-  "max_enemies": 0
+  "max_enemies": 0,
+  "starting_items": [],
+  "starting_money": 0
 },
 {
   "id": 25,
@@ -338,7 +370,9 @@
   "south": 3,
   "west": 1,
   "spawn_which_enemy": 0,
-  "max_enemies": 0
+  "max_enemies": 0,
+  "starting_items": [],
+  "starting_money": 0
 },
 {
   "id": 26,
@@ -351,7 +385,9 @@
   "south": 0,
   "west": 25,
   "spawn_which_enemy": 10,
-  "max_enemies": 1
+  "max_enemies": 1,
+  "starting_items": [],
+  "starting_money": 0
 },
 {
   "id": 27,
@@ -364,7 +400,9 @@
   "south": 24,
   "west": 26,
   "spawn_which_enemy": 10,
-  "max_enemies": 1
+  "max_enemies": 1,
+  "starting_items": [],
+  "starting_money": 0
 },
 {
   "id": 28,
@@ -377,7 +415,9 @@
   "south": 0,
   "west": 27,
   "spawn_which_enemy": 11,
-  "max_enemies": 1
+  "max_enemies": 1,
+  "starting_items": [],
+  "starting_money": 0
 },
 {
   "id": 29,
@@ -390,7 +430,9 @@
   "south": 30,
   "west": 28,
   "spawn_which_enemy": 12,
-  "max_enemies": 1
+  "max_enemies": 1,
+  "starting_items": [],
+  "starting_money": 0
 },
 {
   "id": 30,
@@ -403,7 +445,9 @@
   "south": 52,
   "west": 0,
   "spawn_which_enemy": 12,
-  "max_enemies": 3
+  "max_enemies": 3,
+  "starting_items": [],
+  "starting_money": 0
 },
 {
   "id": 31,
@@ -416,7 +460,9 @@
   "south": 29,
   "west": 0,
   "spawn_which_enemy": 12,
-  "max_enemies": 2
+  "max_enemies": 2,
+  "starting_items": [],
+  "starting_money": 0
 },
 {
   "id": 32,
@@ -429,7 +475,9 @@
   "south": 31,
   "west": 0,
   "spawn_which_enemy": 12,
-  "max_enemies": 8
+  "max_enemies": 8,
+  "starting_items": [],
+  "starting_money": 0
 },
 {
   "id": 33,
@@ -442,7 +490,9 @@
   "south": 0,
   "west": 29,
   "spawn_which_enemy": 13,
-  "max_enemies": 1
+  "max_enemies": 1,
+  "starting_items": [],
+  "starting_money": 0
 },
 {
   "id": 34,
@@ -455,10 +505,10 @@
   "south": 16,
   "west": 0,
   "spawn_which_enemy": 8,
-  "max_enemies": 3
+  "max_enemies": 3,
+  "starting_items": [],
+  "starting_money": 0
 },
-
-
 {
   "id": 35,
   "name": "The Freak Shop",
@@ -470,10 +520,10 @@
   "south": 0,
   "west": 0,
   "spawn_which_enemy": 0,
-  "max_enemies": 0
+  "max_enemies": 0,
+  "starting_items": [],
+  "starting_money": 0
 },
-
-
 {
   "id": 36,
   "name": "Side Street Intersection",
@@ -485,7 +535,9 @@
   "south": 15,
   "west": 37,
   "spawn_which_enemy": 0,
-  "max_enemies": 0
+  "max_enemies": 0,
+  "starting_items": [],
+  "starting_money": 0
 },
 {
   "id": 37,
@@ -498,7 +550,9 @@
   "south": 0,
   "west": 0,
   "spawn_which_enemy": 14,
-  "max_enemies": 1
+  "max_enemies": 1,
+  "starting_items": [],
+  "starting_money": 0
 },
 {
   "id": 38,
@@ -511,7 +565,9 @@
   "south": 36,
   "west": 40,
   "spawn_which_enemy": 0,
-  "max_enemies": 0
+  "max_enemies": 0,
+  "starting_items": [],
+  "starting_money": 0
 },
 {
   "id": 39,
@@ -524,7 +580,9 @@
   "south": 0,
   "west": 38,
   "spawn_which_enemy": 20,
-  "max_enemies": 1
+  "max_enemies": 1,
+  "starting_items": [],
+  "starting_money": 0
 },
 {
   "id": 40,
@@ -537,7 +595,9 @@
   "south": 0,
   "west": 41,
   "spawn_which_enemy": 15,
-  "max_enemies": 1
+  "max_enemies": 1,
+  "starting_items": [],
+  "starting_money": 0
 },
 {
   "id": 41,
@@ -550,7 +610,9 @@
   "south": 42,
   "west": 0,
   "spawn_which_enemy": 11,
-  "max_enemies": 2
+  "max_enemies": 2,
+  "starting_items": [],
+  "starting_money": 0
 },
 {
   "id": 42,
@@ -563,7 +625,9 @@
   "south": 43,
   "west": 0,
   "spawn_which_enemy": 2,
-  "max_enemies": 4
+  "max_enemies": 4,
+  "starting_items": [],
+  "starting_money": 0
 },
 {
   "id": 43,
@@ -576,7 +640,9 @@
   "south": 45,
   "west": 0,
   "spawn_which_enemy": 0,
-  "max_enemies": 0
+  "max_enemies": 0,
+  "starting_items": [],
+  "starting_money": 0
 },
 {
   "id": 44,
@@ -589,7 +655,9 @@
   "south": 46,
   "west": 43,
   "spawn_which_enemy": 6,
-  "max_enemies": 3
+  "max_enemies": 3,
+  "starting_items": [],
+  "starting_money": 0
 },
 {
   "id": 45,
@@ -602,7 +670,9 @@
   "south": 47,
   "west": 0,
   "spawn_which_enemy": 6,
-  "max_enemies": 1
+  "max_enemies": 1,
+  "starting_items": [],
+  "starting_money": 0
 },
 {
   "id": 46,
@@ -615,7 +685,9 @@
   "south": 48,
   "west": 45,
   "spawn_which_enemy": 16,
-  "max_enemies": 1
+  "max_enemies": 1,
+  "starting_items": [],
+  "starting_money": 0
 },
 {
   "id": 47,
@@ -628,7 +700,9 @@
   "south": 0,
   "west": 0,
   "spawn_which_enemy": 16,
-  "max_enemies": 1
+  "max_enemies": 1,
+  "starting_items": [],
+  "starting_money": 0
 },
 {
   "id": 48,
@@ -641,7 +715,9 @@
   "south": 0,
   "west": 47,
   "spawn_which_enemy": 0,
-  "max_enemies": 0
+  "max_enemies": 0,
+  "starting_items": [],
+  "starting_money": 0
 },
 {
   "id": 49,
@@ -654,7 +730,9 @@
   "south": 50,
   "west": 48,
   "spawn_which_enemy": 0,
-  "max_enemies": 0
+  "max_enemies": 0,
+  "starting_items": [],
+  "starting_money": 0
 },
 {
   "id": 50,
@@ -667,7 +745,9 @@
   "south": 0,
   "west": 0,
   "spawn_which_enemy": 9,
-  "max_enemies": 1
+  "max_enemies": 1,
+  "starting_items": [],
+  "starting_money": 0
 },
 {
   "id": 51,
@@ -680,7 +760,9 @@
   "south": 0,
   "west": 50,
   "spawn_which_enemy": 9,
-  "max_enemies": 2
+  "max_enemies": 2,
+  "starting_items": [],
+  "starting_money": 0
 },
 {
   "id": 52,
@@ -693,7 +775,9 @@
   "south": 56,
   "west": 0,
   "spawn_which_enemy": 17,
-  "max_enemies": 1
+  "max_enemies": 1,
+  "starting_items": [],
+  "starting_money": 0
 },
 {
   "id": 53,
@@ -706,7 +790,9 @@
   "south": 0,
   "west": 52,
   "spawn_which_enemy": 17,
-  "max_enemies": 2
+  "max_enemies": 2,
+  "starting_items": [],
+  "starting_money": 0
 },
 {
   "id": 54,
@@ -719,7 +805,9 @@
   "south": 0,
   "west": 53,
   "spawn_which_enemy": 18,
-  "max_enemies": 1
+  "max_enemies": 1,
+  "starting_items": [],
+  "starting_money": 0
 },
 {
   "id": 55,
@@ -732,7 +820,9 @@
   "south": 0,
   "west": 54,
   "spawn_which_enemy": 19,
-  "max_enemies": 1
+  "max_enemies": 1,
+  "starting_items": [],
+  "starting_money": 0
 },
 {
   "id": 56,
@@ -745,7 +835,9 @@
   "south": 0,
   "west": 0,
   "spawn_which_enemy": 0,
-  "max_enemies": 0
+  "max_enemies": 0,
+  "starting_items": [],
+  "starting_money": 0
 },
 {
   "id": 57,

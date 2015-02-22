@@ -2,14 +2,13 @@ import unittest
 import os
 os.environ["SIMPLE_MUD_LOAD_PLAYERS"] = "false"
 import mock
-from attributes import PlayerRank
 from game_handler import GameHandler
 from test_utils import MockProtocol, welcome_message, stats_message
 from training_handler import TrainingHandler
 
 import logon_handler
 from logon_handler import LogonHandler, LogonState
-from player import PlayerDatabase, Player
+from player import PlayerDatabase, Player, PlayerRank
 
 
 ########################################################################

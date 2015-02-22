@@ -3,8 +3,8 @@ import time
 import math
 import logging
 import json
-from enum import Enum
-from attributes import PlayerRank, Attributes, primary_attribute_list, attribute_string_list
+from enum import Enum, IntEnum
+from attributes import Attributes, primary_attribute_list, attribute_string_list
 from entity import Entity
 from entity_database import EntityDatabase
 from item import ItemDatabase
@@ -24,6 +24,7 @@ for attr in attribute_string_list:
     player_attribute_strings.append("MODIFIER_" + attr)
     player_attribute_strings.append(attr)
 
+PlayerRank = IntEnum("PlayerRank", "REGULAR MODERATOR ADMIN")
 PlayerAttributes = Enum("PlayerAttributes", " ".join(player_attribute_strings))
 
 player_database = None

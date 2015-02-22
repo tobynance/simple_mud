@@ -1,8 +1,11 @@
 import os
 import json
-from attributes import ItemType, AttributeSet
+from enum import Enum
+from attributes import AttributeSet
 from entity import Entity
 from entity_database import EntityDatabase
+
+ItemType = Enum("ItemType", "WEAPON ARMOR HEALING")
 
 base = os.path.dirname(__file__)
 data_file = os.path.join(base, "..", "data", "items.json")

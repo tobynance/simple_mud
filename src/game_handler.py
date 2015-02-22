@@ -1,6 +1,7 @@
 import logging
 import datetime
 import random
+from attributes import Direction
 from item import ItemDatabase, ItemType
 from player import player_database, PlayerRank
 import telnet
@@ -76,6 +77,12 @@ class GameHandler(telnet.BaseCommandDispatchHandler):
         self._register_data_handler("reload", self.handle_reload)
         self._register_data_handler("shutdown", self.handle_shutdown)
         self._register_data_handler("train", self.handle_train)
+        self._register_data_handler(["look", "l"], self.handle_look)
+        self._register_data_handler(["north", "n"], self.handle_north)
+        self._register_data_handler(["east", "e"], self.handle_east)
+        self._register_data_handler(["south", "s"], self.handle_south)
+        self._register_data_handler(["west", "w"], self.handle_west)
+        self._register_data_handler("get", self.handle_get)
         self._register_data_handler(True, lambda d, fw, r: self.handle_chat(d, fw, d))  # send whole message to chat
 
     ####################################################################
@@ -229,6 +236,43 @@ class GameHandler(telnet.BaseCommandDispatchHandler):
         self.logout_message("%s leaves to edit stats" % self.player.name)
 
     ####################################################################
+    def handle_look(self, data, first_word, rest):
+        self.player.send_string(self.print_room(self.player.room))
+
+    ####################################################################
+    def handle_north(self, data, first_word, rest):
+        self.move(Direction.NORTH)
+
+    ####################################################################
+    def handle_east(self, data, first_word, rest):
+        self.move(Direction.EAST)
+
+    ####################################################################
+    def handle_south(self, data, first_word, rest):
+        self.move(Direction.SOUTH)
+
+    ####################################################################
+    def handle_west(self, data, first_word, rest):
+        self.move(Direction.WEST)
+
+    ####################################################################
+    def move(self, direction):
+        current_room = self.player.room
+        if direction in current_room.connecting_rooms:
+            new_room = current_room.get_adjacent_room(direction)
+            current_room.remove_player(self.player)
+            self.send_room(current_room, "<green>{} leaves to the {}.".format(self.player.name, direction.name))
+            self.send_room(new_room, "<green>{} enters from the {}.".format(self.player.name, direction.opposite_direction().name))
+            self.player.send_string("<green>You walk {}.".format(direction.name))
+            self.player.room = new_room
+            new_room.add_player(self.player)
+            self.player.send_string(self.print_room(new_room))
+
+    ####################################################################
+    def handle_get(self, data, first_word, rest):
+        self.get_item(rest)
+
+    ####################################################################
     # Base Handler Methods                                           ###
     ####################################################################
     ####################################################################
@@ -238,14 +282,18 @@ class GameHandler(telnet.BaseCommandDispatchHandler):
         self.player.active = True
         self.player.logged_in = True
         self.send_game("<bold><green>{} has entered the realm.".format(self.player.name))
+        self.player.room.add_player(self.player)
         if self.player.newbie:
             self.goto_train()
+        else:
+            self.player.send_string(self.print_room(self.player.room))
 
     ####################################################################
     def leave(self):
         self.player.active = False
         if self.protocol.closed:
             player_database.logout(self.player.id)
+        self.player.room.remove_player(self.player)
         self.send_game("<bold><green>{} has left the realm.".format(self.player.name))
 
     ####################################################################
@@ -458,13 +506,28 @@ class GameHandler(telnet.BaseCommandDispatchHandler):
     ####################################################################
     ####################################################################
     @staticmethod
-    def print_room(room):
-        raise NotImplementedError
+    def print_room(current_room):
+        description = ["<newline><bold><white>{room.name}<newline>",
+                       "<magenta>{room.description}<newline>",
+                       "<green>exits: "]
+
+        paths = ", ".join([d.name for d in Direction if d in current_room.connecting_rooms])
+        description.append(paths)
+        description.append("<newline>")
+        description.append("<yellow>You see: ")
+
+        items = [item.name for item in current_room.items]
+        if current_room.money:
+            items.insert(0, "${}".format(current_room.money))
+        description.append(", ".join(items))
+        description.append("<newline>")
+        return ("".join(description)).format(room=current_room)
 
     ####################################################################
     @staticmethod
-    def send_room(text, room):
-        raise NotImplementedError
+    def send_room(room, text):
+        for player in room.players:
+            player.send_string(text)
 
     ####################################################################
     def move(self, direction):
@@ -472,6 +535,15 @@ class GameHandler(telnet.BaseCommandDispatchHandler):
 
     ####################################################################
     def get_item(self, item_name):
+        if item_name.startswith("$"):
+            amount = item_name[1:]
+            if amount.isdigit():
+                amount = int(amount)
+                if amount <= self.player.room.money:
+                    self.player.room.money -= amount
+                    self.player.money += amount
+                    self.send_room(self.player.room, "<cyan><bold>{p.name} picks up ${amount}".format(p=self.player, amount=amount))
+
         raise NotImplementedError
 
     ####################################################################

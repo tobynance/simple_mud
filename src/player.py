@@ -7,7 +7,8 @@ from enum import Enum, IntEnum
 from attributes import Attributes, primary_attribute_list, attribute_string_list
 from entity import Entity
 from entity_database import EntityDatabase
-from item import ItemDatabase
+from item import item_database
+from room import room_database
 from utils import clamp, double_find_by_name
 
 base = os.path.dirname(__file__)
@@ -16,7 +17,7 @@ data_file = os.path.join(base, "..", "data", "players.json")
 MAX_PLAYER_ITEMS = 16
 logger = logging.getLogger(__name__)
 
-SIMPLE_FIELDS = ["name", "password", "stat_points", "experience", "level", "room", "money", "next_attack_time"]
+SIMPLE_FIELDS = ["name", "password", "stat_points", "experience", "level", "money", "next_attack_time"]
 
 player_attribute_strings = []
 for attr in attribute_string_list:
@@ -173,7 +174,7 @@ class Player(Entity):
         self.stat_points = 18
         self.experience = 0
         self.level = 1
-        self.room = 0
+        self.room = room_database.by_id[1]
         self.money = 0
         self.next_attack_time = 0
         self.hit_points = 0
@@ -341,6 +342,7 @@ class Player(Entity):
         for field in SIMPLE_FIELDS:
             output[field] = getattr(self, field)
         output["rank"] = self.rank.value
+        output["room"] = self.room.id
         output["attributes"] = self.attributes.serialize_to_dict()
         output["inventory"] = [item.id for item in self.inventory]
 
@@ -389,18 +391,17 @@ class Player(Entity):
         for field in SIMPLE_FIELDS:
             setattr(player, field, data_dict[field])
 
-        item_db = ItemDatabase.load()
-
         player.rank = PlayerRank(data_dict["rank"])
+        player.room = room_database.by_id[data_dict["room"]]
 
         player.attributes = PlayerAttributeSet.deserialize_from_dict(data_dict["attributes"])
         player.inventory = []
         for item_id in data_dict["inventory"]:
-            player.inventory.append(item_db[item_id])
+            player.inventory.append(item_database[item_id])
         if data_dict["weapon"]:
-            player.weapon = item_db[data_dict["weapon"]]
+            player.weapon = item_database[data_dict["weapon"]]
         if data_dict["armor"]:
-            player.weapon = item_db[data_dict["armor"]]
+            player.weapon = item_database[data_dict["armor"]]
         player.attributes.set_player(player)
         return player
 

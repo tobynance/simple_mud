@@ -1,8 +1,8 @@
-from enum import Enum
+from enum import Enum, IntEnum
 
 
 ########################################################################
-class Direction(Enum):
+class Direction(IntEnum):
     NORTH = 0
     EAST = 1
     SOUTH = 2

@@ -1,4 +1,6 @@
 import os
+from room import room_database
+
 os.environ["SIMPLE_MUD_LOAD_PLAYERS"] = "false"
 import unittest
 from item import ItemDatabase
@@ -21,7 +23,7 @@ class PlayerTest(unittest.TestCase):
         self.player.money = 1823
         self.player.experience = 17
         self.player.rank = PlayerRank.MODERATOR
-        self.player.room = 3
+        self.player.room = room_datab ase.by_id[3]
         self.player.stat_points = 16
         self.player.attributes.BASE_AGILITY = 3
         self.player.attributes.BASE_MAX_HIT_POINTS = 12

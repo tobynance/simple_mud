@@ -1,6 +1,6 @@
 import unittest
 import os
-from item import ItemDatabase
+from item import item_database
 
 os.environ["SIMPLE_MUD_LOAD_PLAYERS"] = "false"
 from player import PlayerDatabase, Player, PlayerRank
@@ -42,6 +42,11 @@ class GameHandlerTest(unittest.TestCase):
         self.protocol.send_data = []
 
         self.assertEqual(len(list(game_handler.player_database.all())), 2)
+
+        current_room = self.player.room
+        current_room.add_item(item_database.find(55))
+        current_room.add_item(item_database.find(33))
+        current_room.money = 220
         self.status_line = "<clearline><carriage_return><white><bold>[<green>10<white>/10] <reset>"
         self.maxDiff = None
 
@@ -85,8 +90,7 @@ class GameHandlerTest(unittest.TestCase):
 
         self.assertEqual(self.other_protocol.send_data, [])
 
-        item_db = ItemDatabase.load()
-        item = item_db.find(55)
+        item = item_database.find(55)
         self.player.use_armor(item)
 
 
@@ -117,8 +121,7 @@ class GameHandlerTest(unittest.TestCase):
 
         self.assertEqual(self.other_protocol.send_data, [])
 
-        item_db = ItemDatabase.load()
-        item = item_db.find(55)
+        item = item_database.find(55)
         self.player.use_armor(item)
         self.player.experience = 110
 
@@ -362,6 +365,15 @@ class GameHandlerTest(unittest.TestCase):
     ####################################################################
     def test_print_help(self):
         self.fail()
+
+    ####################################################################
+    def test_print_room(self):
+        description = self.handler.print_room(self.player.room)
+        expected = "<newline><bold><white>Town Square<newline>" \
+                   "<magenta>You are in the town square. This is the central meeting place for the realm.<newline>" \
+                   "<green>exits: NORTH, EAST, SOUTH, WEST<newline>" \
+                   "<yellow>You see: $220, Platemail Armor of Power, Cutlass (OBSOLETE, PLEASE DROP IN TOWN SQUARE)<newline>"
+        self.assertEqual(description, expected)
 
     ####################################################################
     def test_print_stats(self):

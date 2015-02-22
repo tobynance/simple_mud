@@ -38,10 +38,13 @@ class Room(Entity):
         item_db = ItemDatabase.load()
         room = Room()
         for field, value in room_template_data.items():
-            if field in ["id", "name", "description", "spawn_which_enemy", "max_enemies"]:
+            if field in ["id", "name", "description", "max_enemies"]:
                 setattr(room, field, value)
             elif field == "type":
                 room.type = getattr(RoomType, value)
+            elif field == "spawn_which_enemy":
+                if value:
+                    room.spawn_which_enemy = value
             elif field == "north":
                 if value:
                     room.connecting_rooms[Direction.NORTH] = value
@@ -83,7 +86,9 @@ class Room(Entity):
 
     ####################################################################
     def get_adjacent_room(self, direction):
-        return self.connecting_rooms.get(direction)
+        room_id = self.connecting_rooms.get(direction)
+        if room_id:
+            return room_database.by_id[room_id]
 
     ####################################################################
     def add_player(self, player):

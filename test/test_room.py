@@ -67,16 +67,23 @@ class RoomTest(unittest.TestCase):
 
     ####################################################################
     def test_serialize_to_dict(self):
-        self.fail()
-        # output = {"items": [], "money": self.money}
-        # for item in self.items:
-        #     output["items"].append(item.id)
-        # return output
+        power_armor = item.item_database.find(55)
+        darkness_armor = item.item_database.find(54)
+        self.room.add_item(power_armor)
+        self.room.add_item(darkness_armor)
+        self.room.money = 33
+
+        expected = {"items": [55, 54],
+                    "money": 33}
+        self.assertEqual(self.room.serialize_to_dict(), expected)
 
     ####################################################################
     def test_get_adjacent_room(self):
-        self.fail()
-        # return self.connecting_rooms.get(direction)
+        first_room = room.room_database.find("Town Square")
+        self.assertEqual(first_room.id, 1)
+        second_room = first_room.get_adjacent_room(Direction.NORTH)
+        self.assertEqual(second_room.id, 2)
+        self.assertEqual(second_room.name, "Street")
 
     ####################################################################
     def test_add_player(self):
@@ -156,10 +163,9 @@ class RoomDatabaseTest(unittest.TestCase):
         self.assertEqual(len(room.room_database.by_id), 57)
         self.assertEqual(len(room.room_database.by_name), 38)
 
-        self.assertEqual(room.room_database.find(40).name, "Rusty Knife")
-        self.assertEqual(room.room_database.find_full("Dagger").id, 42)
-        self.assertEqual(room.room_database.find("Rusty").id, 40)
-        self.assertEqual(room.room_database.find("Short").id, 2)
+        self.assertEqual(room.room_database.find(40).name, "Side Street")
+        self.assertEqual(room.room_database.find_full("Dagger"), None)
+        self.assertEqual(room.room_database.find_full("The Freak Shop").id, 35)
 
         this_room = room.room_database.find(1)
         self.assertEqual(this_room.id, 1)
@@ -169,23 +175,16 @@ class RoomDatabaseTest(unittest.TestCase):
         self.assertEqual(this_room.connecting_rooms, {Direction.NORTH: 2, Direction.EAST: 25, Direction.SOUTH: 4, Direction.WEST: 5})
         self.assertEqual(this_room.spawn_which_enemy, None)
         self.assertEqual(this_room.max_enemies, 0)
-        self.assertEqual(this_room.items, 0)
+        self.assertEqual(this_room.items, [])
         self.assertEqual(this_room.money, 0)
 
-        this_room = room.room_database.find("Platemail armor of power")
-        self.assertEqual(this_room.id, 55)
-        self.assertEqual(this_room.name, "Platemail Armor of Power")
-        self.assertEqual(this_room.type, RoomType.ARMOR)
-        self.assertEqual(this_room.min, 0)
-        self.assertEqual(this_room.max, 0)
-        self.assertEqual(this_room.price, 15000)
-        self.assertEqual(this_room.speed, 0)
-        self.assertEqual(this_room.attributes.STRENGTH, 0)
-        self.assertEqual(this_room.attributes.HEALTH, 0)
-        self.assertEqual(this_room.attributes.AGILITY, 0)
-        self.assertEqual(this_room.attributes.MAX_HIT_POINTS, 0)
-        self.assertEqual(this_room.attributes.ACCURACY, 10)
-        self.assertEqual(this_room.attributes.DODGING, 60)
-        self.assertEqual(this_room.attributes.STRIKE_DAMAGE, 10)
-        self.assertEqual(this_room.attributes.DAMAGE_ABSORB, 5)
-        self.assertEqual(this_room.attributes.HP_REGEN, 0)
+        this_room = room.room_database.find("The Freak Shop")
+        self.assertEqual(this_room.id, 35)
+        self.assertEqual(this_room.name, "The Freak Shop")
+        self.assertEqual(this_room.description, "You're in a shop with a very strange looking man standing behind the counter. He gazes at you with one eye (you can't tell what the other one is doing) and screeches <reset>\"Got anything good to sell me, sonny? The things I'm interested are right on this <bold><yellow>list<reset> here.\"")
+        self.assertEqual(this_room.type, RoomType.STORE)
+        self.assertEqual(this_room.connecting_rooms, {Direction.NORTH: 15})
+        self.assertEqual(this_room.spawn_which_enemy, None)
+        self.assertEqual(this_room.max_enemies, 0)
+        self.assertEqual(this_room.items, [])
+        self.assertEqual(this_room.money, 0)

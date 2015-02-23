@@ -12,7 +12,7 @@ base = os.path.dirname(__file__)
 RoomType = Enum("RoomType", "PLAIN_ROOM TRAINING_ROOM STORE")
 MAX_ITEMS = 32
 
-store_database = None
+room_database = None
 
 
 ########################################################################
@@ -89,7 +89,7 @@ class Room(Entity):
     def get_adjacent_room(self, direction):
         room_id = self.connecting_rooms.get(direction)
         if room_id:
-            return store_database.by_id[room_id]
+            return room_database.by_id[room_id]
 
     ####################################################################
     def add_player(self, player):
@@ -142,7 +142,7 @@ class RoomDatabase(EntityDatabase):
     ####################################################################
     @classmethod
     def load(cls, room_data_path=None, room_templates_path=None, force=False):
-        global store_database
+        global room_database
         if room_database is None or force:
             room_database = RoomDatabase()
             if room_data_path is None:

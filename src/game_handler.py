@@ -2,10 +2,13 @@ import logging
 import datetime
 import random
 from attributes import Direction
-from item import ItemDatabase, ItemType
+from item import ItemType
+import item
 from player import player_database, PlayerRank
+import room
 import telnet
 from training_handler import TrainingHandler
+from utils import find_all_by_name
 
 logger = logging.getLogger(__name__)
 
@@ -52,7 +55,6 @@ HELP_END = "<white><bold>%s<newline>" % ("-" * 80)
 ########################################################################
 class GameHandler(telnet.BaseCommandDispatchHandler):
     system_start_time = datetime.datetime.now()
-    running = False
 
     ####################################################################
     def __init__(self, protocol, player):
@@ -83,6 +85,8 @@ class GameHandler(telnet.BaseCommandDispatchHandler):
         self._register_data_handler(["south", "s"], self.handle_south)
         self._register_data_handler(["west", "w"], self.handle_west)
         self._register_data_handler("get", self.handle_get)
+        self._register_data_handler("drop", self.handle_drop)
+        self._register_data_handler("clear", self.handle_clear)
         self._register_data_handler(True, lambda d, fw, r: self.handle_chat(d, fw, d))  # send whole message to chat
 
     ####################################################################
@@ -212,9 +216,17 @@ class GameHandler(telnet.BaseCommandDispatchHandler):
             self.player.send_string("<red>You do not have permission to do so<newline>")
             return
 
-        if db == "items":
-            ItemDatabase.load(force=True)
-            self.player.send_string("<bold><cyan>Item Database Reloaded!")
+        room.room_database.save()
+        item.item_database = item.ItemDatabase.load(force=True)
+        room.room_database = room.RoomDatabase.load(force=True)
+        for player in player_database.all_logged_in():
+            player.room = room.room_database.by_id[player.room.id]
+            inventory = [i.id for i in player.inventory]
+            player.inventory = []
+            for item_id in inventory:
+                player.inventory.append(item.item_database.by_id[item_id])
+
+        self.player.send_string("<bold><cyan>Item & Room Databases Reloaded!")
 
     ####################################################################
     def handle_shutdown(self, data, first_word, rest):
@@ -223,7 +235,9 @@ class GameHandler(telnet.BaseCommandDispatchHandler):
             self.player.send_string("<red>You do not have permission to do so<newline>")
             return
         self.announce("SYSTEM IS SHUTTING DOWN")
-        GameHandler.running = False
+        room.room_database.save()
+        player_database.save()
+        telnet.stop()
 
     ####################################################################
     def handle_train(self, data, first_word, rest):
@@ -256,21 +270,16 @@ class GameHandler(telnet.BaseCommandDispatchHandler):
         self.move(Direction.WEST)
 
     ####################################################################
-    def move(self, direction):
-        current_room = self.player.room
-        if direction in current_room.connecting_rooms:
-            new_room = current_room.get_adjacent_room(direction)
-            current_room.remove_player(self.player)
-            self.send_room(current_room, "<green>{} leaves to the {}.".format(self.player.name, direction.name))
-            self.send_room(new_room, "<green>{} enters from the {}.".format(self.player.name, direction.opposite_direction().name))
-            self.player.send_string("<green>You walk {}.".format(direction.name))
-            self.player.room = new_room
-            new_room.add_player(self.player)
-            self.player.send_string(self.print_room(new_room))
-
-    ####################################################################
     def handle_get(self, data, first_word, rest):
         self.get_item(rest)
+
+    ####################################################################
+    def handle_drop(self, data, first_word, rest):
+        self.drop_item(rest)
+
+    ####################################################################
+    def handle_clear(self, data, first_word, rest):
+        self.player.send_string("<newline>" * 80)
 
     ####################################################################
     # Base Handler Methods                                           ###
@@ -459,30 +468,34 @@ class GameHandler(telnet.BaseCommandDispatchHandler):
     ####################################################################
     ####################################################################
     def use_item(self, item_name):
-        for item in self.player.inventory:
-            if item.name == item_name:
-                if item.type == ItemType.WEAPON:
-                    self.player.use_weapon(item)
-                    return True
-                elif item.type == ItemType.ARMOR:
-                    self.player.use_armor(item)
-                    return True
-                elif item.type == ItemType.HEALING:
-                    self.player.add_bonuses(item)
-                    self.player.add_hit_points(random.randint(item.min, item.max))
-                    self.player.drop_item(item)
-                    return True
-        self.player.send_string("<red><bold>" + "Could not find that item!")
+        for item in find_all_by_name(item_name, self.player.inventory):
+            if item.type == ItemType.WEAPON:
+                self.player.use_weapon(item)
+                self.player.send_string("<cyan><bold>You are now wielding %s." % item.name)
+                return True
+            elif item.type == ItemType.ARMOR:
+                self.player.use_armor(item)
+                self.player.send_string("<cyan><bold>You are now wearing %s." % item.name)
+                return True
+            elif item.type == ItemType.HEALING:
+                self.player.add_bonuses(item)
+                self.player.add_hit_points(random.randint(item.min, item.max))
+                self.player.drop_item(item)
+                self.player.send_string("<cyan><bold>You have healed yourself using %s." % item.name)
+                return True
+        self.player.send_string("<red><bold>Could not find that item!")
         return False
 
     ####################################################################
     def remove_item(self, item_name):
         if item_name == "weapon":
             if self.player.weapon:
+                self.player.send_string("<cyan><bold>You are no longer wielding %s." % self.player.weapon.name)
                 self.player.remove_weapon()
                 return True
         elif item_name == "armor":
             if self.player.armor:
+                self.player.send_string("<cyan><bold>You are no longer wearing %s." % self.player.armor.name)
                 self.player.remove_armor()
                 return True
         self.player.send_string("<red><bold>" + "Could not remove item!")
@@ -497,30 +510,26 @@ class GameHandler(telnet.BaseCommandDispatchHandler):
         return GameHandler.timer
 
     ####################################################################
-    @staticmethod
-    def get_running():
-        return GameHandler.running
-
-    ####################################################################
     # Map Functions Added in Chapter 9                               ###
     ####################################################################
     ####################################################################
     @staticmethod
     def print_room(current_room):
         description = ["<newline><bold><white>{room.name}<newline>",
-                       "<magenta>{room.description}<newline>",
-                       "<green>exits: "]
+                       "<reset><magenta>{room.description}<newline>",
+                       "<reset><green>exits: "]
 
         paths = ", ".join([d.name for d in Direction if d in current_room.connecting_rooms])
         description.append(paths)
         description.append("<newline>")
-        description.append("<yellow>You see: ")
 
         items = [item.name for item in current_room.items]
         if current_room.money:
             items.insert(0, "${}".format(current_room.money))
-        description.append(", ".join(items))
-        description.append("<newline>")
+        if items:
+            description.append("<yellow>You see: ")
+            description.append(", ".join(items))
+            description.append("<newline>")
         return ("".join(description)).format(room=current_room)
 
     ####################################################################
@@ -531,7 +540,18 @@ class GameHandler(telnet.BaseCommandDispatchHandler):
 
     ####################################################################
     def move(self, direction):
-        raise NotImplementedError
+        current_room = self.player.room
+        if direction in current_room.connecting_rooms:
+            new_room = current_room.get_adjacent_room(direction)
+            current_room.remove_player(self.player)
+            self.send_room(current_room, "<green>{} leaves to the {}.".format(self.player.name, direction.name))
+            self.send_room(new_room, "<green>{} enters from the {}.".format(self.player.name, direction.opposite_direction().name))
+            self.player.send_string("<green>You walk {}.".format(direction.name))
+            self.player.room = new_room
+            new_room.add_player(self.player)
+            self.player.send_string(self.print_room(new_room))
+        else:
+            self.player.send_string("<bold><red>You can't go that way!")
 
     ####################################################################
     def get_item(self, item_name):
@@ -543,12 +563,43 @@ class GameHandler(telnet.BaseCommandDispatchHandler):
                     self.player.room.money -= amount
                     self.player.money += amount
                     self.send_room(self.player.room, "<cyan><bold>{p.name} picks up ${amount}".format(p=self.player, amount=amount))
-
-        raise NotImplementedError
+                else:
+                    self.player.send_string("<red><bold>There isn't that much there!")
+            else:
+                self.player.send_string("<red><bold>Invalid amount!")
+        else:
+            i = self.player.room.find_item(item_name)
+            if i is None:
+                self.player.send_string("<red><bold>You don't see that here!")
+            elif not self.player.pick_up_item(i):
+                self.player.send_string("<red><bold>You can't carry that much!")
+            else:
+                self.player.room.remove_item(i)
+                self.send_room(self.player.room, "<cyan><bold>{} picks up {}.".format(self.player.name, i.name))
 
     ####################################################################
     def drop_item(self, item_name):
-        raise NotImplementedError
+        if item_name.startswith("$"):
+            amount = item_name[1:]
+            if amount.isdigit():
+                amount = int(amount)
+                if amount <= self.player.money:
+                    self.player.money -= amount
+                    self.player.room.money += amount
+                    self.send_room(self.player.room, "<cyan><bold>{p.name} drops ${amount}".format(p=self.player, amount=amount))
+                else:
+                    self.player.send_string("<red><bold>You don't have that much money!")
+            else:
+                self.player.send_string("<red><bold>Invalid amount!")
+        else:
+            i = self.player.find_in_inventory(item_name)
+            if i is None:
+                self.player.send_string("<red><bold>You don't have that item!")
+            elif not self.player.drop_item(i):
+                self.player.send_string("<red><bold>You can't drop that!")
+            else:
+                self.player.room.add_item(i)
+                self.send_room(self.player.room, "<cyan><bold>{} drops {}.".format(self.player.name, i.name))
 
     ####################################################################
     # Enemy Functions Added in Chapter 10                            ###

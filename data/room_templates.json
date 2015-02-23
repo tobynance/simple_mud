@@ -167,7 +167,7 @@
 {
   "id": 12,
   "name": "Dark Forest Entrance",
-  "description": "This is the entrace of the dark forest, where all sorts of strange noises eminate. You see a gate into town to the south.",
+  "description": "This is the entrance of the dark forest, where all sorts of strange noises emanate. You see a gate into town to the south.",
   "type": "PLAIN_ROOM",
   "data": 0,
   "north": 16,

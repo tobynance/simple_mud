@@ -242,6 +242,8 @@ class MudTelnetProtocol(TelnetProtocol):
 
     ####################################################################
     def send(self, data):
+        if not data.endswith("<concealed>"):
+            data += "<reset>"
         data = tf(data)
         self.transport.write(data)
 
@@ -263,6 +265,11 @@ class MudTelnetProtocol(TelnetProtocol):
 def initialize_logger(logging_level=logging.INFO):
     logging.basicConfig(level=logging_level, format="[%(asctime)s] %(levelname)s [%(name)s:%(lineno)s] %(message)s", datefmt="%d/%b/%Y %H:%M:%S")
 
+
+########################################################################
+def stop():
+    logger.info("Shutting down the reactor...")
+    reactor.stop()
 
 ########################################################################
 def run():

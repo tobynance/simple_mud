@@ -260,6 +260,10 @@ class Player(Entity):
             return False
 
     ####################################################################
+    def find_in_inventory(self, item_name):
+        return double_find_by_name(item_name, self.inventory)
+
+    ####################################################################
     def drop_item(self, item):
         if item in self.inventory:
             self.inventory.remove(item)

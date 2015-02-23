@@ -155,7 +155,7 @@ class RoomDatabase(EntityDatabase):
             else:
                 room_data = {}
             for room_template_data in template_data:
-                room = Room.deserialize_from_dict(room_template_data, room_data.get(room_template_data["id"]))
+                room = Room.deserialize_from_dict(room_template_data, room_data.get(str(room_template_data["id"])))
                 room_database.by_id[room.id] = room
                 room_database.by_name[room.name.lower()] = room
             return room_database

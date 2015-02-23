@@ -7,8 +7,8 @@ from enum import Enum, IntEnum
 from attributes import Attributes, primary_attribute_list, attribute_string_list
 from entity import Entity
 from entity_database import EntityDatabase
-from item import item_database
-from room import room_database
+import item
+import room
 from utils import clamp, double_find_by_name
 
 base = os.path.dirname(__file__)
@@ -174,7 +174,7 @@ class Player(Entity):
         self.stat_points = 18
         self.experience = 0
         self.level = 1
-        self.room = room_database.by_id[1]
+        self.room = room.room_database.by_id[1]
         self.money = 0
         self.next_attack_time = 0
         self.hit_points = 0
@@ -396,16 +396,16 @@ class Player(Entity):
             setattr(player, field, data_dict[field])
 
         player.rank = PlayerRank(data_dict["rank"])
-        player.room = room_database.by_id[data_dict["room"]]
+        player.room = room.room_database.by_id[data_dict["room"]]
 
         player.attributes = PlayerAttributeSet.deserialize_from_dict(data_dict["attributes"])
         player.inventory = []
         for item_id in data_dict["inventory"]:
-            player.inventory.append(item_database[item_id])
+            player.inventory.append(item.item_database[item_id])
         if data_dict["weapon"]:
-            player.weapon = item_database[data_dict["weapon"]]
+            player.weapon = item.item_database[data_dict["weapon"]]
         if data_dict["armor"]:
-            player.weapon = item_database[data_dict["armor"]]
+            player.weapon = item.item_database[data_dict["armor"]]
         player.attributes.set_player(player)
         return player
 

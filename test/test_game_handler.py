@@ -141,6 +141,20 @@ class GameHandlerTest(unittest.TestCase):
                                                    self.status_line])
 
     ####################################################################
+    def test_store_list(self):
+        result = self.handler.store_list(5)
+        expected = "<reset><white><bold>" \
+                   "--------------------------------------------------------------------------------<newline>" \
+                   " Item                           | Price<newline>" \
+                   "--------------------------------------------------------------------------------<newline>" \
+                   " Rapier                         | 1500<newline>" \
+                   " Sabre                          | 1600<newline>" \
+                   " Cutlass                        | 1700<newline>" \
+                   " Golden Rapier                  | 5000<newline>" \
+                   "--------------------------------------------------------------------------------"
+        self.assertEqual(expected, result)
+
+    ####################################################################
     def test_handle_quit(self):
         self.player.active = True
         self.player.logged_in = True

@@ -6,9 +6,10 @@ from item import ItemType
 import item
 from player import player_database, PlayerRank
 import room
+import store
 import telnet
 from training_handler import TrainingHandler
-from utils import find_all_by_name
+from utils import find_all_by_name, double_find_by_name
 
 logger = logging.getLogger(__name__)
 
@@ -88,6 +89,8 @@ class GameHandler(telnet.BaseCommandDispatchHandler):
         self._register_data_handler("get", self.handle_get)
         self._register_data_handler("drop", self.handle_drop)
         self._register_data_handler("list", self.handle_list)
+        self._register_data_handler("buy", self.handle_buy)
+        self._register_data_handler("sell", self.handle_sell)
         self._register_data_handler("clear", self.handle_clear)
         self._register_data_handler(True, lambda d, fw, r: self.handle_chat(d, fw, d))  # send whole message to chat
 
@@ -286,11 +289,55 @@ class GameHandler(telnet.BaseCommandDispatchHandler):
         self.player.send_string(self.store_list(self.player.room.data))
 
     ####################################################################
+    def handle_buy(self, data, first_word, rest):
+        if self.player.room.type != room.RoomType.STORE:
+            self.player.send_string("<red><bold>You're not in a store!")
+        self.buy(rest)
+        raise NotImplementedError
+
+    ####################################################################
+    def handle_sell(self, data, first_word, rest):
+        if self.player.room.type != room.RoomType.STORE:
+            self.player.send_string("<red><bold>You're not in a store!")
+        self.sell(rest)
+        raise NotImplementedError
+
+    ####################################################################
     def handle_clear(self, data, first_word, rest):
         self.player.send_string("<newline>" * 80)
 
     ####################################################################
     def store_list(self, store_id):
+        this_store = store.store_database.by_id[store_id]
+        output = ["<reset><white><bold>%s" % ("-" * 80),
+                  " {:<30} | {}".format("Item", "Price"),
+                  "-" * 80]
+        items = [item.item_database.by_id[item_id] for item_id in this_store.available_items]
+        for this_item in items:
+            output.append(" {:<30} | {}".format(this_item.name, this_item.price))
+        output.append("-" * 80)
+        return "<newline>".join(output)
+
+    ####################################################################
+    def buy(self, item_name):
+        this_store = store.store_database.by_id[self.player.room.data]
+        items = [item.item_database.by_id[item_id] for item_id in this_store.available_items]
+        purchase_item = double_find_by_name(item_name, items)
+        if purchase_item is None:
+            self.player.send_string("<red><bold>Sorry, we don't have that item!")
+            return
+        elif self.player.money < purchase_item.price:
+            self.player.send_string("<red><bold>Sorry, but you can't afford that!")
+            return
+        elif self.player.pick_up_item(purchase_item):
+            self.player.send_string("<red><bold>Sorry, but you can't carry that much!")
+            return
+        else:
+            self.player.money -= purchase_item.price
+            self.send_room("<cyan><bold>{} buys a {}".format(self.player.name, purchase_item.name))
+
+    ####################################################################
+    def sell(self, item_name):
         raise NotImplementedError
 
     ####################################################################

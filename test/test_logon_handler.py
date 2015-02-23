@@ -1,5 +1,6 @@
 import unittest
 import os
+
 os.environ["SIMPLE_MUD_LOAD_PLAYERS"] = "false"
 import mock
 from game_handler import GameHandler
@@ -9,12 +10,13 @@ from training_handler import TrainingHandler
 import logon_handler
 from logon_handler import LogonHandler, LogonState
 from player import PlayerDatabase, Player, PlayerRank
-
+import room
 
 ########################################################################
 class LogonHandlerTest(unittest.TestCase):
     ####################################################################
     def setUp(self):
+        room.RoomDatabase.load(force=True, room_data_path="some_random_path")
         MockProtocol.set_handler_class(handler_class=LogonHandler)
         self.protocol = MockProtocol()
         self.handler = self.protocol.handler
@@ -164,14 +166,19 @@ class LogonHandlerTest(unittest.TestCase):
         self.assertEqual(self.protocol.send_data, [message])
         self.assertEqual(self.handler.protocol.drop_connection_calls, 0)
 
-        message = "<clearscreen><reset><bold><white>Thank you! You are now entering the realm...\r\n<reset>"
+        message = ["<clearscreen><reset><bold><white>Thank you! You are now entering the realm...\r\n<reset>",
+                   "<newline><bold><white>Town Square<newline>" + \
+                   "<reset><magenta>You are in the town square. This is the central meeting place for the realm.<newline>" + \
+                   "<reset><green>exits: NORTH, EAST, SOUTH, WEST<newline>",
+                   "<clearline><carriage_return><white><bold>[<green>10<white>/10] <reset>"]
+
         self.protocol.send_data = []
         self.handler.num_errors = 0
         self.handler.state = LogonState.ENTER_PASSWORD
         self.handler.handle_enter_password("something")
         self.assertEqual(self.handler.num_errors, 0)
         self.assertEqual(self.handler.state, LogonState.ENTER_PASSWORD)
-        self.assertEqual(self.protocol.send_data, [message])
+        self.assertEqual(self.protocol.send_data, message)
 
     ####################################################################
     def test_enter_game(self):

@@ -33,6 +33,7 @@ HELP = "<white><bold>" + \
        " get/drop <item>              - Picks up or drops an item on the ground<newline>" + \
        " attack <enemy>               - Attacks an enemy<newline>" + \
        " talk                         - Talks to NPC's in the room<newline>" + \
+       " list                         - List the items an NPC has for sale<newline>" + \
        " buy <item name / id>         - Buys an item from the store<newline>" + \
        " sell <item name>             - Sells an item to the store<newline>" + \
        " inspect <item name>          - Shows stats of an item<newline>" + \
@@ -86,6 +87,7 @@ class GameHandler(telnet.BaseCommandDispatchHandler):
         self._register_data_handler(["west", "w"], self.handle_west)
         self._register_data_handler("get", self.handle_get)
         self._register_data_handler("drop", self.handle_drop)
+        self._register_data_handler("list", self.handle_list)
         self._register_data_handler("clear", self.handle_clear)
         self._register_data_handler(True, lambda d, fw, r: self.handle_chat(d, fw, d))  # send whole message to chat
 
@@ -278,8 +280,18 @@ class GameHandler(telnet.BaseCommandDispatchHandler):
         self.drop_item(rest)
 
     ####################################################################
+    def handle_list(self, data, first_word, rest):
+        if self.player.room.type != room.RoomType.STORE:
+            self.player.send_string("<red><bold>You're not in a store!")
+        self.player.send_string(self.store_list(self.player.room.data))
+
+    ####################################################################
     def handle_clear(self, data, first_word, rest):
         self.player.send_string("<newline>" * 80)
+
+    ####################################################################
+    def store_list(self, store_id):
+        raise NotImplementedError
 
     ####################################################################
     # Base Handler Methods                                           ###

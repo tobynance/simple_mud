@@ -508,4 +508,4 @@ class PlayerDatabase(EntityDatabase):
         player.active = False
         self.save()
 
-player_database = PlayerDatabase.load()
+PlayerDatabase.load()

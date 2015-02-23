@@ -60,4 +60,4 @@ class ItemDatabase(EntityDatabase):
                 item_database.by_name[item.name.lower()] = item
         return item_database
 
-item_database = ItemDatabase.load()
+ItemDatabase.load()

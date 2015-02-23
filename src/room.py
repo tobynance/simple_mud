@@ -12,7 +12,7 @@ base = os.path.dirname(__file__)
 RoomType = Enum("RoomType", "PLAIN_ROOM TRAINING_ROOM STORE")
 MAX_ITEMS = 32
 
-room_database = None
+store_database = None
 
 
 ########################################################################
@@ -25,6 +25,7 @@ class Room(Entity):
         self.connecting_rooms = {}
         self.spawn_which_enemy = None
         self.max_enemies = 0
+        self.data = None
 
         # volatile data
         self.items = []
@@ -58,7 +59,7 @@ class Room(Entity):
                 if value:
                     room.connecting_rooms[Direction.WEST] = value
             elif field == "data":
-                pass  # TODO: Not implemented yet
+                room.data = value
             elif field == "starting_items":
                 for item_id in value:
                     item = item_db.find(item_id)
@@ -88,7 +89,7 @@ class Room(Entity):
     def get_adjacent_room(self, direction):
         room_id = self.connecting_rooms.get(direction)
         if room_id:
-            return room_database.by_id[room_id]
+            return store_database.by_id[room_id]
 
     ####################################################################
     def add_player(self, player):
@@ -141,7 +142,7 @@ class RoomDatabase(EntityDatabase):
     ####################################################################
     @classmethod
     def load(cls, room_data_path=None, room_templates_path=None, force=False):
-        global room_database
+        global store_database
         if room_database is None or force:
             room_database = RoomDatabase()
             if room_data_path is None:
@@ -160,4 +161,4 @@ class RoomDatabase(EntityDatabase):
                 room_database.by_name[room.name.lower()] = room
             return room_database
 
-room_database = RoomDatabase.load()
+RoomDatabase.load()

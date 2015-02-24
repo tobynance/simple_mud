@@ -81,6 +81,7 @@ class GameHandler(telnet.BaseCommandDispatchHandler):
         self._register_data_handler("reload", self.handle_reload)
         self._register_data_handler("shutdown", self.handle_shutdown)
         self._register_data_handler("train", self.handle_train)
+        self._register_data_handler("editstats", self.handle_editstats)
         self._register_data_handler(["look", "l"], self.handle_look)
         self._register_data_handler(["north", "n"], self.handle_north)
         self._register_data_handler(["east", "e"], self.handle_east)
@@ -92,7 +93,7 @@ class GameHandler(telnet.BaseCommandDispatchHandler):
         self._register_data_handler("buy", self.handle_buy)
         self._register_data_handler("sell", self.handle_sell)
         self._register_data_handler("clear", self.handle_clear)
-        self._register_data_handler(True, lambda d, fw, r: self.handle_chat(d, fw, d))  # send whole message to chat
+        self._register_data_handler(True, self.handle_say)  # send whole message to room chat
 
     ####################################################################
     # Handler Methods                                                ###
@@ -105,6 +106,11 @@ class GameHandler(telnet.BaseCommandDispatchHandler):
     def handle_chat(self, data, first_word, text):
         message = "<white><bold>{name} chats: {text}".format(name=self.player.name, text=text)
         self.send_game(message)
+
+    ####################################################################
+    def handle_say(self, data, first_word, text):
+        message = "<white><bold>{name} says: {text}".format(name=self.player.name, text=data)
+        self.send_room(message)
 
     ####################################################################
     def handle_experience(self, data, first_word, rest):
@@ -246,6 +252,19 @@ class GameHandler(telnet.BaseCommandDispatchHandler):
 
     ####################################################################
     def handle_train(self, data, first_word, rest):
+        if self.player.room.type != room.RoomType.TRAINING_ROOM:
+            self.player.send_string("<red><bold>You cannot train here!")
+            return
+        if self.player.train():
+            self.player.send_string("<green><bold>You are now level {}".format(self.player.level))
+        else:
+            self.player.send_string("<red><bold>You don't have enough experience to train!")
+
+    ####################################################################
+    def handle_editstats(self, data, first_word, rest):
+        if self.player.room.type != room.RoomType.TRAINING_ROOM:
+            self.player.send_string("<red><bold>You cannot edit your stats here!")
+            return
         self.goto_train()
 
     ####################################################################
@@ -338,7 +357,17 @@ class GameHandler(telnet.BaseCommandDispatchHandler):
 
     ####################################################################
     def sell(self, item_name):
-        raise NotImplementedError
+        this_store = store.store_database.by_id[self.player.room.data]
+        sell_item = double_find_by_name(item_name, self.player.inventory)
+        if sell_item is None:
+            self.player.send_string("<red><bold>Sorry, you don't have that!")
+            return
+        if not this_store.has(sell_item.id):
+            self.player.send_string("<red><bold>Sorry, we don't want that item!")
+            return
+        self.player.drop_item(sell_item)
+        self.player.money += sell_item.price
+        self.send_room("<cyan><bold>{} sells a {}".format(self.player.name, sell_item.name))
 
     ####################################################################
     # Base Handler Methods                                           ###
@@ -530,17 +559,17 @@ class GameHandler(telnet.BaseCommandDispatchHandler):
         for item in find_all_by_name(item_name, self.player.inventory):
             if item.type == ItemType.WEAPON:
                 self.player.use_weapon(item)
-                self.player.send_string("<cyan><bold>You are now wielding %s." % item.name)
+                self.player.send_room("<green><bold>{} arms a {}.".format(self.player.name, item.name))
                 return True
             elif item.type == ItemType.ARMOR:
                 self.player.use_armor(item)
-                self.player.send_string("<cyan><bold>You are now wearing %s." % item.name)
+                self.player.send_room("<green><bold>{} puts on a {}.".format(self.player.name, item.name))
                 return True
             elif item.type == ItemType.HEALING:
                 self.player.add_bonuses(item)
                 self.player.add_hit_points(random.randint(item.min, item.max))
                 self.player.drop_item(item)
-                self.player.send_string("<cyan><bold>You have healed yourself using %s." % item.name)
+                self.player.send_room("<green><bold>{} uses a {}.".format(self.player.name, item.name))
                 return True
         self.player.send_string("<red><bold>Could not find that item!")
         return False
@@ -592,8 +621,9 @@ class GameHandler(telnet.BaseCommandDispatchHandler):
         return ("".join(description)).format(room=current_room)
 
     ####################################################################
-    @staticmethod
-    def send_room(room, text):
+    def send_room(self, text, room=None):
+        if room is None:
+            room = self.player.room
         for player in room.players:
             player.send_string(text)
 
@@ -603,8 +633,8 @@ class GameHandler(telnet.BaseCommandDispatchHandler):
         if direction in current_room.connecting_rooms:
             new_room = current_room.get_adjacent_room(direction)
             current_room.remove_player(self.player)
-            self.send_room(current_room, "<green>{} leaves to the {}.".format(self.player.name, direction.name))
-            self.send_room(new_room, "<green>{} enters from the {}.".format(self.player.name, direction.opposite_direction().name))
+            self.send_room("<green>{} leaves to the {}.".format(self.player.name, direction.name), current_room)
+            self.send_room("<green>{} enters from the {}.".format(self.player.name, direction.opposite_direction().name), new_room)
             self.player.send_string("<green>You walk {}.".format(direction.name))
             self.player.room = new_room
             new_room.add_player(self.player)
@@ -621,7 +651,7 @@ class GameHandler(telnet.BaseCommandDispatchHandler):
                 if amount <= self.player.room.money:
                     self.player.room.money -= amount
                     self.player.money += amount
-                    self.send_room(self.player.room, "<cyan><bold>{p.name} picks up ${amount}".format(p=self.player, amount=amount))
+                    self.send_room("<cyan><bold>{p.name} picks up ${amount}".format(p=self.player, amount=amount))
                 else:
                     self.player.send_string("<red><bold>There isn't that much there!")
             else:
@@ -634,7 +664,7 @@ class GameHandler(telnet.BaseCommandDispatchHandler):
                 self.player.send_string("<red><bold>You can't carry that much!")
             else:
                 self.player.room.remove_item(i)
-                self.send_room(self.player.room, "<cyan><bold>{} picks up {}.".format(self.player.name, i.name))
+                self.send_room("<cyan><bold>{} picks up {}.".format(self.player.name, i.name))
 
     ####################################################################
     def drop_item(self, item_name):
@@ -645,7 +675,7 @@ class GameHandler(telnet.BaseCommandDispatchHandler):
                 if amount <= self.player.money:
                     self.player.money -= amount
                     self.player.room.money += amount
-                    self.send_room(self.player.room, "<cyan><bold>{p.name} drops ${amount}".format(p=self.player, amount=amount))
+                    self.send_room("<cyan><bold>{p.name} drops ${amount}".format(p=self.player, amount=amount))
                 else:
                     self.player.send_string("<red><bold>You don't have that much money!")
             else:
@@ -658,7 +688,7 @@ class GameHandler(telnet.BaseCommandDispatchHandler):
                 self.player.send_string("<red><bold>You can't drop that!")
             else:
                 self.player.room.add_item(i)
-                self.send_room(self.player.room, "<cyan><bold>{} drops {}.".format(self.player.name, i.name))
+                self.send_room("<cyan><bold>{} drops {}.".format(self.player.name, i.name))
 
     ####################################################################
     # Enemy Functions Added in Chapter 10                            ###

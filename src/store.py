@@ -15,6 +15,13 @@ class Store(Entity):
         self.available_items = []
 
     ####################################################################
+    def has(self, item_id):
+        for item in self.available_items:
+            if item.id == item_id:
+                return True
+        return False
+
+    ####################################################################
     @staticmethod
     def deserialize_from_dict(store_data):
         store = Store()

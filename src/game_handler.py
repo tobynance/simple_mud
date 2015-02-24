@@ -312,14 +312,12 @@ class GameHandler(telnet.BaseCommandDispatchHandler):
         if self.player.room.type != room.RoomType.STORE:
             self.player.send_string("<red><bold>You're not in a store!")
         self.buy(rest)
-        raise NotImplementedError
 
     ####################################################################
     def handle_sell(self, data, first_word, rest):
         if self.player.room.type != room.RoomType.STORE:
             self.player.send_string("<red><bold>You're not in a store!")
         self.sell(rest)
-        raise NotImplementedError
 
     ####################################################################
     def handle_clear(self, data, first_word, rest):
@@ -348,7 +346,7 @@ class GameHandler(telnet.BaseCommandDispatchHandler):
         elif self.player.money < purchase_item.price:
             self.player.send_string("<red><bold>Sorry, but you can't afford that!")
             return
-        elif self.player.pick_up_item(purchase_item):
+        elif not self.player.pick_up_item(purchase_item):
             self.player.send_string("<red><bold>Sorry, but you can't carry that much!")
             return
         else:
@@ -559,17 +557,17 @@ class GameHandler(telnet.BaseCommandDispatchHandler):
         for item in find_all_by_name(item_name, self.player.inventory):
             if item.type == ItemType.WEAPON:
                 self.player.use_weapon(item)
-                self.player.send_room("<green><bold>{} arms a {}.".format(self.player.name, item.name))
+                self.send_room("<green><bold>{} arms a {}.".format(self.player.name, item.name))
                 return True
             elif item.type == ItemType.ARMOR:
                 self.player.use_armor(item)
-                self.player.send_room("<green><bold>{} puts on a {}.".format(self.player.name, item.name))
+                self.send_room("<green><bold>{} puts on a {}.".format(self.player.name, item.name))
                 return True
             elif item.type == ItemType.HEALING:
                 self.player.add_bonuses(item)
                 self.player.add_hit_points(random.randint(item.min, item.max))
                 self.player.drop_item(item)
-                self.player.send_room("<green><bold>{} uses a {}.".format(self.player.name, item.name))
+                self.send_room("<green><bold>{} uses a {}.".format(self.player.name, item.name))
                 return True
         self.player.send_string("<red><bold>Could not find that item!")
         return False
@@ -588,14 +586,6 @@ class GameHandler(telnet.BaseCommandDispatchHandler):
                 return True
         self.player.send_string("<red><bold>" + "Could not remove item!")
         return False
-
-    ####################################################################
-    # Accessors                                                      ###
-    ####################################################################
-    ####################################################################
-    @staticmethod
-    def get_timer():
-        return GameHandler.timer
 
     ####################################################################
     # Map Functions Added in Chapter 9                               ###

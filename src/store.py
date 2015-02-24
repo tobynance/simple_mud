@@ -16,8 +16,8 @@ class Store(Entity):
 
     ####################################################################
     def has(self, item_id):
-        for item in self.available_items:
-            if item.id == item_id:
+        for id in self.available_items:
+            if id == item_id:
                 return True
         return False
 

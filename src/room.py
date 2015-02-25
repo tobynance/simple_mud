@@ -160,5 +160,3 @@ class RoomDatabase(EntityDatabase):
                 room_database.by_id[room.id] = room
                 room_database.by_name[room.name.lower()] = room
             return room_database
-
-RoomDatabase.load()

@@ -44,5 +44,9 @@ class EntityDatabase(object):
         return self.find_full(name) is not None
 
     ####################################################################
+    def all(self):
+        return self.by_id.values()
+
+    ####################################################################
     def __len__(self):
         return len(self.by_id)

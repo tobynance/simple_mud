@@ -1,8 +1,9 @@
 import re
 import logging
 from twisted.conch.telnet import TelnetTransport, TelnetProtocol
-from twisted.internet import reactor, endpoints
+from twisted.internet import reactor, endpoints, task
 from twisted.internet.protocol import ServerFactory
+import game_loop
 
 logger = logging.getLogger(__name__)
 
@@ -271,11 +272,25 @@ def stop():
     logger.info("Shutting down the reactor...")
     reactor.stop()
 
+
 ########################################################################
 def run():
     initialize_logger(logging.INFO)
     factory = ServerFactory()
     factory.protocol = lambda: TelnetTransport(MudTelnetProtocol)
-    print "running on port 8023..."
     endpoints.serverFromString(reactor, "tcp:8023").listen(factory)
+
+    round_timer = task.LoopingCall(game_loop.perform_round)
+    round_timer.start(game_loop.ROUND_TIME)
+
+    db_timer = task.LoopingCall(game_loop.save_databases)
+    db_timer.start(game_loop.DB_SAVE_TIME)
+
+    heal_timer = task.LoopingCall(game_loop.perform_heal)
+    heal_timer.start(game_loop.HEAL_TIME)
+
+    regen_timer = task.LoopingCall(game_loop.perform_regen)
+    regen_timer.start(game_loop.REGEN_TIME)
+
+    print "running on port 8023..."
     reactor.run()

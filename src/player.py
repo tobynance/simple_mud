@@ -444,10 +444,6 @@ class PlayerDatabase(EntityDatabase):
         return len(player_database.by_id) + 1
 
     ####################################################################
-    def all(self):
-        return self.by_id.values()
-
-    ####################################################################
     def all_logged_in(self):
         for player in self.all():
             if player.logged_in:

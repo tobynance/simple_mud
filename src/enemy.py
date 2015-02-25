@@ -202,6 +202,3 @@ class EnemyTemplateDatabase(EntityDatabase):
                 enemy_template_database.by_id[enemy_template.id] = enemy_template
                 enemy_template_database.by_name[enemy_template.name.lower()] = enemy_template
         return enemy_template_database
-
-EnemyTemplateDatabase.load()
-EnemyDatabase.load()

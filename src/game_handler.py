@@ -611,11 +611,10 @@ class GameHandler(telnet.BaseCommandDispatchHandler):
         return ("".join(description)).format(room=current_room)
 
     ####################################################################
-    def send_room(self, text, room=None):
-        if room is None:
-            room = self.player.room
-        for player in room.players:
-            player.send_string(text)
+    def send_room(self, text, this_room=None):
+        if this_room is None:
+            this_room = self.player.room
+        this_room.send_room(text)
 
     ####################################################################
     def move(self, direction):

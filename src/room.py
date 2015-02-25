@@ -125,6 +125,10 @@ class Room(Entity):
     def remove_enemy(self, enemy):
         self.enemies.remove(enemy)
 
+    ####################################################################
+    def send_room(self, text):
+        for player in self.players:
+            player.send_string(text)
 
 ########################################################################
 class RoomDatabase(EntityDatabase):

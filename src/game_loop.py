@@ -23,40 +23,38 @@ ROUND_TIME = 1
 REGEN_TIME = 2 * 60
 HEAL_TIME = 1 * 60
 
-current_round_time = time.time()
-
 
 ########################################################################
 def perform_round():
+    """Have enemies attack players."""
+    global previous_round_time
     for e in enemy.enemy_database.all():
         now = time.time()
-        diff = now - current_round_time
-        e.next_attack_time = max(0, e.next_attack_time - diff)
+        diff = now - previous_round_time
+        e.next_attack_time = max(0, e.next_attack_time - ROUND_TIME)
         # check if enemy can attack
         if e.next_attack_time == 0 and len(e.room.players) > 0:
-            pass
+            e.attack()
+        previous_round_time = now
 
-# void GameLoop::PerformRound() {
-#     EnemyDatabase::iterator itr = EnemyDatabase::begin();
-#     sint64 now = Game::GetTimer().GetMS();
-#     while( itr != EnemyDatabase::end() ) {
-#         if( now >= itr->NextAttackTime() &&
-#         // make sure enemy can attack
-#         itr->CurrentRoom()->Players().size() > 0 ) // check players
-#             Game::EnemyAttack( itr->ID() );
-#         // tell enemy to attack
-#         ++itr;
-#     }
-# }
 
 ########################################################################
 def perform_regen():
-    pass
+    """Spawn enemies into any room that can hold more."""
+    for r in room.room_database.all():
+        if r.spawn_which_enemy and len(r.enemies) < r.max_enemies:
+            # create a new enemy in the room
+            enemy.enemy_database.create_enemy(r.spawn_which_enemy, r)
+            spawned_enemy_type = enemy.enemy_template_database.find(r.spawn_which_enemy)
+            r.send_room("<red><bold>{} enters the room!".format(spawned_enemy_type.name))
 
 
 ########################################################################
 def perform_heal():
-    pass
+    for p in player.player_database.all():
+        if p.active:
+            p.add_hit_points(p.attributes.HP_REGEN)
+            p.print_status_bar()  # TODO: I need to see if this is obnoxious to the user
 
 
 ########################################################################

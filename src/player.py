@@ -409,6 +409,30 @@ class Player(Entity):
         player.attributes.set_player(player)
         return player
 
+    ####################################################################
+    def killed(self):
+        self.room.send_room("<red><bold>{} has died!".format(self.name))
+        money = self.money // 10
+        # calculate how much money to drop
+        if money > 0:
+            self.room.money += money
+            self.money -= money
+            self.room.send_room("<cyan>${} drops to the ground.".format(money))
+
+# if( p.Items() > 0 ) {
+#     // make sure the player has an item
+#     // loop through random indexes until you hit a valid item:
+#     int index = -1;
+#     while( p.GetItem( index = RandomInt( 0, PLAYERITEMS - 1 ) ) == 0 );
+#     item i = p.GetItem( index );
+#     p.CurrentRoom()->AddItem( i );
+#     p.DropItem( index );
+#     // get the item to drop
+#     // add it to the room
+#     // remove it from the player
+#     Game::SendRoom( cyan + i->Name() + " drops to the ground.",
+#     p.CurrentRoom() );
+# }
 
 ########################################################################
 class PlayerDatabase(EntityDatabase):

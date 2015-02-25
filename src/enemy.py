@@ -1,5 +1,6 @@
 import os
 import json
+import random
 from entity import Entity
 from entity_database import EntityDatabase
 import room
@@ -117,6 +118,29 @@ class Enemy(Entity):
                   "next_attack_time": self.next_attack_time}
         return output
 
+    ####################################################################
+    def attack(self):
+        # attack a random player in the room
+        p = random.choice(self.room.players)
+        if self.weapon is None:  # fists, 1-3 damage, 1 second swing time
+            damage = random.randint(1, 3)
+            self.next_attack_time = 1
+        else:
+            damage = random.randint(self.weapon.min, self.weapon.max)
+            self.next_attack_time = self.weapon.speed
+
+        if random.randint(0, 99) >= (self.accuracy - p.attributes.DODGING):
+            self.room.send_room("<white>{} swings at {} but misses!".format(self.name, p.name))
+            return
+        damage += self.strike_damage
+        damage -= p.attributes.DAMAGE_ABSORB
+        if damage < 1:
+            damage = 1
+
+        p.add_hit_points(-damage)
+        self.room.send_room("<red>{} hits {} for {} damage!".format(self.name, p.name, damage))
+        if p.hit_points <= 0:
+            p.killed()
 
 ########################################################################
 class EnemyDatabase(EntityDatabase):

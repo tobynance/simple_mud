@@ -51,11 +51,6 @@ class Enemy(Entity):
 
     ####################################################################
     @property
-    def name(self):
-        return self.template.name
-
-    ####################################################################
-    @property
     def accuracy(self):
         return self.template.accuracy
 
@@ -110,6 +105,7 @@ class Enemy(Entity):
                 this_enemy.room = room.room_database.by_id[value]
             else:
                 setattr(this_enemy, field, value)
+        this_enemy.name = this_enemy.template.name
         return this_enemy
 
     ####################################################################
@@ -166,9 +162,15 @@ class EnemyDatabase(EntityDatabase):
         return enemy_text
 
     ####################################################################
+    def get_next_id(self):
+        return len(self.by_id) + 1
+
+    ####################################################################
     def create_enemy(self, template_id, starting_room):
         e = Enemy()
+        e.id = self.get_next_id()
         e.template = enemy_template_database.by_id[template_id]
+        e.name = e.template.name
         e.hit_points = e.template.hit_points
         e.room = starting_room
         starting_room.add_enemy(e)
@@ -178,6 +180,7 @@ class EnemyDatabase(EntityDatabase):
     def destroy_enemy(self, enemy):
         enemy.room.remove_enemy(enemy)
         del self.by_id[enemy.id]
+
 
 ########################################################################
 class EnemyTemplateDatabase(EntityDatabase):

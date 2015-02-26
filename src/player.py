@@ -1,4 +1,5 @@
 import os
+import random
 import time
 import math
 import logging
@@ -17,7 +18,7 @@ data_file = os.path.join(base, "..", "data", "players.json")
 MAX_PLAYER_ITEMS = 16
 logger = logging.getLogger(__name__)
 
-SIMPLE_FIELDS = ["name", "password", "stat_points", "experience", "level", "money", "next_attack_time"]
+SIMPLE_FIELDS = ["name", "password", "stat_points", "experience", "level", "money", "next_attack_time", "hit_points"]
 
 player_attribute_strings = []
 for attr in attribute_string_list:
@@ -418,21 +419,24 @@ class Player(Entity):
             self.room.money += money
             self.money -= money
             self.room.send_room("<cyan>${} drops to the ground.".format(money))
+        if self.inventory:
+            some_item = random.choice(self.inventory)
+            self.drop_item(some_item)
+            self.room.send_room("<cyan>{} drops to the ground.".format(some_item.name))
 
-# if( p.Items() > 0 ) {
-#     // make sure the player has an item
-#     // loop through random indexes until you hit a valid item:
-#     int index = -1;
-#     while( p.GetItem( index = RandomInt( 0, PLAYERITEMS - 1 ) ) == 0 );
-#     item i = p.GetItem( index );
-#     p.CurrentRoom()->AddItem( i );
-#     p.DropItem( index );
-#     // get the item to drop
-#     // add it to the room
-#     // remove it from the player
-#     Game::SendRoom( cyan + i->Name() + " drops to the ground.",
-#     p.CurrentRoom() );
-# }
+        exp = self.experience // 10
+        self.experience -= exp  # subtract 10% of player experience
+        self.room.remove_player(self)
+        self.room = room.room_database.by_id[1]
+        self.room.add_player(self)
+
+        # set player HP to 70%
+        self.set_hit_points(int(self.attributes.MAX_HIT_POINTS * 0.7))
+
+        self.send_string("<white><bold>You have died, but you have resurrected in %s" % self.room.name)
+        self.send_string("<red><bold>You have lost %s experience!" % exp)
+        self.room.send_room("<white><bold>%s appears out of nowhere!!" % self.name)
+
 
 ########################################################################
 class PlayerDatabase(EntityDatabase):
@@ -527,5 +531,3 @@ class PlayerDatabase(EntityDatabase):
         player.logged_in = False
         player.active = False
         self.save()
-
-PlayerDatabase.load()

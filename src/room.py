@@ -1,4 +1,5 @@
 import os
+import logging
 import json
 from enum import Enum
 from attributes import Direction
@@ -6,6 +7,8 @@ from entity import Entity
 from entity_database import EntityDatabase
 from item import ItemDatabase
 import utils
+
+logger = logging.getLogger(__name__)
 
 base = os.path.dirname(__file__)
 
@@ -129,6 +132,7 @@ class Room(Entity):
     def send_room(self, text):
         for player in self.players:
             player.send_string(text)
+
 
 ########################################################################
 class RoomDatabase(EntityDatabase):

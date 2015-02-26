@@ -4,7 +4,9 @@ import random
 from attributes import Direction
 from item import ItemType
 import item
-from player import player_database, PlayerRank
+from player import PlayerRank
+import player
+import enemy
 import room
 import store
 import telnet
@@ -131,7 +133,7 @@ class GameHandler(telnet.BaseCommandDispatchHandler):
     ####################################################################
     def handle_quit(self, data, first_word, rest):
         self.protocol.drop_connection()
-        player_database.logout(self.player.id)
+        player.player_database.logout(self.player.id)
         self.logout_message("%s has left the realm." % self.player.name)
 
     ####################################################################
@@ -175,7 +177,7 @@ class GameHandler(telnet.BaseCommandDispatchHandler):
             logger.warn("player %s tried to use the kick command, but doesn't have permission to do so", self.player.name)
             self.player.send_string("<red>You do not have permission to do so<newline>")
             return
-        kicked_player = player_database.find_logged_in(player_name)
+        kicked_player = player.player_database.find_logged_in(player_name)
         if kicked_player is None:
             self.player.send_string("<red><bold>Player could not be found.")
             return
@@ -183,7 +185,7 @@ class GameHandler(telnet.BaseCommandDispatchHandler):
             self.player.send_string("<red><bold>You can't kick that player!")
             return
 
-        player_database.logout(kicked_player.id)
+        player.player_database.logout(kicked_player.id)
         self.logout_message("%s has been kicked by %s!!!" % (kicked_player.name, self.player.name))
 
     ####################################################################
@@ -208,7 +210,7 @@ class GameHandler(telnet.BaseCommandDispatchHandler):
             self.player.send_string("<red><bold>Error: Bad Command")
             return
         name, rank = rest
-        other_player = player_database.find(name)
+        other_player = player.player_database.find(name)
         if other_player is None:
             self.player.send_string("<red><bold>Error: Could not find user " + name)
             return
@@ -230,12 +232,12 @@ class GameHandler(telnet.BaseCommandDispatchHandler):
         room.room_database.save()
         item.item_database = item.ItemDatabase.load(force=True)
         room.room_database = room.RoomDatabase.load(force=True)
-        for player in player_database.all_logged_in():
-            player.room = room.room_database.by_id[player.room.id]
-            inventory = [i.id for i in player.inventory]
-            player.inventory = []
+        for p in player.player_database.all_logged_in():
+            p.room = room.room_database.by_id[p.room.id]
+            inventory = [i.id for i in p.inventory]
+            p.inventory = []
             for item_id in inventory:
-                player.inventory.append(item.item_database.by_id[item_id])
+                p.inventory.append(item.item_database.by_id[item_id])
 
         self.player.send_string("<bold><cyan>Item & Room Databases Reloaded!")
 
@@ -247,7 +249,8 @@ class GameHandler(telnet.BaseCommandDispatchHandler):
             return
         self.announce("SYSTEM IS SHUTTING DOWN")
         room.room_database.save()
-        player_database.save()
+        player.player_database.save()
+        enemy.enemy_database.save()
         telnet.stop()
 
     ####################################################################
@@ -387,7 +390,7 @@ class GameHandler(telnet.BaseCommandDispatchHandler):
     def leave(self):
         self.player.active = False
         if self.protocol.closed:
-            player_database.logout(self.player.id)
+            player.player_database.logout(self.player.id)
         self.player.room.remove_player(self.player)
         self.send_game("<bold><green>{} has left the realm.".format(self.player.name))
 
@@ -397,7 +400,7 @@ class GameHandler(telnet.BaseCommandDispatchHandler):
         This notifies the handler that a connection has unexpectedly
         hung up.
         """
-        player_database.logout(self.player.id)
+        player.player_database.logout(self.player.id)
         self.logout_message("%s has suddenly disappeared from the realm." % self.player.name)
 
     ####################################################################
@@ -406,7 +409,7 @@ class GameHandler(telnet.BaseCommandDispatchHandler):
         This notifies the handler that a connection is being kicked
         due to flooding the server.
         """
-        player_database.logout(self.player.id)
+        player.player_database.logout(self.player.id)
         self.logout_message("%s has been kicked out for flooding!" % self.player.name)
 
     ####################################################################
@@ -416,15 +419,15 @@ class GameHandler(telnet.BaseCommandDispatchHandler):
     @staticmethod
     def send_global(text):
         """Sends a string to everyone connected."""
-        for player in player_database.all_logged_in():
-            player.send_string(text)
+        for p in player.player_database.all_logged_in():
+            p.send_string(text)
 
     ####################################################################
     @staticmethod
     def send_game(text):
         """Sends a string to everyone 'within the game'"""
-        for player in player_database.all_active():
-            player.send_string(text)
+        for p in player.player_database.all_active():
+            p.send_string(text)
 
     ####################################################################
     @staticmethod
@@ -441,7 +444,7 @@ class GameHandler(telnet.BaseCommandDispatchHandler):
     ####################################################################
     def whisper(self, message, player_name):
         """Sends a whisper string to the requested player"""
-        other_player = player_database.find_active(player_name)
+        other_player = player.player_database.find_active(player_name)
         if other_player is None:
             self.player.send_string("<red><bold>" + "Error, cannot find user.")
         else:
@@ -455,16 +458,16 @@ class GameHandler(telnet.BaseCommandDispatchHandler):
     def who_list(who):
         """This prints up the who-list for the realm."""
         if who == "all":
-            players = player_database.all()
+            players = player.player_database.all()
         else:
-            players = player_database.all_logged_in()
+            players = player.player_database.all_logged_in()
 
         message = ["<white><bold>{}<newline>".format("-" * 80),
                    " Name             | Level     | Activity | Rank<newline>",
                    "-" * 80, "<newline>"]
 
-        for player in players:
-            message.append(player.who_text())
+        for p in players:
+            message.append(p.who_text())
 
         message.append("-" * 80)
         message.append("<newline>")

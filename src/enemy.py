@@ -1,9 +1,12 @@
 import os
+import logging
 import json
 import random
 from entity import Entity
 from entity_database import EntityDatabase
 import room
+
+logger = logging.getLogger(__name__)
 
 base = os.path.dirname(__file__)
 enemy_template_file = os.path.join(base, "..", "data", "enemy_templates.json")
@@ -142,6 +145,7 @@ class Enemy(Entity):
         if p.hit_points <= 0:
             p.killed()
 
+
 ########################################################################
 class EnemyDatabase(EntityDatabase):
     ####################################################################
@@ -180,6 +184,7 @@ class EnemyDatabase(EntityDatabase):
     ####################################################################
     def save_to_string(self):
         enemies = []
+        logger.info("Saving %s enemies", len(self.by_id))
         for enemy in self.by_id.values():
             enemies.append(enemy.serialize_to_dict())
         enemy_text = json.dumps(enemies, indent=4)
@@ -193,6 +198,7 @@ class EnemyDatabase(EntityDatabase):
     def create_enemy(self, template_id, starting_room):
         e = Enemy()
         e.id = self.get_next_id()
+        self.by_id[e.id] = e
         e.template = enemy_template_database.by_id[template_id]
         e.name = e.template.name
         e.hit_points = e.template.hit_points

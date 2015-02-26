@@ -1,5 +1,5 @@
 import logging
-from player import player_database
+import player
 import telnet
 
 logger = logging.getLogger(__name__)
@@ -15,7 +15,7 @@ class TrainingHandler(telnet.MudTelnetHandler):
     ####################################################################
     def handle(self, data):
         if data == "quit":
-            player_database.save()
+            player.player_database.save()
             self.protocol.remove_handler()
             return
         if data in ["1", "2", "3"]:
@@ -29,7 +29,7 @@ class TrainingHandler(telnet.MudTelnetHandler):
                     self.player.attributes.BASE_AGILITY += 1
             self.print_stats(True)
         else:
-            print "unknown command:", data
+            logger.warn("unknown command: %s", data)
             self.send("<reset><clearscreen><red>Unknown Command '%s'<newline>" % data)
             self.print_stats(False)
 
@@ -46,12 +46,12 @@ class TrainingHandler(telnet.MudTelnetHandler):
     ####################################################################
     def hung_up(self):
         logger.warn("%s - hung up in %s", self.protocol.get_remote_address(), self.__class__.__name__)
-        player_database.logout(self.player.id)
+        player.player_database.logout(self.player.id)
 
     ####################################################################
     def flooded(self):
         logger.warn("%s - flooded in %s", self.protocol.get_remote_address(), self.__class__.__name__)
-        player_database.logout(self.player.id)
+        player.player_database.logout(self.player.id)
 
     ####################################################################
     def print_stats(self, clear_screen=True):

@@ -49,5 +49,3 @@ class StoreDatabase(EntityDatabase):
                 store_database.by_id[store.id] = store
                 store_database.by_name[store.name.lower()] = store
         return store_database
-
-StoreDatabase.load()

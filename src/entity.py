@@ -6,6 +6,10 @@ class Entity(object):
         self.id = 0
 
     ####################################################################
+    def __str__(self):
+        return "(%s)%s" % (self.id, self.name)
+
+    ####################################################################
     def get_comparison_name(self):
         return self.name.lower()
 

@@ -2,7 +2,7 @@ import item
 import room
 import player
 import enemy
-import time
+import store
 import logging
 
 logger = logging.getLogger(__name__)
@@ -72,8 +72,9 @@ def save_databases():
     enemy.enemy_database.save()
 
 
+store.StoreDatabase.load()
 item.ItemDatabase.load()
 room.RoomDatabase.load()
-enemy.EnemyDatabase.load()
 enemy.EnemyTemplateDatabase.load()
+enemy.EnemyDatabase.load()
 player.PlayerDatabase.load()

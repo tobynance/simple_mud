@@ -14,7 +14,7 @@ def double_find_by_name(name, list_entities):
     """First try to find an exact match, then try to do a less exact match"""
     name = name.lower()
     for entity in list_entities:
-        if entity.name == name:
+        if entity.match_full(name):
             return entity
     for entity in list_entities:
         if entity.match(name):

@@ -95,6 +95,7 @@ class GameHandler(telnet.BaseCommandDispatchHandler):
         self._register_data_handler("buy", self.handle_buy)
         self._register_data_handler("sell", self.handle_sell)
         self._register_data_handler("clear", self.handle_clear)
+        self._register_data_handler(["attack", "a"], self.handle_attack)
         self._register_data_handler(True, self.handle_say)  # send whole message to room chat
 
     ####################################################################
@@ -232,6 +233,7 @@ class GameHandler(telnet.BaseCommandDispatchHandler):
         room.room_database.save()
         item.item_database = item.ItemDatabase.load(force=True)
         room.room_database = room.RoomDatabase.load(force=True)
+        store.store_database = store.StoreDatabase.load(force=True)
         for p in player.player_database.all_logged_in():
             p.room = room.room_database.by_id[p.room.id]
             inventory = [i.id for i in p.inventory]
@@ -325,6 +327,10 @@ class GameHandler(telnet.BaseCommandDispatchHandler):
     ####################################################################
     def handle_clear(self, data, first_word, rest):
         self.player.send_string("<newline>" * 80)
+
+    ####################################################################
+    def handle_attack(self, data, first_word, rest):
+        self.player.attack(rest)
 
     ####################################################################
     def store_list(self, store_id):
@@ -611,6 +617,15 @@ class GameHandler(telnet.BaseCommandDispatchHandler):
             description.append("<yellow>You see: ")
             description.append(", ".join(items))
             description.append("<newline>")
+        if current_room.players:
+            description.append("<white>People: ")
+            description.append(", ".join([p.name for p in current_room.players]))
+            description.append("<newline>")
+        if current_room.enemies:
+            description.append("<cyan>Enemies: ")
+            description.append(", ".join([e.name for e in current_room.enemies]))
+            description.append("<newline>")
+
         return ("".join(description)).format(room=current_room)
 
     ####################################################################
@@ -681,25 +696,3 @@ class GameHandler(telnet.BaseCommandDispatchHandler):
             else:
                 self.player.room.add_item(i)
                 self.send_room("<cyan><bold>{} drops {}.".format(self.player.name, i.name))
-
-    ####################################################################
-    # Enemy Functions Added in Chapter 10                            ###
-    ####################################################################
-    ####################################################################
-    @staticmethod
-    def enemy_attack(enemy):
-        raise NotImplementedError
-
-    ####################################################################
-    @staticmethod
-    def player_killed(player):
-        raise NotImplementedError
-
-    ####################################################################
-    def player_attack(self, enemy):
-        raise NotImplementedError
-
-    ####################################################################
-    @staticmethod
-    def enemy_killed(enemy, player):
-        raise NotImplementedError

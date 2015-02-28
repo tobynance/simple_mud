@@ -5,6 +5,8 @@ import random
 from entity import Entity
 from entity_database import EntityDatabase
 import room
+import item
+from utils import clamp
 
 logger = logging.getLogger(__name__)
 
@@ -107,6 +109,7 @@ class Enemy(Entity):
                 this_enemy.template = enemy_template_database.by_id[value]
             elif field == "room":
                 this_enemy.room = room.room_database.by_id[value]
+                this_enemy.room.add_enemy(this_enemy)
             else:
                 setattr(this_enemy, field, value)
         this_enemy.name = this_enemy.template.name
@@ -122,15 +125,21 @@ class Enemy(Entity):
         return output
 
     ####################################################################
+    def add_hit_points(self, hit_points):
+        self.hit_points += hit_points
+        self.hit_points = clamp(self.hit_points, 0, self.template.hit_points)
+
+    ####################################################################
     def attack(self):
         # attack a random player in the room
-        p = random.choice(self.room.players)
-        if self.weapon is None:  # fists, 1-3 damage, 1 second swing time
+        p = random.choice(list(self.room.players))
+        if not self.weapon:  # fists, 1-3 damage, 1 second swing time
             damage = random.randint(1, 3)
             self.next_attack_time = 1
         else:
-            damage = random.randint(self.weapon.min, self.weapon.max)
-            self.next_attack_time = self.weapon.speed
+            weapon = item.item_database.by_id[self.weapon]
+            damage = random.randint(weapon.min, weapon.max)
+            self.next_attack_time = weapon.speed
 
         if random.randint(0, 99) >= (self.accuracy - p.attributes.DODGING):
             self.room.send_room("<white>{} swings at {} but misses!".format(self.name, p.name))
@@ -144,6 +153,25 @@ class Enemy(Entity):
         self.room.send_room("<red>{} hits {} for {} damage!".format(self.name, p.name, damage))
         if p.hit_points <= 0:
             p.killed()
+
+    ####################################################################
+    def killed(self, killer):
+        self.room.send_room("<cyan><bold>%s has died!" % self.name)
+
+        # drop the money
+        money = random.randint(self.money_min, self.money_max)
+        if money > 0:
+            self.room.money += money
+            self.room.send_room("<cyan>$%s drops to the ground." % money)
+
+        for item_id, chance in self.loot:
+            if random.randint(0, 99) < chance:
+                i = item.item_database.by_id[item_id]
+                self.room.add_item(i)
+                self.room.send_room("<cyan>%s drops to the ground." % i.name)
+        killer.experience += self.experience
+        killer.send_string("<cyan><bold>You gain %s experience." % self.experience)
+        enemy_database.destroy_enemy(self)
 
 
 ########################################################################

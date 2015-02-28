@@ -406,7 +406,7 @@ class Player(Entity):
         if data_dict["weapon"]:
             player.weapon = item.item_database[data_dict["weapon"]]
         if data_dict["armor"]:
-            player.weapon = item.item_database[data_dict["armor"]]
+            player.armor = item.item_database[data_dict["armor"]]
         player.attributes.set_player(player)
         return player
 
@@ -436,6 +436,51 @@ class Player(Entity):
         self.send_string("<white><bold>You have died, but you have resurrected in %s" % self.room.name)
         self.send_string("<red><bold>You have lost %s experience!" % exp)
         self.room.send_room("<white><bold>%s appears out of nowhere!!" % self.name)
+
+    ####################################################################
+    def attack(self, enemy_name):
+        # check if the player can attack yet
+        print "next_attack_time:", self.next_attack_time
+        if self.next_attack_time > 0:
+            self.send_string("<red><bold>You can't attack yet!")
+            return
+        if enemy_name is None:
+            # If there are no enemies to attack, tell the player
+            if not self.room.enemies:
+                self.send_string("<red><bold>You don't see anything to attack here!")
+                return
+            e = random.choice(list(self.room.enemies))
+        else:
+            e = self.room.find_enemy(enemy_name)
+            # if we can't find the enemy, tell the player
+            if e is None:
+                self.send_string("<red><bold>You don't see that here!")
+                return
+
+        if self.weapon is None:  # fists, 1-3 damage, 1 second swing time
+            damage = random.randint(1, 3)
+            self.next_attack_time = 1
+        else:
+            damage = random.randint(self.weapon.min, self.weapon.max)
+            print "weapon speed:", self.weapon.speed
+            self.next_attack_time = self.weapon.speed
+            print "(test):", self.next_attack_time
+
+        if random.randint(0, 99) >= (self.attributes.ACCURACY - e.dodging):
+            self.room.send_room("<white>{} swings at {} but misses!".format(self.name, e.name))
+            print "(miss) next_attack_time:", self.next_attack_time
+            return
+        damage += self.attributes.STRIKE_DAMAGE
+        damage -= e.damage_absorb
+        if damage < 1:
+            damage = 1
+
+        e.add_hit_points(-damage)
+        self.room.send_room("<red>{} hits {} for {} damage!".format(self.name, e.name, damage))
+        if e.hit_points <= 0:
+            e.killed(self)
+        print "(post) next_attack_time:", self.next_attack_time
+
 
 
 ########################################################################

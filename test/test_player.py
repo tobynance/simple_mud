@@ -3,11 +3,10 @@ import os
 os.environ["SIMPLE_MUD_LOAD_PLAYERS"] = "false"
 import unittest
 from item import ItemDatabase
-from player import Player, PlayerDatabase, PlayerRank
 import player
-from player import PlayerAttributes, PlayerAttributeSet
+from player import Player, PlayerDatabase, PlayerRank, PlayerAttributes, PlayerAttributeSet
 import test_utils
-from room import room_database
+import room
 
 base = os.path.dirname(__file__)
 data_folder = os.path.join(base, "data")
@@ -17,13 +16,14 @@ data_folder = os.path.join(base, "data")
 class PlayerTest(unittest.TestCase):
     ####################################################################
     def setUp(self):
+        room.RoomDatabase.load()
         self.player = Player(1)
         self.player.name = "jerry_john"
         self.player.password = "supersecret"
         self.player.money = 1823
         self.player.experience = 17
         self.player.rank = PlayerRank.MODERATOR
-        self.player.room = room_database.by_id[3]
+        self.player.room = room.room_database.by_id[3]
         self.player.stat_points = 16
         self.player.attributes.BASE_AGILITY = 3
         self.player.attributes.BASE_MAX_HIT_POINTS = 12
@@ -42,6 +42,7 @@ class PlayerTest(unittest.TestCase):
                                            "BASE_STRENGTH": 1,
                                            "BASE_STRIKE_DAMAGE": 0},
                             "experience": 17,
+                            "hit_points": 10,
                             "inventory": [],
                             "level": 1,
                             "money": 1823,

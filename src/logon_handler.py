@@ -2,7 +2,7 @@ import logging
 import re
 from enum import Enum
 from game_handler import GameHandler
-from player import Player, player_database
+import player
 import telnet
 
 logger = logging.getLogger(__name__)
@@ -42,24 +42,24 @@ class LogonHandler(telnet.BaseStateDispatchHandler):
                 self.state = LogonState.NEW_USER
                 self.send("<bold><white>Please enter your new login name: <reset>")
             else:
-                player = player_database.find_full(username)
-                if player is None:
+                p = player.player_database.find_full(username)
+                if p is None:
                     self.num_errors += 1
                     self.send("<bold><red>Sorry, user <green>%s<red> does not exist.\r\n%s" % (username, self.login_prompt))
-                elif player.logged_in:
+                elif p.logged_in:
                     self.num_errors += 1
                     self.send("<bold><red>Sorry, user <green>%s<red> is logged in.\r\n%s" % (username, self.login_prompt))
                 else:
                     self.state = LogonState.ENTER_PASSWORD
                     self.username = username
-                    self.password = player.password
+                    self.password = p.password
                     self.send("<bold><white>Please enter your password: <reset><concealed>")
 
     ####################################################################
     def handle_new_user(self, username):
         if self.may_continue():
-            player = player_database.find_full(username)
-            if player is not None:
+            p = player.player_database.find_full(username)
+            if p is not None:
                 self.num_errors += 1
                 self.state = LogonState.NEW_CONNECTION
                 self.send("<bold><red>Sorry, the name <green>%s<red> is already used.\r\n%s" % (username, self.login_prompt))
@@ -84,10 +84,10 @@ class LogonHandler(telnet.BaseStateDispatchHandler):
             return
         else:
             self.send("<clearscreen><reset><bold><white>Thank you! You are now entering the realm...\r\n<reset>")
-            player = Player()
-            player.name = self.username
-            player.password = password
-            player_database.add_player(player)
+            p = player.Player()
+            p.name = self.username
+            p.password = password
+            player.player_database.add_player(p)
             self.enter_game(newbie=True)
 
     ####################################################################
@@ -102,21 +102,21 @@ class LogonHandler(telnet.BaseStateDispatchHandler):
 
     ####################################################################
     def enter_game(self, newbie):
-        player = player_database.find_full(self.username)
-        if player is None:
+        p = player.player_database.find_full(self.username)
+        if p is None:
             self.send("Cannot find player!")
             self.protocol.drop_connection()
             return
-        if player.logged_in:
-            player.protocol.drop_connection()
-            player.protocol.handler.hung_up()
-            player.protocol.clear_handlers()
-        player.newbie = newbie
-        player.logged_in = True
+        if p.logged_in:
+            p.protocol.drop_connection()
+            p.protocol.handler.hung_up()
+            p.protocol.clear_handlers()
+        p.newbie = newbie
+        p.logged_in = True
 
-        player.protocol = self.protocol
-        player.protocol.remove_handler()
-        player.protocol.add_handler(GameHandler(self.protocol, player))
+        p.protocol = self.protocol
+        p.protocol.remove_handler()
+        p.protocol.add_handler(GameHandler(self.protocol, p))
 
     ####################################################################
     def enter(self):

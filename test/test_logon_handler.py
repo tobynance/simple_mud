@@ -190,6 +190,7 @@ class LogonHandlerTest(unittest.TestCase):
 
         self.handler.hung_up = mock.MagicMock()
 
+        self.handler.protocol.send_data = []
         self.handler.enter_game(newbie=True)
         self.assertEqual(self.handler.protocol.drop_connection_calls, 0)
         self.assertEqual(self.handler.hung_up.call_count, 0)

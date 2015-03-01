@@ -1,25 +1,31 @@
 import unittest
 import os
-from item import item_database
+import item
+import store
+import room
 
 os.environ["SIMPLE_MUD_LOAD_PLAYERS"] = "false"
-from player import PlayerDatabase, Player, PlayerRank
+from player import Player, PlayerRank
+import player
 import game_handler
 from logon_handler import LogonHandler
-from test_utils import MockProtocol
+from test_utils import MockProtocol, welcome_message, town_square_message
 
 
 ########################################################################
 class GameHandlerTest(unittest.TestCase):
     ####################################################################
     def setUp(self):
-        game_handler.player_database = PlayerDatabase()
+        item.ItemDatabase.load(force=True)
+        store.StoreDatabase.load(force=True)
+        player.PlayerDatabase.load(path="not_real_path", force=True)
+        room.RoomDatabase.load(room_data_path="not_real_path", force=True)
         MockProtocol.set_handler_class(handler_class=LogonHandler)
 
         self.protocol = MockProtocol()
         self.player = Player(28)
         self.player.name = "jerry"
-        game_handler.player_database.add_player(self.player)
+        player.player_database.add_player(self.player)
 
         self.protocol.remove_handler()
         self.player.protocol = self.protocol
@@ -31,7 +37,7 @@ class GameHandlerTest(unittest.TestCase):
         self.other_player.name = "john"
         self.other_player.logged_in = True
         self.other_player.active = True
-        game_handler.player_database.add_player(self.other_player)
+        player.player_database.add_player(self.other_player)
 
         self.other_protocol.remove_handler()
         self.other_player.protocol = self.other_protocol
@@ -41,11 +47,11 @@ class GameHandlerTest(unittest.TestCase):
         self.other_protocol.send_data = []
         self.protocol.send_data = []
 
-        self.assertEqual(len(list(game_handler.player_database.all())), 2)
+        self.assertEqual(len(list(player.player_database.all())), 2)
 
         current_room = self.player.room
-        current_room.add_item(item_database.find(55))
-        current_room.add_item(item_database.find(33))
+        current_room.add_item(item.item_database.find(55))
+        current_room.add_item(item.item_database.find(33))
         current_room.money = 220
         self.status_line = "<clearline><carriage_return><white><bold>[<green>10<white>/10] <reset>"
         self.maxDiff = None
@@ -90,8 +96,8 @@ class GameHandlerTest(unittest.TestCase):
 
         self.assertEqual(self.other_protocol.send_data, [])
 
-        item = item_database.find(55)
-        self.player.use_armor(item)
+        i = item.item_database.find(55)
+        self.player.use_armor(i)
 
 
         self.protocol.send_data = []
@@ -121,8 +127,8 @@ class GameHandlerTest(unittest.TestCase):
 
         self.assertEqual(self.other_protocol.send_data, [])
 
-        item = item_database.find(55)
-        self.player.use_armor(item)
+        i = item.item_database.find(55)
+        self.player.use_armor(i)
         self.player.experience = 110
 
 
@@ -259,8 +265,7 @@ class GameHandlerTest(unittest.TestCase):
         self.assertEqual(self.handler.last_command, "")
         self.assertEqual(self.player.logged_in, True)
         self.assertEqual(self.player.active, True)
-        self.assertEqual(self.protocol.send_data, ["<bold><green>jerry has entered the realm.<newline>",
-                                                   self.status_line])
+        self.assertEqual(self.protocol.send_data, [town_square_message, self.status_line])
 
         self.assertEqual(self.other_protocol.send_data, ["<bold><green>jerry has entered the realm.<newline>",
                                                          self.status_line])
@@ -383,11 +388,7 @@ class GameHandlerTest(unittest.TestCase):
     ####################################################################
     def test_print_room(self):
         description = self.handler.print_room(self.player.room)
-        expected = "<newline><bold><white>Town Square<newline>" \
-                   "<magenta>You are in the town square. This is the central meeting place for the realm.<newline>" \
-                   "<green>exits: NORTH, EAST, SOUTH, WEST<newline>" \
-                   "<yellow>You see: $220, Platemail Armor of Power, Cutlass (OBSOLETE, PLEASE DROP IN TOWN SQUARE)<newline>"
-        self.assertEqual(description, expected)
+        self.assertEqual(description, town_square_message)
 
     ####################################################################
     def test_print_stats(self):

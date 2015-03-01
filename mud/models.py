@@ -1,11 +1,11 @@
 from django.db import models
 import random
-from utils import PlayerRank, ItemType, RoomType
+from utils import PlayerRank, ItemType, RoomType, clamp
 
 
 ########################################################################
 class Item(models.Model):
-    name = models.CharField(max_length=60, db_index=True)
+    name = models.CharField(max_length=60, db_index=True, unique=True)
     type = models.PositiveSmallIntegerField(choices=ItemType.choices(), default=ItemType.ARMOR)
     min = models.PositiveSmallIntegerField(default=0)
     max = models.PositiveSmallIntegerField(default=0)
@@ -38,8 +38,8 @@ class Room(models.Model):
 
 ########################################################################
 class StoreItem(models.Model):
-    room = models.ForeignKey(Room)
-    item = models.ForeignKey(Item)
+    room = models.ForeignKey(Room, on_delete=models.PROTECT)
+    item = models.ForeignKey(Item, on_delete=models.PROTECT)
 
     class Meta:
         unique_together = ("room", "item")
@@ -47,7 +47,7 @@ class StoreItem(models.Model):
 
 ########################################################################
 class EnemyTemplate(models.Model):
-    name = models.CharField(max_length=60, db_index=True)
+    name = models.CharField(max_length=60, db_index=True, unique=True)
     hit_points = models.SmallIntegerField()
     accuracy = models.SmallIntegerField(default=0)
     dodging = models.SmallIntegerField(default=0)
@@ -62,8 +62,8 @@ class EnemyTemplate(models.Model):
 
 ########################################################################
 class EnemyLoot(models.Model):
-    enemy_template = models.ForeignKey(EnemyTemplate)
-    item = models.ForeignKey(Item)
+    enemy_template = models.ForeignKey(EnemyTemplate, on_delete=models.PROTECT)
+    item = models.ForeignKey(Item, on_delete=models.PROTECT)
     percent_change = models.SmallIntegerField()
 
     class Meta:
@@ -72,7 +72,7 @@ class EnemyLoot(models.Model):
 
 ########################################################################
 class Enemy(models.Model):
-    template = models.ForeignKey(EnemyTemplate)
+    template = models.ForeignKey(EnemyTemplate, on_delete=models.PROTECT)
     hit_points = models.SmallIntegerField()
     room = models.ForeignKey(Room)
     next_attack_time = models.SmallIntegerField()
@@ -120,7 +120,7 @@ class Enemy(models.Model):
     ####################################################################
     @property
     def loot(self):
-        return self.template.loot
+        return self.template.loot_set
 
     ####################################################################
     def add_hit_points(self, hit_points):
@@ -161,18 +161,18 @@ class Enemy(models.Model):
             self.room.money += money
             self.room.send_room("<cyan>$%s drops to the ground." % money)
 
-        for item_id, chance in self.loot:
+        for item, chance in self.loot:
             if random.randint(0, 99) < chance:
-                i = item.item_database.by_id[item_id]
-                self.room.add_item(i)
-                self.room.send_room("<cyan>%s drops to the ground." % i.name)
+                self.room.add_item(item)
+                self.room.send_room("<cyan>%s drops to the ground." % item.name)
         killer.experience += self.experience
         killer.send_string("<cyan><bold>You gain %s experience." % self.experience)
-        enemy_database.destroy_enemy(self)
+        Enemy.objects.filter(id=self.id).delete()
+
 
 ########################################################################
 class Player(models.Model):
-    name = models.CharField(max_length=60, db_index=True)
+    name = models.CharField(max_length=60, db_index=True, unique=True)
     password = models.CharField(max_length=20)
     rank = models.PositiveSmallIntegerField(choices=PlayerRank.choices(), default=PlayerRank.REGULAR)
     stat_points = models.PositiveIntegerField(default=18)
@@ -183,7 +183,7 @@ class Player(models.Model):
     hit_points = models.PositiveIntegerField(default=1)
     weapon = models.ForeignKey(Item, null=True, blank=True, default=None, related_name="+")
     armor = models.ForeignKey(Item, null=True, blank=True, default=None, related_name="+")
-    room = models.ForeignKey(Room)
+    room = models.ForeignKey(Room, on_delete=models.PROTECT)
     logged_in = models.BooleanField(db_index=True, default=False)
     active = models.BooleanField(db_index=True, default=False)
     newbie = models.BooleanField(default=True)

@@ -2,7 +2,7 @@ import logging
 import re
 from enum import Enum
 from game_handler import GameHandler
-import player
+from mud.models import Player
 import telnet
 
 logger = logging.getLogger(__name__)
@@ -42,32 +42,33 @@ class LogonHandler(telnet.BaseStateDispatchHandler):
                 self.state = LogonState.NEW_USER
                 self.send("<bold><white>Please enter your new login name: <reset>")
             else:
-                p = player.player_database.find_full(username)
-                if p is None:
+                player = Player.objects.filter(name=username).first()
+                if player is None:
                     self.num_errors += 1
                     self.send("<bold><red>Sorry, user <green>%s<red> does not exist.\r\n%s" % (username, self.login_prompt))
-                elif p.logged_in:
+                elif player.logged_in:
                     self.num_errors += 1
                     self.send("<bold><red>Sorry, user <green>%s<red> is logged in.\r\n%s" % (username, self.login_prompt))
                 else:
                     self.state = LogonState.ENTER_PASSWORD
                     self.username = username
-                    self.password = p.password
+                    self.password = player.password
                     self.send("<bold><white>Please enter your password: <reset><concealed>")
 
     ####################################################################
     def handle_new_user(self, username):
         if self.may_continue():
-            p = player.player_database.find_full(username)
-            if p is not None:
-                self.num_errors += 1
-                self.state = LogonState.NEW_CONNECTION
-                self.send("<bold><red>Sorry, the name <green>%s<red> is already used.\r\n%s" % (username, self.login_prompt))
-                return
-            elif self.is_invalid_name(username):
+            if self.is_invalid_name(username):
                 self.num_errors += 1
                 self.state = LogonState.NEW_CONNECTION
                 self.send("<bold><red>Sorry, the name <green>%s<red> contains invalid characters.\r\n%s" % (username, self.login_prompt))
+                return
+
+            player, created = Player.objects.get_or_create(name=username)
+            if created is False:
+                self.num_errors += 1
+                self.state = LogonState.NEW_CONNECTION
+                self.send("<bold><red>Sorry, the name <green>%s<red> is already used.\r\n%s" % (username, self.login_prompt))
                 return
             else:
                 self.state = LogonState.ENTER_NEW_PASSWORD
@@ -84,10 +85,10 @@ class LogonHandler(telnet.BaseStateDispatchHandler):
             return
         else:
             self.send("<clearscreen><reset><bold><white>Thank you! You are now entering the realm...\r\n<reset>")
-            p = player.Player()
-            p.name = self.username
-            p.password = password
-            player.player_database.add_player(p)
+            player = Player.objects.create(
+            player.name = self.username
+            player.password = password
+            player.player_database.add_player(player)
             self.enter_game(newbie=True)
 
     ####################################################################

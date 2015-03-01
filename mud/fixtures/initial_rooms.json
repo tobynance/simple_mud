@@ -1,0 +1,898 @@
+[
+    {
+        "model": "mud.room", 
+        "pk": 1, 
+        "fields": {
+            "name": "Town Square", 
+            "type": 0, 
+            "description": "You are in the town square. This is the central meeting place for the realm.", 
+            "max_enemies": 0, 
+            "north": 2, 
+            "east": 25, 
+            "south": 4, 
+            "west": 5, 
+            "money": 0
+        }
+    }, 
+    {
+        "model": "mud.room", 
+        "pk": 2, 
+        "fields": {
+            "name": "Street", 
+            "type": 0, 
+            "description": "You are in a small street. Litter is strewn about, and you see rats crawling in and out of the sewer grating.", 
+            "max_enemies": 0, 
+            "north": 11, 
+            "east": 17, 
+            "south": 1, 
+            "west": 18, 
+            "money": 0
+        }
+    }, 
+    {
+        "model": "mud.room", 
+        "pk": 3, 
+        "fields": {
+            "name": "Training Room", 
+            "type": 1, 
+            "description": "This is the training room. An aged guru stands here, practicing his arts. He says <reset>\"If you are ready to advance, young fellow, you may <bold><yellow>train<reset> here.\"", 
+            "max_enemies": 0, 
+            "north": 25, 
+            "east": null, 
+            "south": null, 
+            "west": null, 
+            "money": 0
+        }
+    }, 
+    {
+        "model": "mud.room", 
+        "pk": 4, 
+        "fields": {
+            "name": "Bob's Weapon Shop",
+            "type": 2, 
+            "description": "Bob's Weapon Shop. You see lots of junk available to buy all over the room, and Bob grinning at you from behind a counter. He says <reset>\"Please, come in, shop around, and take a glance at my <bold><yellow>list<reset>.\"",
+            "max_enemies": 0, 
+            "north": 1, 
+            "east": null, 
+            "south": null, 
+            "west": null, 
+            "money": 0
+        }
+    }, 
+    {
+        "model": "mud.room", 
+        "pk": 5, 
+        "fields": {
+            "name": "Alley", 
+            "type": 0, 
+            "description": "You're in a dark alley, where shadows obscure your view and hide dangerous things...", 
+            "max_enemies": 1, 
+            "enemy_type": 1, 
+            "north": null, 
+            "east": 1, 
+            "south": 7, 
+            "west": 6, 
+            "money": 0
+        }
+    }, 
+    {
+        "model": "mud.room", 
+        "pk": 6, 
+        "fields": {
+            "name": "Narrow Alley", 
+            "type": 0, 
+            "description": "You're in a dark alley, where shadows obscure your view and hide dangerous things...", 
+            "max_enemies": 1, 
+            "enemy_type": 2, 
+            "north": null, 
+            "east": 5, 
+            "south": null, 
+            "west": 15, 
+            "money": 0
+        }
+    }, 
+    {
+        "model": "mud.room", 
+        "pk": 7, 
+        "fields": {
+            "name": "Alley", 
+            "type": 0, 
+            "description": "You're in a dark alley, where shadows obscure your view and hide dangerous things...", 
+            "max_enemies": 3, 
+            "enemy_type": 1, 
+            "north": 5, 
+            "east": null, 
+            "south": 8, 
+            "west": null, 
+            "money": 0
+        }
+    }, 
+    {
+        "model": "mud.room", 
+        "pk": 8, 
+        "fields": {
+            "name": "Sloping Alley", 
+            "type": 0, 
+            "description": "This sloping alley is on a large slant that leads down into a sewage trench.", 
+            "max_enemies": 1, 
+            "enemy_type": 3, 
+            "north": 7, 
+            "east": null, 
+            "south": 9, 
+            "west": null, 
+            "money": 0
+        }
+    }, 
+    {
+        "model": "mud.room", 
+        "pk": 9, 
+        "fields": {
+            "name": "Sewage Trench", 
+            "type": 0, 
+            "description": "You're in a disgusting sewage trench, with liquids containing things you don't want to know about flowing around your feet.", 
+            "max_enemies": 1, 
+            "enemy_type": 4, 
+            "north": 8, 
+            "east": 10, 
+            "south": null, 
+            "west": 51, 
+            "money": 0
+        }
+    }, 
+    {
+        "model": "mud.room", 
+        "pk": 10, 
+        "fields": {
+            "name": "Sewer", 
+            "type": 0, 
+            "description": "You're in a disgusting sewage trench, with liquids containing things you don't want to know about flowing around your feet.", 
+            "max_enemies": 1, 
+            "enemy_type": 5, 
+            "north": null, 
+            "east": 19, 
+            "south": null, 
+            "west": 9, 
+            "money": 0
+        }
+    }, 
+    {
+        "model": "mud.room", 
+        "pk": 11, 
+        "fields": {
+            "name": "Town Gates", 
+            "type": 0, 
+            "description": "You're at the town gates, which lead into the dark forest.", 
+            "max_enemies": 0, 
+            "north": 12, 
+            "east": null, 
+            "south": 2, 
+            "west": null, 
+            "money": 0
+        }
+    }, 
+    {
+        "model": "mud.room", 
+        "pk": 12, 
+        "fields": {
+            "name": "Dark Forest Entrance", 
+            "type": 0, 
+            "description": "This is the entrance of the dark forest, where all sorts of strange noises emanate. You see a gate into town to the south.", 
+            "max_enemies": 1, 
+            "enemy_type": 6, 
+            "north": 16, 
+            "east": 14, 
+            "south": 11, 
+            "west": 13, 
+            "money": 0
+        }
+    }, 
+    {
+        "model": "mud.room", 
+        "pk": 13, 
+        "fields": {
+            "name": "Dark Forest Path", 
+            "type": 0, 
+            "description": "This is a small pathway, overgrown with shrubbery and foliage, winding through the dark forest.", 
+            "max_enemies": 3, 
+            "enemy_type": 6, 
+            "north": null, 
+            "east": 12, 
+            "south": null, 
+            "west": null, 
+            "money": 0
+        }
+    }, 
+    {
+        "model": "mud.room", 
+        "pk": 14, 
+        "fields": {
+            "name": "Dark Forest Path", 
+            "type": 0, 
+            "description": "This is a small pathway, overgrown with shrubbery and foliage, winding through the dark forest.", 
+            "max_enemies": 3, 
+            "enemy_type": 6, 
+            "north": null, 
+            "east": null, 
+            "south": null, 
+            "west": 12, 
+            "money": 0
+        }
+    }, 
+    {
+        "model": "mud.room", 
+        "pk": 15, 
+        "fields": {
+            "name": "Alley Junction", 
+            "type": 0, 
+            "description": "You're at a junction in the alley; it's barely visible here, but you can make out some small cages lying on the floor.", 
+            "max_enemies": 1, 
+            "enemy_type": 7, 
+            "north": 36, 
+            "east": 6, 
+            "south": 35, 
+            "west": null, 
+            "money": 0
+        }
+    }, 
+    {
+        "model": "mud.room", 
+        "pk": 16, 
+        "fields": {
+            "name": "Dark Forest Foliage", 
+            "type": 0, 
+            "description": "You're in the heart of the forest, with thick foliage all over the place, obscuring many things.", 
+            "max_enemies": 1, 
+            "enemy_type": 8, 
+            "north": 34, 
+            "east": null, 
+            "south": 12, 
+            "west": null, 
+            "money": 0
+        }
+    }, 
+    {
+        "model": "mud.room", 
+        "pk": 17, 
+        "fields": {
+            "name": "Samuels Armorsmith", 
+            "type": 2, 
+            "description": "This is Samuels Armorsmith. You see Samuel busy working on some kind of metalwork, and when he notices you he says, <reset>\"Hello, thanks for stopping by. I've got many things in my <bold><yellow>list<reset> you may be interested in.\"", 
+            "max_enemies": 0, 
+            "north": null, 
+            "east": null, 
+            "south": null, 
+            "west": 2, 
+            "money": 0
+        }
+    }, 
+    {
+        "model": "mud.room", 
+        "pk": 18, 
+        "fields": {
+            "name": "The Insane Alchemist's Workshop", 
+            "type": 2, 
+            "description": "This is The Insane Alchemist's Workshop. Lots of beakers and test tubes litter the room, most filled with strange-looking liquids. A few of them look like they have exploded. The Mad Alchemist is busy pouring something into a beaker, but he takes the time to tell you, <reset>\"Hello hello! I'm sure I've got something you need, just view my <bold><yellow>list<reset> and tell me what you want!\"", 
+            "max_enemies": 0, 
+            "north": null, 
+            "east": 2, 
+            "south": null, 
+            "west": null, 
+            "money": 0
+        }
+    }, 
+    {
+        "model": "mud.room", 
+        "pk": 19, 
+        "fields": {
+            "name": "Deep Sewer", 
+            "type": 0, 
+            "description": "You're in a deep and very dark portion of the sewers beneath town. Strange sloshing noises reach your ears, but you can't figure out what's causing them.", 
+            "max_enemies": 2, 
+            "enemy_type": 5, 
+            "north": null, 
+            "east": 20, 
+            "south": null, 
+            "west": 10, 
+            "money": 0
+        }
+    }, 
+    {
+        "model": "mud.room", 
+        "pk": 20, 
+        "fields": {
+            "name": "Deep Sewer", 
+            "type": 0, 
+            "description": "You're in a deep and very dark portion of the sewers beneath town. Strange sloshing noises reach your ears, but you can't figure out what's causing them.", 
+            "max_enemies": 3, 
+            "enemy_type": 4, 
+            "north": 22, 
+            "east": 21, 
+            "south": null, 
+            "west": 19, 
+            "money": 0
+        }
+    }, 
+    {
+        "model": "mud.room", 
+        "pk": 21, 
+        "fields": {
+            "name": "Sewer", 
+            "type": 0, 
+            "description": "You're in dark portion of the sewers beneath town. Strange sloshing noises reach your ears, but you can't figure out what's causing them.", 
+            "max_enemies": 3, 
+            "enemy_type": 9, 
+            "north": 23, 
+            "east": null, 
+            "south": null, 
+            "west": 20, 
+            "money": 0
+        }
+    }, 
+    {
+        "model": "mud.room", 
+        "pk": 22, 
+        "fields": {
+            "name": "Sewer", 
+            "type": 0, 
+            "description": "You're in dark portion of the sewers beneath town. Strange sloshing noises reach your ears, but you can't figure out what's causing them.", 
+            "max_enemies": 2, 
+            "enemy_type": 9, 
+            "north": null, 
+            "east": 23, 
+            "south": 20, 
+            "west": null, 
+            "money": 0
+        }
+    }, 
+    {
+        "model": "mud.room", 
+        "pk": 23, 
+        "fields": {
+            "name": "Sewage Trench", 
+            "type": 0, 
+            "description": "You're in a sloping trench which leads downward into the sewers, and upwards onto an avenue in town.", 
+            "max_enemies": 1, 
+            "enemy_type": 9, 
+            "north": 24, 
+            "east": null, 
+            "south": 21, 
+            "west": 22, 
+            "money": 0
+        }
+    }, 
+    {
+        "model": "mud.room", 
+        "pk": 24, 
+        "fields": {
+            "name": "Sloping Bank", 
+            "type": 0, 
+            "description": "You're in a sloping bank which leads down towards a sewage trench. The stench from the sewers reaches your nose from all the way up here.", 
+            "max_enemies": 0, 
+            "north": 27, 
+            "east": null, 
+            "south": 23, 
+            "west": null, 
+            "money": 0
+        }
+    }, 
+    {
+        "model": "mud.room", 
+        "pk": 25, 
+        "fields": {
+            "name": "Avenue", 
+            "type": 0, 
+            "description": "You're on an avenue running through the town.", 
+            "max_enemies": 0, 
+            "north": null, 
+            "east": 26, 
+            "south": 3, 
+            "west": 1, 
+            "money": 0
+        }
+    }, 
+    {
+        "model": "mud.room", 
+        "pk": 26, 
+        "fields": {
+            "name": "Avenue", 
+            "type": 0, 
+            "description": "You're on an avenue running through the town.", 
+            "max_enemies": 1, 
+            "enemy_type": 10, 
+            "north": null, 
+            "east": 27, 
+            "south": null, 
+            "west": 25, 
+            "money": 0
+        }
+    }, 
+    {
+        "model": "mud.room", 
+        "pk": 27, 
+        "fields": {
+            "name": "Avenue Intersection", 
+            "type": 0, 
+            "description": "You're on an avenue running through the town. To the south you can see a trench running down into the sewers, and to the east you can see the beach.", 
+            "max_enemies": 1, 
+            "enemy_type": 10, 
+            "north": null, 
+            "east": 28, 
+            "south": 24, 
+            "west": 26, 
+            "money": 0
+        }
+    }, 
+    {
+        "model": "mud.room", 
+        "pk": 28, 
+        "fields": {
+            "name": "Boardwalk", 
+            "type": 0, 
+            "description": "You're on an avenue running through the town. To the south you can see a trench running down into the sewers.", 
+            "max_enemies": 1, 
+            "enemy_type": 11, 
+            "north": null, 
+            "east": 29, 
+            "south": null, 
+            "west": 27, 
+            "money": 0
+        }
+    }, 
+    {
+        "model": "mud.room", 
+        "pk": 29, 
+        "fields": {
+            "name": "Beach", 
+            "type": 0, 
+            "description": "You're on a sandy beach, and you can see the ocean to the east, ponderously throwing water onto the sand. You can see a boardwalk to the west.", 
+            "max_enemies": 1, 
+            "enemy_type": 12, 
+            "north": 31, 
+            "east": 33, 
+            "south": 30, 
+            "west": 28, 
+            "money": 0
+        }
+    }, 
+    {
+        "model": "mud.room", 
+        "pk": 30, 
+        "fields": {
+            "name": "Beach", 
+            "type": 0, 
+            "description": "You're on a sandy beach, and you can see the ocean to the east, ponderously throwing water onto the sand.", 
+            "max_enemies": 3, 
+            "enemy_type": 12, 
+            "north": 29, 
+            "east": null, 
+            "south": 52, 
+            "west": null, 
+            "money": 0
+        }
+    }, 
+    {
+        "model": "mud.room", 
+        "pk": 31, 
+        "fields": {
+            "name": "Beach", 
+            "type": 0, 
+            "description": "You're on a sandy beach, and you can see the ocean to the east, ponderously throwing water onto the sand.", 
+            "max_enemies": 2, 
+            "enemy_type": 12, 
+            "north": 32, 
+            "east": null, 
+            "south": 29, 
+            "west": null, 
+            "money": 0
+        }
+    }, 
+    {
+        "model": "mud.room", 
+        "pk": 32, 
+        "fields": {
+            "name": "Lobster Nest", 
+            "type": 0, 
+            "description": "You're on a sandy beach, and you can see the ocean to the east, ponderously throwing water onto the sand. There's a large lobster nest here as well.", 
+            "max_enemies": 8, 
+            "enemy_type": 12, 
+            "north": null, 
+            "east": null, 
+            "south": 31, 
+            "west": null, 
+            "money": 0
+        }
+    }, 
+    {
+        "model": "mud.room", 
+        "pk": 33, 
+        "fields": {
+            "name": "Ocean", 
+            "type": 0, 
+            "description": "You're in the ocean, and the water is making you cold. You can see the beach back to the west.", 
+            "max_enemies": 1, 
+            "enemy_type": 13, 
+            "north": null, 
+            "east": null, 
+            "south": null, 
+            "west": 29, 
+            "money": 0
+        }
+    }, 
+    {
+        "model": "mud.room", 
+        "pk": 34, 
+        "fields": {
+            "name": "Dark Forest Clearing", 
+            "type": 0, 
+            "description": "You're in a clearing within the heart of the forest, with thick foliage all over the place, obscuring many things.", 
+            "max_enemies": 3, 
+            "enemy_type": 8, 
+            "north": null, 
+            "east": null, 
+            "south": 16, 
+            "west": null, 
+            "money": 0
+        }
+    }, 
+    {
+        "model": "mud.room", 
+        "pk": 35, 
+        "fields": {
+            "name": "The Freak Shop", 
+            "type": 2, 
+            "description": "You're in a shop with a very strange looking man standing behind the counter. He gazes at you with one eye (you can't tell what the other one is doing) and screeches <reset>\"Got anything good to sell me, sonny? The things I'm interested are right on this <bold><yellow>list<reset> here.\"", 
+            "max_enemies": 0, 
+            "north": 15, 
+            "east": null, 
+            "south": null, 
+            "west": null, 
+            "money": 0
+        }
+    }, 
+    {
+        "model": "mud.room", 
+        "pk": 36, 
+        "fields": {
+            "name": "Side Street Intersection", 
+            "type": 0, 
+            "description": "You're on a small street running between some buildings in town.", 
+            "max_enemies": 0, 
+            "north": 38, 
+            "east": null, 
+            "south": 15, 
+            "west": 37, 
+            "money": 0
+        }
+    }, 
+    {
+        "model": "mud.room", 
+        "pk": 37, 
+        "fields": {
+            "name": "Side Street", 
+            "type": 0, 
+            "description": "You're on a small street running between some buildings in town.", 
+            "max_enemies": 1, 
+            "enemy_type": 14, 
+            "north": null, 
+            "east": 36, 
+            "south": null, 
+            "west": null, 
+            "money": 0
+        }
+    }, 
+    {
+        "model": "mud.room", 
+        "pk": 38, 
+        "fields": {
+            "name": "Side Street T-Junction", 
+            "type": 0, 
+            "description": "You're on a small street running between some buildings in town.", 
+            "max_enemies": 0, 
+            "north": null, 
+            "east": 39, 
+            "south": 36, 
+            "west": 40, 
+            "money": 0
+        }
+    }, 
+    {
+        "model": "mud.room", 
+        "pk": 39, 
+        "fields": {
+            "name": "Side Street Dead End", 
+            "type": 0, 
+            "description": "You're on a small street running between some buildings in town.", 
+            "max_enemies": 1, 
+            "enemy_type": 20, 
+            "north": null, 
+            "east": null, 
+            "south": null, 
+            "west": 38, 
+            "money": 0
+        }
+    }, 
+    {
+        "model": "mud.room", 
+        "pk": 40, 
+        "fields": {
+            "name": "Side Street", 
+            "type": 0, 
+            "description": "You're on a small street running between some buildings in town.", 
+            "max_enemies": 1, 
+            "enemy_type": 15, 
+            "north": null, 
+            "east": 38, 
+            "south": null, 
+            "west": 41, 
+            "money": 0
+        }
+    }, 
+    {
+        "model": "mud.room", 
+        "pk": 41, 
+        "fields": {
+            "name": "Side Street Curve", 
+            "type": 0, 
+            "description": "You're on a small street running between some buildings in town.", 
+            "max_enemies": 2, 
+            "enemy_type": 11, 
+            "north": null, 
+            "east": 40, 
+            "south": 42, 
+            "west": null, 
+            "money": 0
+        }
+    }, 
+    {
+        "model": "mud.room", 
+        "pk": 42, 
+        "fields": {
+            "name": "Side Street", 
+            "type": 0, 
+            "description": "You're on a small street running between some buildings in town.", 
+            "max_enemies": 4, 
+            "enemy_type": 2, 
+            "north": 41, 
+            "east": null, 
+            "south": 43, 
+            "west": null, 
+            "money": 0
+        }
+    }, 
+    {
+        "model": "mud.room", 
+        "pk": 43, 
+        "fields": {
+            "name": "Park Entrance", 
+            "type": 0, 
+            "description": "You're in the town park, and you can see foliage all over the place. You can also hear birds chirping.", 
+            "max_enemies": 0, 
+            "north": 42, 
+            "east": 44, 
+            "south": 45, 
+            "west": null, 
+            "money": 0
+        }
+    }, 
+    {
+        "model": "mud.room", 
+        "pk": 44, 
+        "fields": {
+            "name": "Parkway", 
+            "type": 0, 
+            "description": "You're in the town park, and you can see foliage all over the place. You can also hear birds chirping.", 
+            "max_enemies": 3, 
+            "enemy_type": 6, 
+            "north": null, 
+            "east": null, 
+            "south": 46, 
+            "west": 43, 
+            "money": 0
+        }
+    }, 
+    {
+        "model": "mud.room", 
+        "pk": 45, 
+        "fields": {
+            "name": "Parkway", 
+            "type": 0, 
+            "description": "You're in the town park, and you can see foliage all over the place. You can also hear birds chirping.", 
+            "max_enemies": 1, 
+            "enemy_type": 6, 
+            "north": 43, 
+            "east": 46, 
+            "south": 47, 
+            "west": null, 
+            "money": 0
+        }
+    }, 
+    {
+        "model": "mud.room", 
+        "pk": 46, 
+        "fields": {
+            "name": "Parkway", 
+            "type": 0, 
+            "description": "You're in the town park, and you can see foliage all over the place. You can also hear birds chirping.", 
+            "max_enemies": 1, 
+            "enemy_type": 16, 
+            "north": 44, 
+            "east": null, 
+            "south": 48, 
+            "west": 45, 
+            "money": 0
+        }
+    }, 
+    {
+        "model": "mud.room", 
+        "pk": 47, 
+        "fields": {
+            "name": "Parkway", 
+            "type": 0, 
+            "description": "You're in the town park, and you can see foliage all over the place. You can also hear birds chirping.", 
+            "max_enemies": 1, 
+            "enemy_type": 16, 
+            "north": 45, 
+            "east": 48, 
+            "south": null, 
+            "west": null, 
+            "money": 0
+        }
+    }, 
+    {
+        "model": "mud.room", 
+        "pk": 48, 
+        "fields": {
+            "name": "Parkway Embankment", 
+            "type": 0, 
+            "description": "You're in the town park, and you can see foliage all over the place. This is a sloped embankment that leads down into a sewage trench.", 
+            "max_enemies": 0, 
+            "north": 46, 
+            "east": 49, 
+            "south": null, 
+            "west": 47, 
+            "money": 0
+        }
+    }, 
+    {
+        "model": "mud.room", 
+        "pk": 49, 
+        "fields": {
+            "name": "Sewage Trench Incline", 
+            "type": 0, 
+            "description": "You're on an cobblestone incline that leads upward to the city part, and downward towards the town sewage trench.", 
+            "max_enemies": 0, 
+            "north": null, 
+            "east": null, 
+            "south": 50, 
+            "west": 48, 
+            "money": 0
+        }
+    }, 
+    {
+        "model": "mud.room", 
+        "pk": 50, 
+        "fields": {
+            "name": "Sewage Trench", 
+            "type": 0, 
+            "description": "You're in a sewage trench, filled with all sorts of liquid refuse, slowly flowing eastward into the town sewers.", 
+            "max_enemies": 1, 
+            "enemy_type": 9, 
+            "north": 49, 
+            "east": 51, 
+            "south": null, 
+            "west": null, 
+            "money": 0
+        }
+    }, 
+    {
+        "model": "mud.room", 
+        "pk": 51, 
+        "fields": {
+            "name": "Sewage Trench", 
+            "type": 0, 
+            "description": "You're in a sewage trench, filled with all sorts of liquid refuse, slowly flowing eastward into the town sewers.", 
+            "max_enemies": 2, 
+            "enemy_type": 9, 
+            "north": null, 
+            "east": 9, 
+            "south": null, 
+            "west": 50, 
+            "money": 0
+        }
+    }, 
+    {
+        "model": "mud.room", 
+        "pk": 52, 
+        "fields": {
+            "name": "Pier", 
+            "type": 0, 
+            "description": "You're on a long wooden pier that streches out into the ocean. Seagulls can be seen flying around above you. You can see a small shanty to the south.", 
+            "max_enemies": 1, 
+            "enemy_type": 17, 
+            "north": 30, 
+            "east": 53, 
+            "south": 56, 
+            "west": null, 
+            "money": 0
+        }
+    }, 
+    {
+        "model": "mud.room", 
+        "pk": 53, 
+        "fields": {
+            "name": "Pier", 
+            "type": 0, 
+            "description": "You're on a long wooden pier that streches out into the ocean. Seagulls can be seen flying around above you.", 
+            "max_enemies": 2, 
+            "enemy_type": 17, 
+            "north": null, 
+            "east": 54, 
+            "south": null, 
+            "west": 52, 
+            "money": 0
+        }
+    }, 
+    {
+        "model": "mud.room", 
+        "pk": 54, 
+        "fields": {
+            "name": "Pier", 
+            "type": 0, 
+            "description": "You're on a long wooden pier that streches out into the ocean. Seagulls can be seen flying around above you.", 
+            "max_enemies": 1, 
+            "enemy_type": 18, 
+            "north": null, 
+            "east": 55, 
+            "south": null, 
+            "west": 53, 
+            "money": 0
+        }
+    }, 
+    {
+        "model": "mud.room", 
+        "pk": 55, 
+        "fields": {
+            "name": "Pier", 
+            "type": 0, 
+            "description": "You're on a long wooden pier that streches out into the ocean. Seagulls can be seen flying around above you.", 
+            "max_enemies": 1, 
+            "enemy_type": 19, 
+            "north": null, 
+            "east": null, 
+            "south": null, 
+            "west": 54, 
+            "money": 0
+        }
+    }, 
+    {
+        "model": "mud.room", 
+        "pk": 56, 
+        "fields": {
+            "name": "Sea Shanty", 
+            "type": 2, 
+            "description": "You're in a little sea shanty, where an old man with a glass eye and a hook for an arm stands, gazing off at something in the ocean. He acknowledges your presense by saying <reset>\"Arrr maytee, the sea's be good this morn. I've many a thing ye may need to fight off them dern rogue shipmen on thee docks, just have a looksee at my <bold><yellow>list<reset> here.\"", 
+            "max_enemies": 0, 
+            "north": 52, 
+            "east": null, 
+            "south": null, 
+            "west": null, 
+            "money": 0
+        }
+    }, 
+    {
+        "model": "mud.room", 
+        "pk": 57, 
+        "fields": {
+            "name": "Hell", 
+            "type": 0, 
+            "description": "You're in hell. You should have turned away when you had the chance, but no, you didn't. And now you're going to die. Have fun being dead.", 
+            "max_enemies": 1, 
+            "enemy_type": 20, 
+            "north": 56, 
+            "east": null, 
+            "south": null, 
+            "west": null, 
+            "money": 0
+        }
+    }
+]

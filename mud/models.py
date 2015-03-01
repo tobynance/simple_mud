@@ -1,6 +1,7 @@
 from django.db import models
 import random
 from utils import PlayerRank, ItemType, RoomType, clamp
+from django.contrib.auth.models import User
 
 
 ########################################################################
@@ -21,6 +22,10 @@ class Item(models.Model):
     DAMAGE_ABSORB = models.PositiveSmallIntegerField(default=0)
     HP_REGEN = models.PositiveSmallIntegerField(default=0)
 
+    ####################################################################
+    def __unicode__(self):
+        return self.name
+
 
 ########################################################################
 class Room(models.Model):
@@ -32,17 +37,35 @@ class Room(models.Model):
     south = models.ForeignKey("Room", null=True, default=None, related_name="+")
     west = models.ForeignKey("Room", null=True, default=None, related_name="+")
     enemy_type = models.ForeignKey("EnemyTemplate", null=True, default=None)
+    max_enemies = models.PositiveSmallIntegerField(default=0)
     items = models.ManyToManyField(Item)
     money = models.PositiveIntegerField(default=0)
+
+    ####################################################################
+    def __unicode__(self):
+        return self.name
+
+
+########################################################################
+class Store(models.Model):
+    room = models.ForeignKey(Room, on_delete=models.PROTECT)
+
+    ####################################################################
+    def __unicode__(self):
+        return self.room.name
 
 
 ########################################################################
 class StoreItem(models.Model):
-    room = models.ForeignKey(Room, on_delete=models.PROTECT)
+    store = models.ForeignKey(Store, on_delete=models.PROTECT)
     item = models.ForeignKey(Item, on_delete=models.PROTECT)
 
     class Meta:
-        unique_together = ("room", "item")
+        unique_together = ("store", "item")
+
+    ####################################################################
+    def __unicode__(self):
+        return self.item.name
 
 
 ########################################################################
@@ -59,6 +82,10 @@ class EnemyTemplate(models.Model):
     money_max = models.SmallIntegerField(default=0)
     loot = models.ManyToManyField(Item, through="EnemyLoot")
 
+    ####################################################################
+    def __unicode__(self):
+        return self.name
+
 
 ########################################################################
 class EnemyLoot(models.Model):
@@ -69,13 +96,24 @@ class EnemyLoot(models.Model):
     class Meta:
         unique_together = ("enemy_template", "item")
 
+    ####################################################################
+    def __unicode__(self):
+        return self.item.name
+
 
 ########################################################################
 class Enemy(models.Model):
     template = models.ForeignKey(EnemyTemplate, on_delete=models.PROTECT)
     hit_points = models.SmallIntegerField()
-    # room = models.ForeignKey(Room)
+    room = models.ForeignKey(Room)
     next_attack_time = models.SmallIntegerField()
+
+    class Meta:
+        verbose_name_plural = "Enemies"
+
+    ####################################################################
+    def __unicode__(self):
+        return "(%s) %s" % (self.id, self.template.name)
 
     ####################################################################
     @property
@@ -172,9 +210,8 @@ class Enemy(models.Model):
 
 ########################################################################
 class Player(models.Model):
+    user = models.ForeignKey(User)
     name = models.CharField(max_length=60, db_index=True, unique=True)
-    password = models.CharField(max_length=20)
-    rank = models.PositiveSmallIntegerField(choices=PlayerRank.choices(), default=PlayerRank.REGULAR)
     stat_points = models.PositiveIntegerField(default=18)
     experience = models.PositiveIntegerField(default=0)
     level = models.PositiveSmallIntegerField(default=1)
@@ -183,7 +220,7 @@ class Player(models.Model):
     hit_points = models.PositiveIntegerField(default=1)
     weapon = models.ForeignKey(Item, null=True, blank=True, default=None, related_name="+")
     armor = models.ForeignKey(Item, null=True, blank=True, default=None, related_name="+")
-    #room = models.ForeignKey(Room, on_delete=models.PROTECT)
+    room = models.ForeignKey(Room, on_delete=models.PROTECT)
     logged_in = models.BooleanField(db_index=True, default=False)
     active = models.BooleanField(db_index=True, default=False)
     newbie = models.BooleanField(default=True)
@@ -196,3 +233,7 @@ class Player(models.Model):
     BASE_STRIKE_DAMAGE = models.PositiveSmallIntegerField(default=0)
     BASE_DAMAGE_ABSORB = models.PositiveSmallIntegerField(default=0)
     BASE_HP_REGEN = models.PositiveSmallIntegerField(default=0)
+
+    ####################################################################
+    def __unicode__(self):
+        return self.name

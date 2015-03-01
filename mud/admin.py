@@ -16,7 +16,27 @@ admin.site.register(mud.models.Item, ItemAdmin)
 ########################################################################
 class RoomAdmin(admin.ModelAdmin):
     search_fields = ("name",)
-    list_display = ("name", "type", "north", "east", "south", "west", "money")
+    list_display = ("name", "type", "north_name", "east_name", "south_name", "west_name", "money")
+
+    ####################################################################
+    def north_name(self, obj):
+        if obj.north:
+            return obj.north.name
+
+    ####################################################################
+    def east_name(self, obj):
+        if obj.east:
+            return obj.east.name
+
+    ####################################################################
+    def south_name(self, obj):
+        if obj.south:
+            return obj.south.name
+
+    ####################################################################
+    def west_name(self, obj):
+        if obj.west:
+            return obj.west.name
 
 admin.site.register(mud.models.Room, RoomAdmin)
 
@@ -34,3 +54,35 @@ class EnemyTemplateAdmin(admin.ModelAdmin):
             return obj.weapon.name
 
 admin.site.register(mud.models.EnemyTemplate, EnemyTemplateAdmin)
+
+
+########################################################################
+class EnemyAdmin(admin.ModelAdmin):
+    search_fields = ("template_name", "room_name")
+    list_display = ("template_name", "hit_points", "next_attack_time")
+
+    ####################################################################
+    def template_name(self, obj):
+        return obj.template.name
+
+    ####################################################################
+    def room_name(self, obj):
+        return obj.room.name
+
+admin.site.register(mud.models.Enemy, EnemyAdmin)
+
+
+########################################################################
+class StoreAdmin(admin.ModelAdmin):
+    search_fields = ["room"]
+    list_display = ["room"]
+
+    ####################################################################
+    def template_name(self, obj):
+        return obj.template.name
+
+    ####################################################################
+    def room_name(self, obj):
+        return obj.room.name
+
+admin.site.register(mud.models.Store, StoreAdmin)

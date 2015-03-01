@@ -8,22 +8,21 @@ import telnet
 logger = logging.getLogger(__name__)
 
 MAX_ERRORS = 6
-LogonState = Enum("LogonState", "NEW_CONNECTION NEW_USER ENTER_NEW_PASSWORD ENTER_PASSWORD")
+LogonState = Enum("LogonState", "NEW_CONNECTION ENTER_PASSWORD")
 
 
 ########################################################################
 class LogonHandler(telnet.BaseStateDispatchHandler):
     state_enum = LogonState
     initial_state = LogonState.NEW_CONNECTION
-    login_prompt = '<white>Please enter your name, or "new" if you are a new user: <reset>'
+    login_prompt = '<white>Please enter your name: <reset>'
 
     ####################################################################
     def __init__(self, protocol):
         super(LogonHandler, self).__init__(protocol)
         self.state = self.initial_state
         self.num_errors = 0
-        self.username = None
-        self.password = None
+        self.player_id = None
 
     ####################################################################
     def may_continue(self):
@@ -38,62 +37,22 @@ class LogonHandler(telnet.BaseStateDispatchHandler):
     ####################################################################
     def handle_new_connection(self, username):
         if self.may_continue():
-            if username == "new":
-                self.state = LogonState.NEW_USER
-                self.send("<bold><white>Please enter your new login name: <reset>")
-            else:
-                player = Player.objects.filter(name=username).first()
-                if player is None:
-                    self.num_errors += 1
-                    self.send("<bold><red>Sorry, user <green>%s<red> does not exist.\r\n%s" % (username, self.login_prompt))
-                elif player.logged_in:
-                    self.num_errors += 1
-                    self.send("<bold><red>Sorry, user <green>%s<red> is logged in.\r\n%s" % (username, self.login_prompt))
-                else:
-                    self.state = LogonState.ENTER_PASSWORD
-                    self.username = username
-                    self.password = player.password
-                    self.send("<bold><white>Please enter your password: <reset><concealed>")
-
-    ####################################################################
-    def handle_new_user(self, username):
-        if self.may_continue():
-            if self.is_invalid_name(username):
+            player = Player.objects.filter(user__username=username).first()
+            if player is None:
                 self.num_errors += 1
-                self.state = LogonState.NEW_CONNECTION
-                self.send("<bold><red>Sorry, the name <green>%s<red> contains invalid characters.\r\n%s" % (username, self.login_prompt))
-                return
-
-            player, created = Player.objects.get_or_create(name=username)
-            if created is False:
+                self.send("<bold><red>Sorry, user <green>%s<red> does not exist.\r\n%s" % (username, self.login_prompt))
+            elif player.logged_in:
                 self.num_errors += 1
-                self.state = LogonState.NEW_CONNECTION
-                self.send("<bold><red>Sorry, the name <green>%s<red> is already used.\r\n%s" % (username, self.login_prompt))
-                return
+                self.send("<bold><red>Sorry, user <green>%s<red> is logged in.\r\n%s" % (username, self.login_prompt))
             else:
-                self.state = LogonState.ENTER_NEW_PASSWORD
-                self.username = username
-                self.send("<reset><bold><white>Please enter your new password: <reset><concealed>")
-                return
-
-    ####################################################################
-    def handle_enter_new_password(self, password):
-        if len(password) < 3:
-            self.num_errors += 1
-            self.send("<reset><bold><red>Password must be at least 3 characters in length\r\n")
-            self.send("<reset><bold><white>Please enter your new password: <reset><concealed>")
-            return
-        else:
-            self.send("<clearscreen><reset><bold><white>Thank you! You are now entering the realm...\r\n<reset>")
-            player = Player.objects.create(
-            player.name = self.username
-            player.password = password
-            player.player_database.add_player(player)
-            self.enter_game(newbie=True)
+                self.state = LogonState.ENTER_PASSWORD
+                self.player_id = player.id
+                self.send("<bold><white>Please enter your password: <reset><concealed>")
 
     ####################################################################
     def handle_enter_password(self, password):
-        if password == self.password:
+        player = Player.objects.get(id=self.player_id)
+        if password == player.user.password:
             self.send("<clearscreen><reset><bold><white>Thank you! You are now entering the realm...\r\n<reset>")
             self.enter_game(newbie=False)
         else:
@@ -103,26 +62,26 @@ class LogonHandler(telnet.BaseStateDispatchHandler):
 
     ####################################################################
     def enter_game(self, newbie):
-        p = player.player_database.find_full(self.username)
-        if p is None:
+        player = Player.objects.filter(id=self.player_id).first()
+        if player is None:
             self.send("Cannot find player!")
             self.protocol.drop_connection()
             return
-        if p.logged_in:
-            p.protocol.drop_connection()
-            p.protocol.handler.hung_up()
-            p.protocol.clear_handlers()
-        p.newbie = newbie
-        p.logged_in = True
+        if player.logged_in:
+            player.protocol.drop_connection()
+            player.protocol.handler.hung_up()
+            player.protocol.clear_handlers()
+        player.newbie = newbie
+        player.logged_in = True
 
-        p.protocol = self.protocol
-        p.protocol.remove_handler()
-        p.protocol.add_handler(GameHandler(self.protocol, p))
+        player.protocol = self.protocol
+        player.protocol.remove_handler()
+        player.protocol.add_handler(GameHandler(self.protocol, player))
 
     ####################################################################
     def enter(self):
         super(LogonHandler, self).enter()
-        self.send('<bold><green>Welcome to my game world! \r\n<white>Please enter your name, or "new" if you are a new user: <reset>')
+        self.send('<bold><green>Welcome to my game world! \r\n<white>Please enter your name: <reset>')
 
     ####################################################################
     def is_invalid_name(self, name):

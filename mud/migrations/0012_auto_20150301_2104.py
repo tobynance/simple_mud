@@ -3,7 +3,7 @@ from __future__ import unicode_literals
 from django.core.management import call_command
 from django.db import models, migrations
 
-fixture = "initial_enemy_templates.json"
+fixture = "initial_stores.json"
 
 
 ########################################################################
@@ -14,14 +14,15 @@ def load_fixture(apps, schema_editor):
 ########################################################################
 def unload_fixture(apps, schema_editor):
     "Brutally deleting all entries for this model..."
-    MyModel = apps.get_model("mud", "EnemyTemplate")
+    MyModel = apps.get_model("mud", "Store")
     MyModel.objects.all().delete()
 
 
+########################################################################
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('mud', '0006_auto_20150301_1907'),
+        ('mud', '0011_auto_20150301_2103'),
     ]
 
     operations = [

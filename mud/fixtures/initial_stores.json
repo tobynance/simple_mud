@@ -1,0 +1,349 @@
+[
+    {
+        "model": "mud.store",
+        "pk": 1,
+        "fields": {
+            "room": 4
+        }
+    },
+    {
+        "model": "mud.store",
+        "pk": 2,
+        "fields": {
+            "room": 17
+        }
+    },
+    {
+        "model": "mud.store",
+        "pk": 3,
+        "fields": {
+            "room": 18
+        }
+    },
+    {
+        "model": "mud.store",
+        "pk": 4,
+        "fields": {
+            "room": 35
+        }
+    },
+    {
+        "model": "mud.store",
+        "pk": 5,
+        "fields": {
+            "room": 56
+        }
+    },
+    {
+        "model": "mud.storeitem",
+        "pk": 1,
+        "fields": {
+            "store": 1,
+            "item": 40
+        }
+    },
+    {
+        "model": "mud.storeitem",
+        "pk": 2,
+        "fields": {
+            "store": 1,
+            "item": 41
+        }
+    },
+    {
+        "model": "mud.storeitem",
+        "pk": 3,
+        "fields": {
+            "store": 1,
+            "item": 42
+        }
+    },
+    {
+        "model": "mud.storeitem",
+        "pk": 4,
+        "fields": {
+            "store": 1,
+            "item": 43
+        }
+    },
+    {
+        "model": "mud.storeitem",
+        "pk": 5,
+        "fields": {
+            "store": 1,
+            "item": 44
+        }
+    },
+    {
+        "model": "mud.storeitem",
+        "pk": 6,
+        "fields": {
+            "store": 1,
+            "item": 58
+        }
+    },
+    {
+        "model": "mud.storeitem",
+        "pk": 7,
+        "fields": {
+            "store": 1,
+            "item": 59
+        }
+    },
+    {
+        "model": "mud.storeitem",
+        "pk": 8,
+        "fields": {
+            "store": 1,
+            "item": 60
+        }
+    },
+    {
+        "model": "mud.storeitem",
+        "pk": 9,
+        "fields": {
+            "store": 1,
+            "item": 61
+        }
+    },
+    {
+        "model": "mud.storeitem",
+        "pk": 10,
+        "fields": {
+            "store": 1,
+            "item": 62
+        }
+    },
+    {
+        "model": "mud.storeitem",
+        "pk": 11,
+        "fields": {
+            "store": 1,
+            "item": 63
+        }
+    },
+    {
+        "model": "mud.storeitem",
+        "pk": 12,
+        "fields": {
+            "store": 1,
+            "item": 64
+        }
+    },
+    {
+        "model": "mud.storeitem",
+        "pk": 13,
+        "fields": {
+            "store": 1,
+            "item": 65
+        }
+    },
+    {
+        "model": "mud.storeitem",
+        "pk": 14,
+        "fields": {
+            "store": 1,
+            "item": 66
+        }
+    },
+    {
+        "model": "mud.storeitem",
+        "pk": 15,
+        "fields": {
+            "store": 1,
+            "item": 67
+        }
+    },
+    {
+        "model": "mud.storeitem",
+        "pk": 16,
+        "fields": {
+            "store": 1,
+            "item": 68
+        }
+    },
+    {
+        "model": "mud.storeitem",
+        "pk": 17,
+        "fields": {
+            "store": 2,
+            "item": 57
+        }
+    },
+    {
+        "model": "mud.storeitem",
+        "pk": 18,
+        "fields": {
+            "store": 2,
+            "item": 45
+        }
+    },
+    {
+        "model": "mud.storeitem",
+        "pk": 19,
+        "fields": {
+            "store": 2,
+            "item": 46
+        }
+    },
+    {
+        "model": "mud.storeitem",
+        "pk": 20,
+        "fields": {
+            "store": 2,
+            "item": 47
+        }
+    },
+    {
+        "model": "mud.storeitem",
+        "pk": 21,
+        "fields": {
+            "store": 2,
+            "item": 48
+        }
+    },
+    {
+        "model": "mud.storeitem",
+        "pk": 22,
+        "fields": {
+            "store": 2,
+            "item": 49
+        }
+    },
+    {
+        "model": "mud.storeitem",
+        "pk": 23,
+        "fields": {
+            "store": 2,
+            "item": 50
+        }
+    },
+    {
+        "model": "mud.storeitem",
+        "pk": 24,
+        "fields": {
+            "store": 2,
+            "item": 51
+        }
+    },
+    {
+        "model": "mud.storeitem",
+        "pk": 25,
+        "fields": {
+            "store": 2,
+            "item": 52
+        }
+    },
+    {
+        "model": "mud.storeitem",
+        "pk": 26,
+        "fields": {
+            "store": 2,
+            "item": 53
+        }
+    },
+    {
+        "model": "mud.storeitem",
+        "pk": 27,
+        "fields": {
+            "store": 2,
+            "item": 54
+        }
+    },
+    {
+        "model": "mud.storeitem",
+        "pk": 28,
+        "fields": {
+            "store": 2,
+            "item": 55
+        }
+    },
+    {
+        "model": "mud.storeitem",
+        "pk": 28,
+        "fields": {
+            "store": 2,
+            "item": 56
+        }
+    },
+    {
+        "model": "mud.storeitem",
+        "pk": 29,
+        "fields": {
+            "store": 3,
+            "item": 35
+        }
+    },
+    {
+        "model": "mud.storeitem",
+        "pk": 30,
+        "fields": {
+            "store": 3,
+            "item": 36
+        }
+    },
+    {
+        "model": "mud.storeitem",
+        "pk": 31,
+        "fields": {
+            "store": 3,
+            "item": 37
+        }
+    },
+    {
+        "model": "mud.storeitem",
+        "pk": 32,
+        "fields": {
+            "store": 3,
+            "item": 38
+        }
+    },
+    {
+        "model": "mud.storeitem",
+        "pk": 33,
+        "fields": {
+            "store": 3,
+            "item": 39
+        }
+    },
+    {
+        "model": "mud.storeitem",
+        "pk": 34,
+        "fields": {
+            "store": 4,
+            "item": 1
+        }
+    },
+    {
+        "model": "mud.storeitem",
+        "pk": 35,
+        "fields": {
+            "store": 5,
+            "item": 69
+        }
+    },
+    {
+        "model": "mud.storeitem",
+        "pk": 36,
+        "fields": {
+            "store": 5,
+            "item": 70
+        }
+    },
+    {
+        "model": "mud.storeitem",
+        "pk": 37,
+        "fields": {
+            "store": 5,
+            "item": 71
+        }
+    },
+    {
+        "model": "mud.storeitem",
+        "pk": 38,
+        "fields": {
+            "store": 5,
+            "item": 72
+        }
+    }
+]

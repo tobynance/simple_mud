@@ -6,6 +6,7 @@ from entity import Entity
 from entity_database import EntityDatabase
 import room
 import item
+import game_handler
 from utils import clamp
 
 logger = logging.getLogger(__name__)
@@ -176,6 +177,8 @@ class Enemy(Entity):
 
 ########################################################################
 class EnemyDatabase(EntityDatabase):
+    next_id = 1
+
     ####################################################################
     def __init__(self):
         super(EnemyDatabase, self).__init__()
@@ -220,12 +223,20 @@ class EnemyDatabase(EntityDatabase):
 
     ####################################################################
     def get_next_id(self):
-        return len(self.by_id) + 1
+        next = EnemyDatabase.next_id
+        EnemyDatabase.next_id += 1
+        return next
 
     ####################################################################
     def create_enemy(self, template_id, starting_room):
         e = Enemy()
+        ### TODO: actually save the next id to the DB
         e.id = self.get_next_id()
+        while e.id in self.by_id:
+            message = "Re-using already used enemy id %s" % e.id
+            logger.error(message)
+            game_handler.GameHandler.announce(message)
+            e.id = self.get_next_id()
         self.by_id[e.id] = e
         e.template = enemy_template_database.by_id[template_id]
         e.name = e.template.name

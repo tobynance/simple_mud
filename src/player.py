@@ -10,6 +10,7 @@ from entity import Entity
 from entity_database import EntityDatabase
 import item
 import room
+import enemy
 from utils import clamp, double_find_by_name
 
 base = os.path.dirname(__file__)
@@ -422,6 +423,7 @@ class Player(Entity):
         if self.inventory:
             some_item = random.choice(self.inventory)
             self.drop_item(some_item)
+            self.room.add_item(some_item)
             self.room.send_room("<cyan>{} drops to the ground.".format(some_item.name))
 
         exp = self.experience // 10
@@ -456,6 +458,12 @@ class Player(Entity):
             if e is None:
                 self.send_string("<red><bold>You don't see that here!")
                 return
+
+        if e.id not in enemy.enemy_database.by_id:
+            message = "Cannot find enemy %s(%s) of template %s in room %s(%s)" % (e.name, e.id, e.template.id, self.room.name, self.room.id)
+            logger.error(message)
+            self.send_string("<red><bold>" + message)
+            return
 
         if self.weapon is None:  # fists, 1-3 damage, 1 second swing time
             damage = random.randint(1, 3)

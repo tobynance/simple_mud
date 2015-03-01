@@ -25,6 +25,7 @@ HELP = "<white><bold>" + \
        " quit                         - Allows you to leave the realm.<newline>" + \
        " remove <'weapon'/'armor'>    - Removes your weapon or armor<newline>" + \
        " stats                        - Shows all of your statistics<newline>" + \
+       " editstats                    - Edit your statistics<newline>" + \
        " train                        - Go to train using StatPoints<newline>" + \
        " time                         - Shows the current system time.<newline>" + \
        " use <item>                   - Use an item in your inventory<newline>" + \
@@ -135,6 +136,7 @@ class GameHandler(telnet.BaseCommandDispatchHandler):
     def handle_quit(self, data, first_word, rest):
         self.protocol.drop_connection()
         player.player_database.logout(self.player.id)
+        self.player.room.remove_player(self.player)
         self.logout_message("%s has left the realm." % self.player.name)
 
     ####################################################################
@@ -231,6 +233,8 @@ class GameHandler(telnet.BaseCommandDispatchHandler):
             return
 
         room.room_database.save()
+        player.player_database.save()
+        enemy.enemy_database.save()
         item.item_database = item.ItemDatabase.load(force=True)
         room.room_database = room.RoomDatabase.load(force=True)
         store.store_database = store.StoreDatabase.load(force=True)
@@ -600,8 +604,7 @@ class GameHandler(telnet.BaseCommandDispatchHandler):
     # Map Functions Added in Chapter 9                               ###
     ####################################################################
     ####################################################################
-    @staticmethod
-    def print_room(current_room):
+    def print_room(self, current_room):
         description = ["<newline><bold><white>{room.name}<newline>",
                        "<reset><magenta>{room.description}<newline>",
                        "<reset><green>exits: "]
@@ -617,9 +620,11 @@ class GameHandler(telnet.BaseCommandDispatchHandler):
             description.append("<yellow>You see: ")
             description.append(", ".join(items))
             description.append("<newline>")
-        if current_room.players:
+
+        player_names = [p.name for p in current_room.players if p.active and p != self.player]
+        if player_names:
             description.append("<white>People: ")
-            description.append(", ".join([p.name for p in current_room.players]))
+            description.append(", ".join(player_names))
             description.append("<newline>")
         if current_room.enemies:
             description.append("<cyan>Enemies: ")
@@ -651,6 +656,21 @@ class GameHandler(telnet.BaseCommandDispatchHandler):
 
     ####################################################################
     def get_item(self, item_name):
+        if not item_name and self.player.room.items:
+            i = random.choice(self.player.room.items)
+            if not self.player.pick_up_item(i):
+                self.player.send_string("<red><bold>You can't carry that much!")
+                return
+            else:
+                self.player.room.remove_item(i)
+                self.send_room("<cyan><bold>{} picks up {}.".format(self.player.name, i.name))
+                return
+        if not item_name and self.player.room.money:
+            amount = self.player.room.money
+            self.player.room.money -= amount
+            self.player.money += amount
+            self.send_room("<cyan><bold>{p.name} picks up ${amount}".format(p=self.player, amount=amount))
+            return
         if item_name.startswith("$"):
             amount = item_name[1:]
             if amount.isdigit():

@@ -114,3 +114,45 @@ def convert_item(initial_item_data):
                        "DAMAGE_ABSORB", "HP_REGEN"]:
         fields[field_name] = initial_item_data[field_name]
     return output_data
+
+
+########################################################################
+def convert_enemy_template(initial_template_data):
+    output_data = OrderedDict()
+    output_data["model"] = "mud.enemytemplate"
+    output_data["pk"] = initial_template_data["id"]
+    output_data["fields"] = OrderedDict()
+    fields = output_data["fields"]
+    for field_name in ["name", "hit_points", "accuracy", "dodging",
+                       "strike_damage", "damage_absorb", "experience",
+                       "weapon", "money_min", "money_max"]:
+        fields[field_name] = initial_template_data[field_name]
+    return output_data
+
+
+########################################################################
+def convert_enemy_loot(initial_template_data, current_count, output_list):
+    for item_id, chance in initial_template_data.get("loot", []):
+        output_data = OrderedDict()
+        output_data["model"] = "mud.enemyloot"
+        current_count += 1
+        output_data["pk"] = current_count
+        output_data["fields"] = OrderedDict()
+        fields = output_data["fields"]
+        fields["enemy_template"] = initial_template_data["id"]
+        fields["item"] = item_id
+        fields["percent_chance"] = chance
+        output_list.append(output_data)
+    return current_count
+
+#
+# import json
+# from collections import OrderedDict
+# initial_data = json.load(open("enemy_templates.json"))
+# output_list_data = []
+# for et in initial_data:
+#     output_list_data.append(convert_enemy_template(et))
+#
+# current_count = 0
+# for et in initial_data:
+#     current_count = convert_enemy_loot(et, current_count, output_list_data)

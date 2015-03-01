@@ -19,3 +19,18 @@ class RoomAdmin(admin.ModelAdmin):
     list_display = ("name", "type", "north", "east", "south", "west", "money")
 
 admin.site.register(mud.models.Room, RoomAdmin)
+
+
+########################################################################
+class EnemyTemplateAdmin(admin.ModelAdmin):
+    search_fields = ("name",)
+    list_display = ("name", "hit_points", "accuracy", "dodging",
+                    "strike_damage", "damage_absorb", "experience",
+                    "weapon_name", "money_min", "money_max")
+
+    ####################################################################
+    def weapon_name(self, obj):
+        if obj.weapon:
+            return obj.weapon.name
+
+admin.site.register(mud.models.EnemyTemplate, EnemyTemplateAdmin)

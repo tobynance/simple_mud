@@ -1,0 +1,511 @@
+[
+    {
+        "model": "mud.enemytemplate", 
+        "pk": 1, 
+        "fields": {
+            "name": "Rabid Monkey", 
+            "hit_points": 6, 
+            "accuracy": 40, 
+            "dodging": -30, 
+            "strike_damage": 0, 
+            "damage_absorb": 0, 
+            "experience": 4, 
+            "weapon": 40, 
+            "money_min": 0, 
+            "money_max": 2
+        }
+    }, 
+    {
+        "model": "mud.enemytemplate", 
+        "pk": 2, 
+        "fields": {
+            "name": "Thug", 
+            "hit_points": 15, 
+            "accuracy": 70, 
+            "dodging": -10, 
+            "strike_damage": 0, 
+            "damage_absorb": 0, 
+            "experience": 10, 
+            "weapon": 41, 
+            "money_min": 0, 
+            "money_max": 4
+        }
+    }, 
+    {
+        "model": "mud.enemytemplate", 
+        "pk": 3, 
+        "fields": {
+            "name": "Gangmember", 
+            "hit_points": 15, 
+            "accuracy": 80, 
+            "dodging": -20, 
+            "strike_damage": 0, 
+            "damage_absorb": 0, 
+            "experience": 13, 
+            "weapon": 42, 
+            "money_min": 0, 
+            "money_max": 5
+        }
+    }, 
+    {
+        "model": "mud.enemytemplate", 
+        "pk": 4, 
+        "fields": {
+            "name": "Tentacle Monster", 
+            "hit_points": 30, 
+            "accuracy": 100, 
+            "dodging": -10, 
+            "strike_damage": 4, 
+            "damage_absorb": 1, 
+            "experience": 20, 
+            "weapon": 7, 
+            "money_min": 0, 
+            "money_max": 0
+        }
+    }, 
+    {
+        "model": "mud.enemytemplate", 
+        "pk": 5, 
+        "fields": {
+            "name": "Abomination", 
+            "hit_points": 50, 
+            "accuracy": 110, 
+            "dodging": 10, 
+            "strike_damage": 6, 
+            "damage_absorb": 2, 
+            "experience": 50, 
+            "weapon": 7, 
+            "money_min": 0, 
+            "money_max": 0
+        }
+    }, 
+    {
+        "model": "mud.enemytemplate", 
+        "pk": 6, 
+        "fields": {
+            "name": "Evil Squirrel", 
+            "hit_points": 4, 
+            "accuracy": 70, 
+            "dodging": 10, 
+            "strike_damage": -2, 
+            "damage_absorb": 0, 
+            "experience": 3, 
+            "weapon": null,
+            "money_min": 0, 
+            "money_max": 0
+        }
+    }, 
+    {
+        "model": "mud.enemytemplate", 
+        "pk": 7, 
+        "fields": {
+            "name": "Monkey Trainer", 
+            "hit_points": 100, 
+            "accuracy": 100, 
+            "dodging": 15, 
+            "strike_damage": 5, 
+            "damage_absorb": 2, 
+            "experience": 70, 
+            "weapon": 59, 
+            "money_min": 0, 
+            "money_max": 10
+        }
+    }, 
+    {
+        "model": "mud.enemytemplate", 
+        "pk": 8, 
+        "fields": {
+            "name": "Bandit", 
+            "hit_points": 30, 
+            "accuracy": 70, 
+            "dodging": 30, 
+            "strike_damage": 0, 
+            "damage_absorb": 1, 
+            "experience": 30, 
+            "weapon": 44, 
+            "money_min": 2, 
+            "money_max": 15
+        }
+    }, 
+    {
+        "model": "mud.enemytemplate", 
+        "pk": 9, 
+        "fields": {
+            "name": "Mutant", 
+            "hit_points": 20, 
+            "accuracy": 90, 
+            "dodging": 10, 
+            "strike_damage": 2, 
+            "damage_absorb": 0, 
+            "experience": 15, 
+            "weapon": 28, 
+            "money_min": 0, 
+            "money_max": 1
+        }
+    }, 
+    {
+        "model": "mud.enemytemplate", 
+        "pk": 10, 
+        "fields": {
+            "name": "Vagrant", 
+            "hit_points": 10, 
+            "accuracy": 80, 
+            "dodging": 0, 
+            "strike_damage": 1, 
+            "damage_absorb": 0, 
+            "experience": 9, 
+            "weapon": 40, 
+            "money_min": 0, 
+            "money_max": 1
+        }
+    }, 
+    {
+        "model": "mud.enemytemplate", 
+        "pk": 11, 
+        "fields": {
+            "name": "Thief", 
+            "hit_points": 15, 
+            "accuracy": 110, 
+            "dodging": 10, 
+            "strike_damage": 1, 
+            "damage_absorb": 0, 
+            "experience": 14, 
+            "weapon": 42, 
+            "money_min": 3, 
+            "money_max": 15
+        }
+    }, 
+    {
+        "model": "mud.enemytemplate", 
+        "pk": 12, 
+        "fields": {
+            "name": "Rock Lobster", 
+            "hit_points": 10, 
+            "accuracy": 90, 
+            "dodging": 10, 
+            "strike_damage": 2, 
+            "damage_absorb": 0, 
+            "experience": 8, 
+            "weapon": 26, 
+            "money_min": 0, 
+            "money_max": 0
+        }
+    }, 
+    {
+        "model": "mud.enemytemplate", 
+        "pk": 13, 
+        "fields": {
+            "name": "Bikini Whale", 
+            "hit_points": 175, 
+            "accuracy": 160, 
+            "dodging": -20, 
+            "strike_damage": 0, 
+            "damage_absorb": 5, 
+            "experience": 150, 
+            "weapon": 27, 
+            "money_min": 0, 
+            "money_max": 0
+        }
+    }, 
+    {
+        "model": "mud.enemytemplate", 
+        "pk": 14, 
+        "fields": {
+            "name": "Gang Leader", 
+            "hit_points": 120, 
+            "accuracy": 180, 
+            "dodging": 30, 
+            "strike_damage": 4, 
+            "damage_absorb": 2, 
+            "experience": 110, 
+            "weapon": 63, 
+            "money_min": 0, 
+            "money_max": 20
+        }
+    }, 
+    {
+        "model": "mud.enemytemplate", 
+        "pk": 15, 
+        "fields": {
+            "name": "Ruffian", 
+            "hit_points": 100, 
+            "accuracy": 140, 
+            "dodging": 40, 
+            "strike_damage": 2, 
+            "damage_absorb": 3, 
+            "experience": 80, 
+            "weapon": 43, 
+            "money_min": 0, 
+            "money_max": 10
+        }
+    }, 
+    {
+        "model": "mud.enemytemplate", 
+        "pk": 16, 
+        "fields": {
+            "name": "Robber", 
+            "hit_points": 50, 
+            "accuracy": 140, 
+            "dodging": 40, 
+            "strike_damage": 2, 
+            "damage_absorb": 3, 
+            "experience": 35, 
+            "weapon": 42, 
+            "money_min": 5, 
+            "money_max": 15
+        }
+    }, 
+    {
+        "model": "mud.enemytemplate", 
+        "pk": 17, 
+        "fields": {
+            "name": "Corsair", 
+            "hit_points": 50, 
+            "accuracy": 180, 
+            "dodging": 10, 
+            "strike_damage": 5, 
+            "damage_absorb": 2, 
+            "experience": 65, 
+            "weapon": 32, 
+            "money_min": 0, 
+            "money_max": 20
+        }
+    }, 
+    {
+        "model": "mud.enemytemplate", 
+        "pk": 18, 
+        "fields": {
+            "name": "Pirate", 
+            "hit_points": 100, 
+            "accuracy": 120, 
+            "dodging": 0, 
+            "strike_damage": 0, 
+            "damage_absorb": 8, 
+            "experience": 95, 
+            "weapon": 33, 
+            "money_min": 10, 
+            "money_max": 40
+        }
+    }, 
+    {
+        "model": "mud.enemytemplate", 
+        "pk": 19, 
+        "fields": {
+            "name": "Captain Jack", 
+            "hit_points": 200, 
+            "accuracy": 200, 
+            "dodging": 50, 
+            "strike_damage": 10, 
+            "damage_absorb": 10, 
+            "experience": 200, 
+            "weapon": 34, 
+            "money_min": 0, 
+            "money_max": 200
+        }
+    }, 
+    {
+        "model": "mud.enemytemplate", 
+        "pk": 20, 
+        "fields": {
+            "name": "Backstreet Boy", 
+            "hit_points": 150, 
+            "accuracy": 125, 
+            "dodging": 100, 
+            "strike_damage": 2, 
+            "damage_absorb": 3, 
+            "experience": 150, 
+            "weapon": 58, 
+            "money_min": 0, 
+            "money_max": 40
+        }
+    }, 
+    {
+        "model": "mud.enemyloot", 
+        "pk": 1, 
+        "fields": {
+            "enemy_template": 1, 
+            "item": 40, 
+            "percent_chance": 3
+        }
+    }, 
+    {
+        "model": "mud.enemyloot", 
+        "pk": 2, 
+        "fields": {
+            "enemy_template": 1, 
+            "item": 35, 
+            "percent_chance": 2
+        }
+    }, 
+    {
+        "model": "mud.enemyloot", 
+        "pk": 3, 
+        "fields": {
+            "enemy_template": 2, 
+            "item": 41, 
+            "percent_chance": 1
+        }
+    }, 
+    {
+        "model": "mud.enemyloot", 
+        "pk": 4, 
+        "fields": {
+            "enemy_template": 2, 
+            "item": 35, 
+            "percent_chance": 2
+        }
+    }, 
+    {
+        "model": "mud.enemyloot", 
+        "pk": 5, 
+        "fields": {
+            "enemy_template": 3, 
+            "item": 42, 
+            "percent_chance": 1
+        }
+    }, 
+    {
+        "model": "mud.enemyloot", 
+        "pk": 6, 
+        "fields": {
+            "enemy_template": 3, 
+            "item": 57, 
+            "percent_chance": 2
+        }
+    }, 
+    {
+        "model": "mud.enemyloot", 
+        "pk": 7, 
+        "fields": {
+            "enemy_template": 7, 
+            "item": 59, 
+            "percent_chance": 1
+        }
+    }, 
+    {
+        "model": "mud.enemyloot", 
+        "pk": 8, 
+        "fields": {
+            "enemy_template": 7, 
+            "item": 57, 
+            "percent_chance": 1
+        }
+    }, 
+    {
+        "model": "mud.enemyloot", 
+        "pk": 9, 
+        "fields": {
+            "enemy_template": 8, 
+            "item": 44, 
+            "percent_chance": 1
+        }
+    }, 
+    {
+        "model": "mud.enemyloot", 
+        "pk": 10, 
+        "fields": {
+            "enemy_template": 10, 
+            "item": 40, 
+            "percent_chance": 1
+        }
+    }, 
+    {
+        "model": "mud.enemyloot", 
+        "pk": 11, 
+        "fields": {
+            "enemy_template": 11, 
+            "item": 42, 
+            "percent_chance": 1
+        }
+    }, 
+    {
+        "model": "mud.enemyloot", 
+        "pk": 12, 
+        "fields": {
+            "enemy_template": 11, 
+            "item": 41, 
+            "percent_chance": 1
+        }
+    }, 
+    {
+        "model": "mud.enemyloot", 
+        "pk": 13, 
+        "fields": {
+            "enemy_template": 14, 
+            "item": 63, 
+            "percent_chance": 1
+        }
+    }, 
+    {
+        "model": "mud.enemyloot", 
+        "pk": 14, 
+        "fields": {
+            "enemy_template": 15, 
+            "item": 43, 
+            "percent_chance": 1
+        }
+    }, 
+    {
+        "model": "mud.enemyloot", 
+        "pk": 15, 
+        "fields": {
+            "enemy_template": 15, 
+            "item": 35, 
+            "percent_chance": 1
+        }
+    }, 
+    {
+        "model": "mud.enemyloot", 
+        "pk": 16, 
+        "fields": {
+            "enemy_template": 16, 
+            "item": 42, 
+            "percent_chance": 2
+        }
+    }, 
+    {
+        "model": "mud.enemyloot", 
+        "pk": 17, 
+        "fields": {
+            "enemy_template": 16, 
+            "item": 57, 
+            "percent_chance": 5
+        }
+    }, 
+    {
+        "model": "mud.enemyloot", 
+        "pk": 18, 
+        "fields": {
+            "enemy_template": 17, 
+            "item": 69, 
+            "percent_chance": 1
+        }
+    }, 
+    {
+        "model": "mud.enemyloot", 
+        "pk": 19, 
+        "fields": {
+            "enemy_template": 18, 
+            "item": 70, 
+            "percent_chance": 1
+        }
+    }, 
+    {
+        "model": "mud.enemyloot", 
+        "pk": 20, 
+        "fields": {
+            "enemy_template": 19, 
+            "item": 71, 
+            "percent_chance": 1
+        }
+    }, 
+    {
+        "model": "mud.enemyloot", 
+        "pk": 21, 
+        "fields": {
+            "enemy_template": 20, 
+            "item": 58, 
+            "percent_chance": 1
+        }
+    }
+]

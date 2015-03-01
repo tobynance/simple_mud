@@ -27,10 +27,10 @@ class Room(models.Model):
     name = models.CharField(max_length=60, db_index=True)
     type = models.PositiveSmallIntegerField(choices=ItemType.choices(), default=RoomType.PLAIN_ROOM)
     description = models.TextField()
-    north = models.ForeignKey("Room", null=True, default=None)
-    east = models.ForeignKey("Room", null=True, default=None)
-    south = models.ForeignKey("Room", null=True, default=None)
-    west = models.ForeignKey("Room", null=True, default=None)
+    north = models.ForeignKey("Room", null=True, default=None, related_name="+")
+    east = models.ForeignKey("Room", null=True, default=None, related_name="+")
+    south = models.ForeignKey("Room", null=True, default=None, related_name="+")
+    west = models.ForeignKey("Room", null=True, default=None, related_name="+")
     enemy_type = models.ForeignKey("EnemyTemplate", null=True, default=None)
     items = models.ManyToManyField(Item)
     money = models.PositiveIntegerField(default=0)
@@ -64,7 +64,7 @@ class EnemyTemplate(models.Model):
 class EnemyLoot(models.Model):
     enemy_template = models.ForeignKey(EnemyTemplate, on_delete=models.PROTECT)
     item = models.ForeignKey(Item, on_delete=models.PROTECT)
-    percent_change = models.SmallIntegerField()
+    percent_chance = models.SmallIntegerField()
 
     class Meta:
         unique_together = ("enemy_template", "item")
@@ -74,7 +74,7 @@ class EnemyLoot(models.Model):
 class Enemy(models.Model):
     template = models.ForeignKey(EnemyTemplate, on_delete=models.PROTECT)
     hit_points = models.SmallIntegerField()
-    room = models.ForeignKey(Room)
+    # room = models.ForeignKey(Room)
     next_attack_time = models.SmallIntegerField()
 
     ####################################################################
@@ -183,7 +183,7 @@ class Player(models.Model):
     hit_points = models.PositiveIntegerField(default=1)
     weapon = models.ForeignKey(Item, null=True, blank=True, default=None, related_name="+")
     armor = models.ForeignKey(Item, null=True, blank=True, default=None, related_name="+")
-    room = models.ForeignKey(Room, on_delete=models.PROTECT)
+    #room = models.ForeignKey(Room, on_delete=models.PROTECT)
     logged_in = models.BooleanField(db_index=True, default=False)
     active = models.BooleanField(db_index=True, default=False)
     newbie = models.BooleanField(default=True)

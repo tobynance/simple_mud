@@ -58,16 +58,8 @@ admin.site.register(mud.models.EnemyTemplate, EnemyTemplateAdmin)
 
 ########################################################################
 class EnemyAdmin(admin.ModelAdmin):
-    search_fields = ("template_name", "room_name")
-    list_display = ("template_name", "hit_points", "next_attack_time")
-
-    ####################################################################
-    def template_name(self, obj):
-        return obj.template.name
-
-    ####################################################################
-    def room_name(self, obj):
-        return obj.room.name
+    search_fields = ("template", "room")
+    list_display = ("template", "room", "hit_points", "next_attack_time")
 
 admin.site.register(mud.models.Enemy, EnemyAdmin)
 
@@ -77,12 +69,12 @@ class StoreAdmin(admin.ModelAdmin):
     search_fields = ["room"]
     list_display = ["room"]
 
-    ####################################################################
-    def template_name(self, obj):
-        return obj.template.name
-
-    ####################################################################
-    def room_name(self, obj):
-        return obj.room.name
-
 admin.site.register(mud.models.Store, StoreAdmin)
+
+
+########################################################################
+class PlayerAdmin(admin.ModelAdmin):
+    search_fields = ["user", "name", "room"]
+    list_display = ["user", "name", "room", "level", "logged_in", "active", "newbie"]
+
+admin.site.register(mud.models.Player, PlayerAdmin)

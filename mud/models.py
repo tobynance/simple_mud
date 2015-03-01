@@ -1,6 +1,6 @@
 from django.db import models
 import random
-from utils import PlayerRank, ItemType, RoomType, clamp
+from utils import ItemType, RoomType, clamp
 from django.contrib.auth.models import User
 
 

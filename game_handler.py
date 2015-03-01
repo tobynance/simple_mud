@@ -41,17 +41,9 @@ HELP = "<white><bold>" + \
        " inspect <item name>          - Shows stats of an item<newline>" + \
        " map                          - Shows the map<newline>"
 
-MODERATOR_HELP = "<yellow><bold>" + \
-                 "------------------------------ Moderator Commands ------------------------------<newline>" + \
-                 " kick <who>                   - Kicks a user from the realm<newline>"
-
 ADMIN_HELP = "<green><bold>" + \
              "-------------------------------- Admin Commands --------------------------------<newline>" + \
-             " kick <who>                   - Kicks a user from the realm<newline>" + \
-             " announce <msg>               - Makes a global system announcement<newline>" + \
-             " changerank <who> <rank>      - Changes the rank of a player<newline>" + \
-             " reload <db>                  - Reloads the requested database<newline>" + \
-             " shutdown                     - Shuts the server down<newline>"
+             " announce <msg>               - Makes a global system announcement<newline>"
 HELP_END = "<white><bold>%s<newline>" % ("-" * 80)
 
 
@@ -488,8 +480,6 @@ class GameHandler(telnet.BaseCommandDispatchHandler):
         if player_rank is None:
             player_rank = player.PlayerRank.REGULAR
         help_text = [HELP]
-        if player_rank >= player.PlayerRank.MODERATOR:
-            help_text.append(MODERATOR_HELP)
         if player_rank >= player.PlayerRank.ADMIN:
             help_text.append(ADMIN_HELP)
         help_text.append(HELP_END)

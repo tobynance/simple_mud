@@ -88,3 +88,29 @@ PlayerRank = DjangoChoiceEnum()
 PlayerRank.add(0, "REGULAR")
 PlayerRank.add(1, "MODERATOR")
 PlayerRank.add(2, "ADMIN")
+
+RoomType = DjangoChoiceEnum()
+RoomType.add(0, "PLAIN_ROOM")
+RoomType.add(1, "TRAINING_ROOM")
+RoomType.add(2, "STORE")
+
+
+########################################################################
+# Temporary conversion util
+########################################################################
+from collections import OrderedDict
+
+
+########################################################################
+def convert_item(initial_item_data):
+    output_data = OrderedDict()
+    output_data["model"] = "mud.item"
+    output_data["pk"] = initial_item_data["id"]
+    output_data["fields"] = OrderedDict()
+    fields = output_data["fields"]
+    for field_name in ["name", "type", "min", "max", "speed", "price",
+                       "STRENGTH", "HEALTH", "AGILITY", "MAX_HIT_POINTS",
+                       "ACCURACY", "DODGING", "STRIKE_DAMAGE",
+                       "DAMAGE_ABSORB", "HP_REGEN"]:
+        fields[field_name] = initial_item_data[field_name]
+    return output_data

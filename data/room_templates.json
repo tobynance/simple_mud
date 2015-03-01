@@ -47,7 +47,7 @@
 {
   "id": 4,
   "name": "Bobs Weapon Shop",
-  "description": "Bobs Weapon Shop. You see lots of crap available to buy all over the room, and Bob grinning at you from behind a counter. He says <reset>\"Please, come in, shop around, and take a glance at my <bold><yellow>list<reset>.\"",
+  "description": "Bobs Weapon Shop. You see lots of junk available to buy all over the room, and Bob grinning at you from behind a counter. He says <reset>\"Please, come in, shop around, and take a glance at my <bold><yellow>list<reset>.\"",
   "type": "STORE",
   "data": 1,
   "north": 1,

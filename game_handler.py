@@ -567,20 +567,20 @@ class GameHandler(telnet.BaseCommandDispatchHandler):
     ####################################################################
     ####################################################################
     def use_item(self, item_name):
-        for item in find_all_by_name(item_name, self.player.inventory):
-            if item.type == item.ItemType.WEAPON:
-                self.player.use_weapon(item)
-                self.send_room("<green><bold>{} arms a {}.".format(self.player.name, item.name))
+        for i in find_all_by_name(item_name, self.player.inventory):
+            if i.type == item.ItemType.WEAPON:
+                self.player.use_weapon(i)
+                self.send_room("<green><bold>{} arms a {}.".format(self.player.name, i.name))
                 return True
-            elif item.type == item.ItemType.ARMOR:
-                self.player.use_armor(item)
-                self.send_room("<green><bold>{} puts on a {}.".format(self.player.name, item.name))
+            elif i.type == item.ItemType.ARMOR:
+                self.player.use_armor(i)
+                self.send_room("<green><bold>{} puts on a {}.".format(self.player.name, i.name))
                 return True
-            elif item.type == item.ItemType.HEALING:
-                self.player.add_bonuses(item)
-                self.player.add_hit_points(random.randint(item.min, item.max))
-                self.player.drop_item(item)
-                self.send_room("<green><bold>{} uses a {}.".format(self.player.name, item.name))
+            elif i.type == item.ItemType.HEALING:
+                self.player.add_bonuses(i)
+                self.player.add_hit_points(random.randint(i.min, i.max))
+                self.player.drop_item(i)
+                self.send_room("<green><bold>{} uses a {}.".format(self.player.name, i.name))
                 return True
         self.player.send_string("<red><bold>Could not find that item!")
         return False

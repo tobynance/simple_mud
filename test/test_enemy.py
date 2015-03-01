@@ -1,8 +1,8 @@
 import unittest
-import unittest
-from enemy import Enemy, EnemyTemplate, EnemyDatabase, EnemyTemplateDatabase
+from enemy import Enemy, EnemyTemplate
 import enemy
 import room
+
 
 ########################################################################
 class EnemyTemplateTest(unittest.TestCase):
@@ -40,6 +40,12 @@ class EnemyTemplateTest(unittest.TestCase):
 ########################################################################
 class EnemyTest(unittest.TestCase):
     ####################################################################
+    def setUp(self):
+        enemy.EnemyDatabase()
+        enemy.EnemyTemplateDatabase.load()
+        room.RoomDatabase().load(room_data_path="not_real_path")
+
+    ####################################################################
     def test_create_enemy(self):
         this_enemy = enemy.enemy_database.create_enemy(2, room.room_database.by_id[1])
         self.assertEqual(this_enemy.id, 1)
@@ -61,14 +67,14 @@ class EnemyTest(unittest.TestCase):
         this_enemy = enemy.enemy_database.create_enemy(2, room.room_database.by_id[1])
         this_enemy.hit_points = 12
         data = this_enemy.serialize_to_dict()
-        self.assertEqual(data, {"id": 1,
+        self.assertEqual(data, {"id": 2,
                                 "template_id": 2,
                                 "hit_points": 12,
                                 "room": 1,
                                 "next_attack_time": 0})
 
         new_enemy = Enemy.deserialize_from_dict(data)
-        self.assertEqual(new_enemy.id, 1)
+        self.assertEqual(new_enemy.id, 2)
         self.assertEqual(new_enemy.name, "Thug")
         self.assertEqual(isinstance(new_enemy.template, EnemyTemplate), True)
         self.assertEqual(new_enemy.hit_points, 12)

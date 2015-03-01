@@ -42,6 +42,12 @@ welcome_message = """\
 You must train your character with your desired stats,\r
 before you enter the realm.\r\n\r\n"""
 
+town_square_message = "<newline><bold><white>Town Square<newline><reset>" \
+                      "<magenta>You are in the town square. This is the central meeting place for the realm.<newline><reset>" \
+                      "<green>exits: NORTH, EAST, SOUTH, WEST<newline><reset>" \
+                      "<yellow>You see: $220, Platemail Armor of Power, Cutlass (OBSOLETE, PLEASE DROP IN TOWN SQUARE)<newline><reset>" \
+                      "<white>People: john<newline>"
+
 stats_message = """\
 <white><bold>---------------------- Your Stats ----------------------\r
 <dim>Player: jerry\r

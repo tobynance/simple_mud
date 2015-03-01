@@ -223,6 +223,8 @@ class EnemyDatabase(EntityDatabase):
 
     ####################################################################
     def get_next_id(self):
+        while EnemyDatabase.next_id in self.by_id:
+            EnemyDatabase.next_id += 1
         next = EnemyDatabase.next_id
         EnemyDatabase.next_id += 1
         return next

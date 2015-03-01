@@ -170,7 +170,7 @@ class Player(Entity):
     ####################################################################
     def __init__(self, player_id=None):
         super(Player, self).__init__()
-        self.id = player_id or PlayerDatabase.get_next_id()
+        self.id = player_id or player_database.get_next_id()
         self.password = "UNDEFINED"
         self.rank = PlayerRank.REGULAR
         self.stat_points = 18
@@ -339,7 +339,6 @@ class Player(Entity):
             status_bar += "<green>"
         status_bar += "{hit_points}<white>/{max_hit_points}] <reset>".format(hit_points=self.hit_points,
                                                                              max_hit_points=self.attributes.MAX_HIT_POINTS)
-        # print "status_bar:", status_bar
         self.protocol.send(status_bar)
 
     ####################################################################
@@ -442,7 +441,6 @@ class Player(Entity):
     ####################################################################
     def attack(self, enemy_name):
         # check if the player can attack yet
-        print "next_attack_time:", self.next_attack_time
         if self.next_attack_time > 0:
             self.send_string("<red><bold>You can't attack yet!")
             return
@@ -470,13 +468,10 @@ class Player(Entity):
             self.next_attack_time = 1
         else:
             damage = random.randint(self.weapon.min, self.weapon.max)
-            print "weapon speed:", self.weapon.speed
             self.next_attack_time = self.weapon.speed
-            print "(test):", self.next_attack_time
 
         if random.randint(0, 99) >= (self.attributes.ACCURACY - e.dodging):
             self.room.send_room("<white>{} swings at {} but misses!".format(self.name, e.name))
-            print "(miss) next_attack_time:", self.next_attack_time
             return
         damage += self.attributes.STRIKE_DAMAGE
         damage -= e.damage_absorb
@@ -487,12 +482,12 @@ class Player(Entity):
         self.room.send_room("<red>{} hits {} for {} damage!".format(self.name, e.name, damage))
         if e.hit_points <= 0:
             e.killed(self)
-        print "(post) next_attack_time:", self.next_attack_time
-
 
 
 ########################################################################
 class PlayerDatabase(EntityDatabase):
+    next_id = 1
+
     ####################################################################
     def __init__(self):
         super(PlayerDatabase, self).__init__()
@@ -520,9 +515,12 @@ class PlayerDatabase(EntityDatabase):
             self.by_name[player.name.lower()] = player
 
     ####################################################################
-    @classmethod
-    def get_next_id(cls):
-        return len(player_database.by_id) + 1
+    def get_next_id(self):
+        while PlayerDatabase.next_id in self.by_id:
+            PlayerDatabase.next_id += 1
+        next = PlayerDatabase.next_id
+        PlayerDatabase.next_id += 1
+        return next
 
     ####################################################################
     def all_logged_in(self):

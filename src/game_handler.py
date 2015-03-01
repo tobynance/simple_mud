@@ -2,9 +2,7 @@ import logging
 import datetime
 import random
 from attributes import Direction
-from item import ItemType
 import item
-from player import PlayerRank
 import player
 import enemy
 import room
@@ -176,7 +174,7 @@ class GameHandler(telnet.BaseCommandDispatchHandler):
     ####################################################################
     ####################################################################
     def handle_kick(self, data, first_word, player_name):
-        if self.player.rank < PlayerRank.MODERATOR:
+        if self.player.rank < player.PlayerRank.MODERATOR:
             logger.warn("player %s tried to use the kick command, but doesn't have permission to do so", self.player.name)
             self.player.send_string("<red>You do not have permission to do so<newline>")
             return
@@ -196,7 +194,7 @@ class GameHandler(telnet.BaseCommandDispatchHandler):
     ####################################################################
     ####################################################################
     def handle_announce(self, data, first_word, announcement):
-        if self.player.rank < PlayerRank.ADMIN:
+        if self.player.rank < player.PlayerRank.ADMIN:
             logger.warn("player %s tried to use the announce command, but doesn't have permission to do so", self.player.name)
             self.player.send_string("<red>You do not have permission to do so<newline>")
             return
@@ -204,7 +202,7 @@ class GameHandler(telnet.BaseCommandDispatchHandler):
 
     ####################################################################
     def handle_change_rank(self, data, first_word, rest):
-        if self.player.rank < PlayerRank.ADMIN:
+        if self.player.rank < player.PlayerRank.ADMIN:
             logger.warn("player %s tried to use the changerank command, but doesn't have permission to do so", self.player.name)
             self.player.send_string("<red>You do not have permission to do so<newline>")
             return
@@ -218,16 +216,16 @@ class GameHandler(telnet.BaseCommandDispatchHandler):
             self.player.send_string("<red><bold>Error: Could not find user " + name)
             return
 
-        if not hasattr(PlayerRank, rank):
+        if not hasattr(player.PlayerRank, rank):
             self.player.send_string("<red><bold>Error: Cannot understand rank '%s'" % rank)
             return
 
-        other_player.rank = PlayerRank[rank]
+        other_player.rank = player.PlayerRank[rank]
         self.send_game("<green><bold>{name}'s rank has been changed to: {rank}".format(name=other_player.name, rank=other_player.rank.name))
 
     ####################################################################
     def handle_reload(self, data, first_word, db):
-        if self.player.rank < PlayerRank.ADMIN:
+        if self.player.rank < player.PlayerRank.ADMIN:
             logger.warn("player %s tried to use the reload command, but doesn't have permission to do so", self.player.name)
             self.player.send_string("<red>You do not have permission to do so<newline>")
             return
@@ -249,7 +247,7 @@ class GameHandler(telnet.BaseCommandDispatchHandler):
 
     ####################################################################
     def handle_shutdown(self, data, first_word, rest):
-        if self.player.rank < PlayerRank.ADMIN:
+        if self.player.rank < player.PlayerRank.ADMIN:
             logger.warn("player %s tried to use the shutdown command, but doesn't have permission to do so", self.player.name)
             self.player.send_string("<red>You do not have permission to do so<newline>")
             return
@@ -387,9 +385,9 @@ class GameHandler(telnet.BaseCommandDispatchHandler):
     def enter(self):
         logger.info("%s - enter called in %s", self.protocol.get_remote_address(), self.__class__.__name__)
         self.last_command = ""
+        self.send_game("<bold><green>{} has entered the realm.".format(self.player.name))
         self.player.active = True
         self.player.logged_in = True
-        self.send_game("<bold><green>{} has entered the realm.".format(self.player.name))
         self.player.room.add_player(self.player)
         if self.player.newbie:
             self.goto_train()
@@ -485,12 +483,14 @@ class GameHandler(telnet.BaseCommandDispatchHandler):
 
     ####################################################################
     @staticmethod
-    def print_help(player_rank=PlayerRank.REGULAR):
+    def print_help(player_rank=None):
         """Prints out a help listing based on a user's rank."""
+        if player_rank is None:
+            player_rank = player.PlayerRank.REGULAR
         help_text = [HELP]
-        if player_rank >= PlayerRank.MODERATOR:
+        if player_rank >= player.PlayerRank.MODERATOR:
             help_text.append(MODERATOR_HELP)
-        if player_rank >= PlayerRank.ADMIN:
+        if player_rank >= player.PlayerRank.ADMIN:
             help_text.append(ADMIN_HELP)
         help_text.append(HELP_END)
         return "".join(help_text)
@@ -568,15 +568,15 @@ class GameHandler(telnet.BaseCommandDispatchHandler):
     ####################################################################
     def use_item(self, item_name):
         for item in find_all_by_name(item_name, self.player.inventory):
-            if item.type == ItemType.WEAPON:
+            if item.type == item.ItemType.WEAPON:
                 self.player.use_weapon(item)
                 self.send_room("<green><bold>{} arms a {}.".format(self.player.name, item.name))
                 return True
-            elif item.type == ItemType.ARMOR:
+            elif item.type == item.ItemType.ARMOR:
                 self.player.use_armor(item)
                 self.send_room("<green><bold>{} puts on a {}.".format(self.player.name, item.name))
                 return True
-            elif item.type == ItemType.HEALING:
+            elif item.type == item.ItemType.HEALING:
                 self.player.add_bonuses(item)
                 self.player.add_hit_points(random.randint(item.min, item.max))
                 self.player.drop_item(item)
@@ -617,17 +617,17 @@ class GameHandler(telnet.BaseCommandDispatchHandler):
         if current_room.money:
             items.insert(0, "${}".format(current_room.money))
         if items:
-            description.append("<yellow>You see: ")
+            description.append("<reset><yellow>You see: ")
             description.append(", ".join(items))
             description.append("<newline>")
 
         player_names = [p.name for p in current_room.players if p.active and p != self.player]
         if player_names:
-            description.append("<white>People: ")
+            description.append("<reset><white>People: ")
             description.append(", ".join(player_names))
             description.append("<newline>")
         if current_room.enemies:
-            description.append("<cyan>Enemies: ")
+            description.append("<reset><cyan>Enemies: ")
             description.append(", ".join([e.name for e in current_room.enemies]))
             description.append("<newline>")
 

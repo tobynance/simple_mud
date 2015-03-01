@@ -27,8 +27,9 @@ class EntityDatabase(object):
             if result:
                 return result
             else:
+                name = name_or_id.lower()
                 for entity in self.by_name.values():
-                    if entity.match(name_or_id):
+                    if entity.match(name):
                         return entity
 
     ####################################################################

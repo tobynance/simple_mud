@@ -5,9 +5,11 @@ def clamp(value, minimum=0.0, maximum=1.0):
 
 ########################################################################
 def find_all_by_name(name, list_entities):
+    name = name.lower()
     for entity in list_entities:
         if entity.match(name):
             yield entity
+
 
 ########################################################################
 def double_find_by_name(name, list_entities):

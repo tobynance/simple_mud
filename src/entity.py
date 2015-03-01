@@ -19,7 +19,8 @@ class Entity(object):
 
     ####################################################################
     def match(self, name):
-        name = name.lower()
+        if self.match_full(name):
+            return True
         for part in self.name.lower().split():
             if part.startswith(name):
                 return True

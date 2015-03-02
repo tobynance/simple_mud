@@ -211,6 +211,7 @@ class Enemy(models.Model):
 ########################################################################
 class Player(models.Model):
     user = models.ForeignKey(User)
+    last_command = models.CharField(max_length=60, default="look")
     name = models.CharField(max_length=60, db_index=True, unique=True)
     stat_points = models.PositiveIntegerField(default=18)
     experience = models.PositiveIntegerField(default=0)

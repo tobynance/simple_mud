@@ -17,6 +17,7 @@ def game(request):
 @login_required
 def game_ajax(request):
     if request.method == "POST":
+        print "text:", request.POST.get("text")
         return JsonResponse({"success": True, "foo": "bar"})
     else:
         return HttpResponse("<p>Testing, testing.</p>", content_type="text/plain")

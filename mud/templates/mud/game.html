@@ -10,6 +10,7 @@
 <p>The Game Window</p>
 <div id="message_box"></div>
 <form name="message" action="">
+ {% csrf_token %}
     <label for="user_text">Input:</label><input name="user_text" type="text" id="user_text"/>
 <input name="submit" type="submit" id="message_submit" value="Send"/>
 </form>
@@ -17,6 +18,7 @@
 <script type="text/javascript">
 var HOME_URL = "{% url "home" %}";
 var AJAX_URL = "{% url "game_ajax" %}";
+var CSRF_TOKEN = "{{ csrf_token }}";
 </script>
 <script type="text/javascript" src="{% static "mud/game.js" %}"></script>
 {% endblock %}

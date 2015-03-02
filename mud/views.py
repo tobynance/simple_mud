@@ -1,5 +1,5 @@
 from django.contrib.auth.decorators import login_required
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
 
 
@@ -16,8 +16,7 @@ def game(request):
 ########################################################################
 @login_required
 def game_ajax(request):
-    print "called:", request.GET, request.POST
     if request.method == "POST":
-        print "POST:", request.POST
-    context = {"player": None}
-    return HttpResponse("<p>Testing, testing.</p>", content_type="text/plain")
+        return JsonResponse({"success": True, "foo": "bar"})
+    else:
+        return HttpResponse("<p>Testing, testing.</p>", content_type="text/plain")

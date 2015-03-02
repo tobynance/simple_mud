@@ -9,18 +9,23 @@ $(document).ready(function(){
             window.location = HOME_URL;
         }
     });
+
     $("#message_submit").click(function() {
         var user_text = $("#user_text");
         var client_message = user_text.val();
-        $.post(AJAX_URL, {text: client_message}, function (response) {
-            if (response.success) {
+        var data = {text: client_message, csrfmiddlewaretoken: CSRF_TOKEN};
+        $.ajax({
+            type: "POST",
+            url: AJAX_URL,
+            data: data,
+            success: function (data) {
                 console.log("success");
-            }
-            else {
+                console.log(data);
+            },
+            error: function (data) {
                 console.log("fail");
-            }
-            console.log(response);
-        });
+                console.log(data);
+            }});
         user_text.attr("value", "");
         return false;
     });

@@ -16,5 +16,8 @@ def game(request):
 ########################################################################
 @login_required
 def game_ajax(request):
+    print "called:", request.GET, request.POST
+    if request.method == "POST":
+        print "POST:", request.POST
     context = {"player": None}
     return HttpResponse("<p>Testing, testing.</p>", content_type="text/plain")

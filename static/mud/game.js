@@ -12,13 +12,21 @@ $(document).ready(function(){
     $("#message_submit").click(function() {
         var user_text = $("#user_text");
         var client_message = user_text.val();
-        $.post(AJAX_URL, {text: client_message});
+        $.post(AJAX_URL, {text: client_message}, function (response) {
+            if (response.success) {
+                console.log("success");
+            }
+            else {
+                console.log("fail");
+            }
+            console.log(response);
+        });
         user_text.attr("value", "");
         return false;
     });
 
     // Reload data every 700ms
-    setInterval(get_data, 700);
+    //setInterval(get_data, 2700);
 });
 
 //*********************************************************************

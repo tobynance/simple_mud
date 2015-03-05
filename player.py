@@ -3,12 +3,10 @@ import random
 import time
 import math
 import logging
-import json
 from enum import Enum, IntEnum
 from attributes import Attributes, primary_attribute_list, attribute_string_list
 from entity import Entity
 from entity_database import EntityDatabase
-import item
 import room
 import enemy
 from utils import clamp, double_find_by_name
@@ -145,24 +143,6 @@ class PlayerAttributeSet(dict):
             self[name] = value
         else:
             super(PlayerAttributeSet, self).__setattr__(name, value)
-
-    ####################################################################
-    def serialize_to_dict(self):
-        return {key.name: value for key, value in self.items() if key.name.startswith("BASE_")}
-
-    ####################################################################
-    @staticmethod
-    def deserialize_from_dict(data_dict, player=None):
-        attr_set = PlayerAttributeSet()
-        attr_set.recalculating = True
-        attr_set.player = player
-
-        for key, value in data_dict.items():
-            if key not in attribute_string_list:
-                attr_set[PlayerAttributes[key]] = value
-        attr_set.recalculating = False
-        attr_set.recalculate_stats()
-        return attr_set
 
 
 ########################################################################
@@ -342,27 +322,6 @@ class Player(Entity):
         self.protocol.send(status_bar)
 
     ####################################################################
-    def serialize_to_dict(self):
-        output = {"id": self.id}
-        for field in SIMPLE_FIELDS:
-            output[field] = getattr(self, field)
-        output["rank"] = self.rank.value
-        output["room"] = self.room.id
-        output["attributes"] = self.attributes.serialize_to_dict()
-        output["inventory"] = [item.id for item in self.inventory]
-
-        if self.weapon:
-            output["weapon"] = self.weapon.id
-        else:
-            output["weapon"] = None
-
-        if self.armor:
-            output["armor"] = self.armor.id
-        else:
-            output["armor"] = None
-        return output
-
-    ####################################################################
     def who_text(self):
         """Return a string describing the player"""
         text = [" {:<17}| {:<10}| ".format(self.name, self.level)]
@@ -383,32 +342,6 @@ class Player(Entity):
         text.append(self.rank.name)
         text.append("<white>\r\n")
         return "".join(text)
-
-    ####################################################################
-    @staticmethod
-    def deserialize(string_data):
-        return Player.deserialize_from_dict(json.loads(string_data))
-
-    ####################################################################
-    @staticmethod
-    def deserialize_from_dict(data_dict):
-        player = Player(data_dict["id"])
-        for field in SIMPLE_FIELDS:
-            setattr(player, field, data_dict[field])
-
-        player.rank = PlayerRank(data_dict["rank"])
-        player.room = room.room_database.by_id[data_dict["room"]]
-
-        player.attributes = PlayerAttributeSet.deserialize_from_dict(data_dict["attributes"])
-        player.inventory = []
-        for item_id in data_dict["inventory"]:
-            player.inventory.append(item.item_database[item_id])
-        if data_dict["weapon"]:
-            player.weapon = item.item_database[data_dict["weapon"]]
-        if data_dict["armor"]:
-            player.armor = item.item_database[data_dict["armor"]]
-        player.attributes.set_player(player)
-        return player
 
     ####################################################################
     def killed(self):
@@ -486,42 +419,6 @@ class Player(Entity):
 
 ########################################################################
 class PlayerDatabase(EntityDatabase):
-    next_id = 1
-
-    ####################################################################
-    def __init__(self):
-        super(PlayerDatabase, self).__init__()
-        global player_database
-        player_database = self
-
-    ####################################################################
-    @staticmethod
-    def load(path=None, force=False):
-        global player_database
-        if player_database is None or force:
-            if path is None:
-                path = data_file
-            player_database = PlayerDatabase()
-            if os.environ.get("SIMPLE_MUD_LOAD_PLAYERS", "true") == "true" and os.path.exists(path):
-                player_database.load_from_string(open(path).read())
-        return player_database
-
-    ####################################################################
-    def load_from_string(self, text):
-        players_data = json.loads(text)
-        for player_data in players_data:
-            player = Player.deserialize_from_dict(player_data)
-            self.by_id[player.id] = player
-            self.by_name[player.name.lower()] = player
-
-    ####################################################################
-    def get_next_id(self):
-        while PlayerDatabase.next_id in self.by_id:
-            PlayerDatabase.next_id += 1
-        next = PlayerDatabase.next_id
-        PlayerDatabase.next_id += 1
-        return next
-
     ####################################################################
     def all_logged_in(self):
         for player in self.all():
@@ -533,23 +430,6 @@ class PlayerDatabase(EntityDatabase):
         for player in self.all():
             if player.active:
                 yield player
-
-    ####################################################################
-    def save(self, path=None):
-        if path is None:
-            path = data_file
-        player_text = self.save_to_string()
-        if os.environ.get("SIMPLE_MUD_LOAD_PLAYERS", "true") == "true":
-            with open(path, "w") as out_file:
-                out_file.write(player_text)
-
-    ####################################################################
-    def save_to_string(self):
-        players = []
-        for player in self.by_id.values():
-            players.append(player.serialize_to_dict())
-        player_text = json.dumps(players, indent=4)
-        return player_text
 
     ####################################################################
     def add_player(self, player):

@@ -10,6 +10,7 @@ https://docs.djangoproject.com/en/1.7/ref/settings/
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 import os
+import datetime
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 
 
@@ -92,3 +93,25 @@ BROKER_URL = 'redis://localhost:6379/0'
 CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
+
+ROUND_TIME = 1
+# REGEN_TIME = 2 * 60
+# HEAL_TIME = 1 * 60
+
+REGEN_TIME = 2 * 6
+HEAL_TIME = 1 * 6
+
+CELERYBEAT_SCHEDULE = {
+    'round-time': {
+        'task': 'mud.tasks.perform_round_task',
+        'schedule': datetime.timedelta(seconds=ROUND_TIME)
+    },
+    'regen-time': {
+        'task': 'mud.tasks.perform_regen_task',
+        'schedule': datetime.timedelta(seconds=REGEN_TIME)
+    },
+    'heal-time': {
+        'task': 'mud.tasks.perform_heal_task',
+        'schedule': datetime.timedelta(seconds=HEAL_TIME)
+    },
+}

@@ -18,7 +18,7 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('hit_points', models.SmallIntegerField()),
-                ('next_attack_time', models.SmallIntegerField()),
+                ('next_attack_time', models.SmallIntegerField(default=1)),
             ],
             options={
                 'verbose_name_plural': 'Enemies',
@@ -81,6 +81,7 @@ class Migration(migrations.Migration):
             name='Player',
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('last_command', models.CharField(default=b'look', max_length=60)),
                 ('name', models.CharField(unique=True, max_length=60, db_index=True)),
                 ('stat_points', models.PositiveIntegerField(default=18)),
                 ('experience', models.PositiveIntegerField(default=0)),
@@ -155,6 +156,12 @@ class Migration(migrations.Migration):
             model_name='player',
             name='room',
             field=models.ForeignKey(to='mud.Room', on_delete=django.db.models.deletion.PROTECT),
+            preserve_default=True,
+        ),
+        migrations.AddField(
+            model_name='player',
+            name='last_command',
+            field=models.CharField(default=b'look', max_length=60),
             preserve_default=True,
         ),
         migrations.AddField(

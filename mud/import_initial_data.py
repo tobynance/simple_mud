@@ -5,7 +5,8 @@ from django.core.management import call_command
 fixtures = ["initial_items.json",
             "initial_enemy_templates.json",
             "initial_rooms.json",
-            "initial_stores.json"]
+            "initial_stores.json",
+            "initial_users.json"]
 
 
 ########################################################################

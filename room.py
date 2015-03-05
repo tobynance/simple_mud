@@ -37,58 +37,6 @@ class Room(Entity):
         self.enemies = set()  # not serialized
 
     ####################################################################
-    @staticmethod
-    def deserialize_from_dict(room_template_data, room_volatile_data):
-        item_db = ItemDatabase.load()
-        room = Room()
-        for field, value in room_template_data.items():
-            if field in ["id", "name", "description", "max_enemies"]:
-                setattr(room, field, value)
-            elif field == "type":
-                room.type = getattr(RoomType, value)
-            elif field == "spawn_which_enemy":
-                if value:
-                    room.spawn_which_enemy = value
-            elif field == "north":
-                if value:
-                    room.connecting_rooms[Direction.NORTH] = value
-            elif field == "south":
-                if value:
-                    room.connecting_rooms[Direction.SOUTH] = value
-            elif field == "east":
-                if value:
-                    room.connecting_rooms[Direction.EAST] = value
-            elif field == "west":
-                if value:
-                    room.connecting_rooms[Direction.WEST] = value
-            elif field == "data":
-                room.data = value
-            elif field == "starting_items":
-                for item_id in value:
-                    item = item_db.find(item_id)
-                    room.items.append(item)
-            elif field == "starting_money":
-                room.money = value
-
-        if room_volatile_data:
-            for field, value in room_volatile_data.items():
-                if field == "items":
-                    room.items = []
-                    for item_id in value:
-                        item = item_db.find(item_id)
-                        room.items.append(item)
-                elif field == "money":
-                    room.money = value
-        return room
-
-    ####################################################################
-    def serialize_to_dict(self):
-        output = {"items": [], "money": self.money}
-        for item in self.items:
-            output["items"].append(item.id)
-        return output
-
-    ####################################################################
     def get_adjacent_room(self, direction):
         room_id = self.connecting_rooms.get(direction)
         if room_id:
@@ -132,39 +80,3 @@ class Room(Entity):
     def send_room(self, text):
         for player in self.players:
             player.send_string(text)
-
-
-########################################################################
-class RoomDatabase(EntityDatabase):
-    room_data_path = os.path.join(base, "..", "data", "room_data.json")
-    room_templates_path = os.path.join(base, "..", "data", "room_templates.json")
-
-    ####################################################################
-    def save(self, room_data_path=None):
-        if room_data_path is None:
-            room_data_path = self.room_data_path
-        room_data = {room.id: room.serialize_to_dict() for room in self.by_id.values()}
-        with open(room_data_path, "w") as out_file:
-            json.dump(room_data, out_file, indent=4, sort_keys=True)
-
-    ####################################################################
-    @classmethod
-    def load(cls, room_data_path=None, room_templates_path=None, force=False):
-        global room_database
-        if room_database is None or force:
-            room_database = RoomDatabase()
-            if room_data_path is None:
-                room_data_path = cls.room_data_path
-            if room_templates_path is None:
-                room_templates_path = cls.room_templates_path
-
-            template_data = json.load(open(room_templates_path))
-            if os.path.exists(room_data_path):
-                room_data = json.load(open(room_data_path))
-            else:
-                room_data = {}
-            for room_template_data in template_data:
-                room = Room.deserialize_from_dict(room_template_data, room_data.get(str(room_template_data["id"])))
-                room_database.by_id[room.id] = room
-                room_database.by_name[room.name.lower()] = room
-            return room_database

@@ -45,6 +45,11 @@ class Room(models.Model):
     def __unicode__(self):
         return self.name
 
+    ####################################################################
+    def send_room(self, message):
+        for player in self.player_set.all():
+            player.send_string(message)
+
 
 ########################################################################
 class Store(models.Model):
@@ -86,6 +91,10 @@ class EnemyTemplate(models.Model):
     def __unicode__(self):
         return self.name
 
+    ####################################################################
+    def create_enemy(self, room):
+        return Enemy.objects.create(template=self, hit_points=self.hit_points, room=room)
+
 
 ########################################################################
 class EnemyLoot(models.Model):
@@ -106,7 +115,7 @@ class Enemy(models.Model):
     template = models.ForeignKey(EnemyTemplate, on_delete=models.PROTECT)
     hit_points = models.SmallIntegerField()
     room = models.ForeignKey(Room)
-    next_attack_time = models.SmallIntegerField()
+    next_attack_time = models.SmallIntegerField(default=1)
 
     class Meta:
         verbose_name_plural = "Enemies"
@@ -114,6 +123,11 @@ class Enemy(models.Model):
     ####################################################################
     def __unicode__(self):
         return "(%s) %s" % (self.id, self.template.name)
+
+    ####################################################################
+    @property
+    def name(self):
+        return self.template.name
 
     ####################################################################
     @property
@@ -238,3 +252,11 @@ class Player(models.Model):
     ####################################################################
     def __unicode__(self):
         return self.name
+
+    ####################################################################
+    def perform_heal_cycle(self):
+        self.add_hit_points(self.HP_REGEN)
+
+    ####################################################################
+    def send_string(self, message):
+        print "sending message to %s: %s" % (self, message)

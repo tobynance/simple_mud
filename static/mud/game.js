@@ -16,22 +16,25 @@ $(document).ready(function(){
         var data = {player_id: 1, text: client_message, csrfmiddlewaretoken: CSRF_TOKEN};
         $.ajax({
             type: "POST",
-            url: AJAX_URL,
+            url: SUBMIT_COMMAND_URL,
             data: data,
             success: function (data) {
                 console.log("success");
                 console.log(data);
+                user_text.attr("value", "");
+                user_text.focus();
             },
             error: function (data) {
                 console.log("fail");
                 console.log(data);
+                user_text.focus();
             }});
-        user_text.attr("value", "");
+
         return false;
     });
 
     // Reload data every 700ms
-    //setInterval(get_data, 2700);
+    setInterval(get_data, 2700);
 });
 
 //*********************************************************************
@@ -39,9 +42,12 @@ function get_data() {
     // Scroll height before the request
     var message_box = $("#message_box");
     var old_scroll_height = message_box.attr("scrollHeight") - 20;
+    var data = {player_id: 1,csrfmiddlewaretoken: CSRF_TOKEN};
     $.ajax({
-        url: AJAX_URL,
+        url: GET_MESSAGES_URL,
+        type: "POST",
         cache: false,
+        data: data,
         success: function(html) {
             // Insert chat log into the #message_box div
             message_box.html(message_box.html() + html);

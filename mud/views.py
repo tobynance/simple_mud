@@ -1,7 +1,10 @@
 from django.contrib.auth.decorators import login_required
-from django.http import HttpResponse, JsonResponse
+from django.http import HttpResponse, JsonResponse, HttpResponseForbidden
 from django.shortcuts import render
 from mud.models import Player, PlayerMessage
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 ########################################################################
@@ -18,17 +21,31 @@ def game(request):
 
 ########################################################################
 @login_required
-def game_ajax(request):
-    if request.method == "POST":
-        player_id = int(request.POST["player_id"])
-        player = Player.objects.filter(user=request.user, id=player_id).first()
-        query_set = PlayerMessage.object.filter(player=player)
-        messages = [m.text for m in query_set.order_by("created")]
-        query_set.delete()
-        output = {"hit_points": player.hit_points,
-                  "max_hit_points": player.max_hit_points,
-                  "messages": messages}
-        print "text:", request.POST.get("text")
-        return JsonResponse({"success": True, "foo": "bar"})
-    else:
-        return HttpResponse("<p>Testing, testing.</p>", content_type="text/plain")
+def get_messages(request):
+    logger.info("get_messages called")
+    if request.method != "POST":
+        return HttpResponseForbidden()
+    print "GET:", request.POST
+    player_id = int(request.POST["player_id"])
+    player = Player.objects.filter(user=request.user, id=player_id).first()
+    print "player:", player
+    query_set = PlayerMessage.objects.filter(player=player)
+    messages = [m.text for m in query_set.order_by("created")]
+    query_set.delete()
+    output = {"hit_points": player.hit_points,
+              "max_hit_points": player.max_hit_points,
+              "messages": messages}
+    return JsonResponse(output)
+
+
+########################################################################
+@login_required
+def submit_command(request):
+    logger.info("submit_command called")
+    if request.method != "POST":
+        return HttpResponseForbidden()
+    player_id = int(request.POST["player_id"])
+    player = Player.objects.filter(user=request.user, id=player_id).first()
+    text = request.POST["text"]
+    print "text: '%s'" % text
+    return JsonResponse({"received": True})

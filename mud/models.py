@@ -13,15 +13,15 @@ class Item(models.Model):
     max = models.PositiveSmallIntegerField(default=0)
     speed = models.PositiveSmallIntegerField(default=0)
     price = models.PositiveIntegerField(default=0)
-    STRENGTH = models.PositiveSmallIntegerField(default=0)
-    HEALTH = models.PositiveSmallIntegerField(default=0)
-    AGILITY = models.PositiveSmallIntegerField(default=0)
-    MAX_HIT_POINTS = models.PositiveSmallIntegerField(default=0)
-    ACCURACY = models.PositiveSmallIntegerField(default=0)
-    DODGING = models.PositiveSmallIntegerField(default=0)
-    STRIKE_DAMAGE = models.PositiveSmallIntegerField(default=0)
-    DAMAGE_ABSORB = models.PositiveSmallIntegerField(default=0)
-    HP_REGEN = models.PositiveSmallIntegerField(default=0)
+    strength = models.PositiveSmallIntegerField(default=0)
+    health = models.PositiveSmallIntegerField(default=0)
+    agility = models.PositiveSmallIntegerField(default=0)
+    max_hit_points = models.PositiveSmallIntegerField(default=0)
+    accuracy = models.PositiveSmallIntegerField(default=0)
+    dodging = models.PositiveSmallIntegerField(default=0)
+    strike_damage = models.PositiveSmallIntegerField(default=0)
+    damage_absorb = models.PositiveSmallIntegerField(default=0)
+    hp_regen = models.PositiveSmallIntegerField(default=0)
 
     ####################################################################
     def __unicode__(self):
@@ -191,11 +191,11 @@ class Enemy(models.Model):
             damage = random.randint(self.weapon.min, self.weapon.max)
             self.next_attack_time = self.weapon.speed
 
-        if random.randint(0, 99) >= (self.accuracy - p.attributes.DODGING):
+        if random.randint(0, 99) >= (self.accuracy - p.attributes.dodging):
             self.room.send_room("<white>{} swings at {} but misses!".format(self.name, p.name))
             return
         damage += self.strike_damage
-        damage -= p.attributes.DAMAGE_ABSORB
+        damage -= p.attributes.damage_absorb
         if damage < 1:
             damage = 1
 
@@ -240,23 +240,57 @@ class Player(models.Model):
     logged_in = models.BooleanField(db_index=True, default=False)
     active = models.BooleanField(db_index=True, default=False)
     newbie = models.BooleanField(default=True)
-    BASE_STRENGTH = models.PositiveSmallIntegerField(default=1)
-    BASE_HEALTH = models.PositiveSmallIntegerField(default=1)
-    BASE_AGILITY = models.PositiveSmallIntegerField(default=1)
-    BASE_MAX_HIT_POINTS = models.PositiveSmallIntegerField(default=0)
-    BASE_ACCURACY = models.PositiveSmallIntegerField(default=0)
-    BASE_DODGING = models.PositiveSmallIntegerField(default=0)
-    BASE_STRIKE_DAMAGE = models.PositiveSmallIntegerField(default=0)
-    BASE_DAMAGE_ABSORB = models.PositiveSmallIntegerField(default=0)
-    BASE_HP_REGEN = models.PositiveSmallIntegerField(default=0)
+    base_strength = models.PositiveSmallIntegerField(default=1)
+    base_health = models.PositiveSmallIntegerField(default=1)
+    base_agility = models.PositiveSmallIntegerField(default=1)
+    base_max_hit_points = models.PositiveSmallIntegerField(default=0)
+    base_accuracy = models.PositiveSmallIntegerField(default=0)
+    base_dodging = models.PositiveSmallIntegerField(default=0)
+    base_strike_damage = models.PositiveSmallIntegerField(default=0)
+    base_damage_absorb = models.PositiveSmallIntegerField(default=0)
+    base_hp_regen = models.PositiveSmallIntegerField(default=0)
+
+    modifier_strength = models.PositiveSmallIntegerField(default=0)
+    modifier_health = models.PositiveSmallIntegerField(default=0)
+    modifier_agility = models.PositiveSmallIntegerField(default=0)
+    modifier_max_hit_points = models.PositiveSmallIntegerField(default=0)
+    modifier_accuracy = models.PositiveSmallIntegerField(default=0)
+    modifier_dodging = models.PositiveSmallIntegerField(default=0)
+    modifier_strike_damage = models.PositiveSmallIntegerField(default=0)
+    modifier_damage_absorb = models.PositiveSmallIntegerField(default=0)
+    modifier_hp_regen = models.PositiveSmallIntegerField(default=0)
+
+    strength = models.PositiveSmallIntegerField(default=0)
+    health = models.PositiveSmallIntegerField(default=0)
+    agility = models.PositiveSmallIntegerField(default=0)
+    max_hit_points = models.PositiveSmallIntegerField(default=0)
+    accuracy = models.PositiveSmallIntegerField(default=0)
+    dodging = models.PositiveSmallIntegerField(default=0)
+    strike_damage = models.PositiveSmallIntegerField(default=0)
+    damage_absorb = models.PositiveSmallIntegerField(default=0)
+    hp_regen = models.PositiveSmallIntegerField(default=0)
 
     ####################################################################
     def __unicode__(self):
         return self.name
 
     ####################################################################
+    def recalculate_stats(self):
+        raise NotImplementedError
+
+    ####################################################################
+    @property
+    def max_hit_points(self):
+        return int(10 + (self.level * self.health / 1.5)) + self.modifier_max_hit_points + self.base_max_hit_points
+
+    ####################################################################
+    @property
+    def health(self):
+        return self.base_health + self.modifier_health
+
+    ####################################################################
     def perform_heal_cycle(self):
-        self.add_hit_points(self.HP_REGEN)
+        self.add_hit_points(self.hp_regen)
 
     ####################################################################
     def send_string(self, message):

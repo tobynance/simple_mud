@@ -102,7 +102,28 @@ class Migration(migrations.Migration):
                 ('BASE_STRIKE_DAMAGE', models.PositiveSmallIntegerField(default=0)),
                 ('BASE_DAMAGE_ABSORB', models.PositiveSmallIntegerField(default=0)),
                 ('BASE_HP_REGEN', models.PositiveSmallIntegerField(default=0)),
+                ('MODIFIER_STRENGTH', models.PositiveSmallIntegerField(default=0)),
+                ('MODIFIER_HEALTH', models.PositiveSmallIntegerField(default=0)),
+                ('MODIFIER_AGILITY', models.PositiveSmallIntegerField(default=0)),
+                ('MODIFIER_MAX_HIT_POINTS', models.PositiveSmallIntegerField(default=0)),
+                ('MODIFIER_ACCURACY', models.PositiveSmallIntegerField(default=0)),
+                ('MODIFIER_DODGING', models.PositiveSmallIntegerField(default=0)),
+                ('MODIFIER_STRIKE_DAMAGE', models.PositiveSmallIntegerField(default=0)),
+                ('MODIFIER_DAMAGE_ABSORB', models.PositiveSmallIntegerField(default=0)),
+                ('MODIFIER_HP_REGEN', models.PositiveSmallIntegerField(default=0)),
                 ('armor', models.ForeignKey(related_name='+', default=None, blank=True, to='mud.Item', null=True)),
+            ],
+            options={
+            },
+            bases=(models.Model,),
+        ),
+        migrations.CreateModel(
+            name='PlayerMessage',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('text', models.TextField()),
+                ('created', models.DateTimeField(default=django.utils.timezone.now)),
+                ('player', models.ForeignKey(to='mud.Player')),
             ],
             options={
             },
@@ -149,18 +170,6 @@ class Migration(migrations.Migration):
             },
             bases=(models.Model,),
         ),
-        migrations.CreateModel(
-            name='PlayerMessage',
-            fields=[
-                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
-                ('text', models.TextField()),
-                ('created', models.DateTimeField(default=django.utils.timezone.now)),
-                ('player', models.ForeignKey(to='mud.Player')),
-            ],
-            options={
-            },
-            bases=(models.Model,),
-        ),
         migrations.AlterUniqueTogether(
             name='storeitem',
             unique_together=set([('store', 'item')]),
@@ -169,12 +178,6 @@ class Migration(migrations.Migration):
             model_name='player',
             name='room',
             field=models.ForeignKey(to='mud.Room', on_delete=django.db.models.deletion.PROTECT),
-            preserve_default=True,
-        ),
-        migrations.AddField(
-            model_name='player',
-            name='last_command',
-            field=models.CharField(default=b'look', max_length=60),
             preserve_default=True,
         ),
         migrations.AddField(
@@ -215,7 +218,7 @@ class Migration(migrations.Migration):
         ),
         migrations.AlterUniqueTogether(
             name='enemyloot',
-            unique_together={('enemy_template', 'item')},
+            unique_together=set([('enemy_template', 'item')]),
         ),
         migrations.AddField(
             model_name='enemy',

@@ -1,5 +1,6 @@
 from django.db import models
 import random
+from django.utils import timezone
 from utils import ItemType, RoomType, clamp
 from django.contrib.auth.models import User
 
@@ -260,3 +261,9 @@ class Player(models.Model):
     ####################################################################
     def send_string(self, message):
         print "sending message to %s: %s" % (self, message)
+
+
+########################################################################
+class PlayerMessage(models.Model):
+    text = models.TextField()
+    created = models.DateTimeField(default=timezone.now)

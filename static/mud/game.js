@@ -13,7 +13,7 @@ $(document).ready(function(){
     $("#message_submit").click(function() {
         var user_text = $("#user_text");
         var client_message = user_text.val();
-        var data = {text: client_message, csrfmiddlewaretoken: CSRF_TOKEN};
+        var data = {player_id: 1, text: client_message, csrfmiddlewaretoken: CSRF_TOKEN};
         $.ajax({
             type: "POST",
             url: AJAX_URL,

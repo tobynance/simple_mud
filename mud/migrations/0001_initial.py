@@ -3,6 +3,7 @@ from __future__ import unicode_literals
 
 from django.db import models, migrations
 import django.db.models.deletion
+import django.utils.timezone
 from django.conf import settings
 
 
@@ -143,6 +144,18 @@ class Migration(migrations.Migration):
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('item', models.ForeignKey(to='mud.Item', on_delete=django.db.models.deletion.PROTECT)),
                 ('store', models.ForeignKey(to='mud.Store', on_delete=django.db.models.deletion.PROTECT)),
+            ],
+            options={
+            },
+            bases=(models.Model,),
+        ),
+        migrations.CreateModel(
+            name='PlayerMessage',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('text', models.TextField()),
+                ('created', models.DateTimeField(default=django.utils.timezone.now)),
+                ('player', models.ForeignKey(to='mud.Player')),
             ],
             options={
             },

@@ -8,18 +8,20 @@ from mud.models import Player, PlayerMessage
 def home(request):
     return render(request, "mud/index.html")
 
+
 ########################################################################
 @login_required
 def game(request):
     context = {"player": None}
     return render(request, "mud/game.html", context)
 
+
 ########################################################################
 @login_required
 def game_ajax(request):
     if request.method == "POST":
         player_id = int(request.POST["player_id"])
-        player = Player.objects.get(id=player_id)
+        player = Player.objects.filter(user=request.user, id=player_id).first()
         query_set = PlayerMessage.object.filter(player=player)
         messages = [m.text for m in query_set.order_by("created")]
         query_set.delete()

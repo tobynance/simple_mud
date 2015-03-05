@@ -34,5 +34,14 @@
           "email": "test.user@draft2digital.com",
           "date_joined": "2014-09-10T21:24:52.579Z"
         }
+    },
+    {
+        "model": "mud.player",
+        "pk": 1,
+        "fields": {
+          "user": 1,
+          "name": "toby",
+          "room": 1
+        }
     }
 ]

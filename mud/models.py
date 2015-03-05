@@ -265,5 +265,6 @@ class Player(models.Model):
 
 ########################################################################
 class PlayerMessage(models.Model):
+    player = models.ForeignKey(Player)
     text = models.TextField()
     created = models.DateTimeField(default=timezone.now)

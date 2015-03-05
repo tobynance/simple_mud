@@ -84,3 +84,11 @@ USE_TZ = True
 STATIC_URL = '/static/'
 
 STATICFILES_DIRS = [os.path.join(BASE_DIR, "static")]
+
+# CELERY SETTINGS
+BROKER_URL = 'redis://localhost:6379/0'
+# BROKER_URL = "amqp://guest@toby-desktop//"
+# CELERY_RESULT_BACKEND = "amqp://guest@toby-desktop//"
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'

@@ -26,9 +26,10 @@ def main():
             print "Removing file '%s'" % filename
             os.remove(os.path.join(MIGRATION_FOLDER, filename))
         subprocess.call([PYTHON, "manage.py", "makemigrations"])
-        subprocess.call([PYTHON, "manage.py", "migrate"])
     finally:
         os.rename(TEMP_DATA_MIGRATION_FILE, DATA_MIGRATION_FILE)
+
+    subprocess.call([PYTHON, "manage.py", "migrate"])
 
 
 ########################################################################

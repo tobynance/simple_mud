@@ -245,6 +245,7 @@ class Player(models.Model):
     logged_in = models.BooleanField(db_index=True, default=False)
     active = models.BooleanField(db_index=True, default=False)
     newbie = models.BooleanField(default=True)
+
     base_strength = models.PositiveSmallIntegerField(default=1)
     base_health = models.PositiveSmallIntegerField(default=1)
     base_agility = models.PositiveSmallIntegerField(default=1)

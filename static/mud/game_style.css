@@ -57,3 +57,10 @@ a {
 .logout { float:right; }
 
 .msgln { margin:0 0 2px 0; }
+
+.magenta { color: #FF00FF; }
+.bold { font-weight: bold; }
+.green { color: #00FF00; }
+.yellow { color: #FFFF00; }
+.cyan { color: #00FFFF; }
+.red { color: #FF0000; }

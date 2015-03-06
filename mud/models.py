@@ -1,7 +1,8 @@
 import logging
-from django.db import models
+from django.db import models, transaction
 import random
 from django.utils import timezone
+from attributes import Direction
 from utils import ItemType, RoomType, clamp
 from django.contrib.auth.models import User
 
@@ -59,9 +60,13 @@ class Room(models.Model):
     ####################################################################
     @property
     def connecting_rooms(self):
-        for room in [self.north, self.east, self.south, self.west]:
+        rooms = {}
+        for d in Direction:
+            room = getattr(self, d.name.lower())
             if room:
-                yield room
+                rooms[d] = room
+        print "rooms:", rooms
+        return rooms
 
 ########################################################################
 class Store(models.Model):
@@ -236,6 +241,7 @@ class Enemy(models.Model):
 
 ########################################################################
 class Player(models.Model):
+    max_items = 16
     user = models.ForeignKey(User)
     last_command = models.CharField(max_length=60, default="look")
     name = models.CharField(max_length=60, db_index=True, unique=True)
@@ -248,6 +254,7 @@ class Player(models.Model):
     weapon = models.ForeignKey(Item, null=True, blank=True, default=None, related_name="+")
     armor = models.ForeignKey(Item, null=True, blank=True, default=None, related_name="+")
     room = models.ForeignKey(Room, on_delete=models.PROTECT)
+    inventory = models.ManyToManyField(Item)
     logged_in = models.BooleanField(db_index=True, default=False)
     active = models.BooleanField(db_index=True, default=False)
     newbie = models.BooleanField(default=True)
@@ -368,6 +375,52 @@ class Player(models.Model):
     ####################################################################
     def send_string(self, message):
         PlayerMessage.objects.create(player=self, text=message)
+
+    ####################################################################
+    def set_active(self, active):
+        if active is True:
+            self.active = True
+            self.save(update_fields=["active"])
+        else:
+            self.active = False
+            self.last_command = "look"
+            self.save(update_fields=["active", "last_command"])
+
+    ####################################################################
+    def drop_item(self, item):
+        if item in self.inventory:
+            self.inventory.remove(item)
+            if item == self.weapon:
+                self.weapon = None
+                self.save(update_fields=["weapon"])
+            if item == self.armor:
+                self.armor = None
+                self.save(update_fields=["armor"])
+            return True
+        else:
+            return False
+
+    ####################################################################
+    def pick_up_item(self, item):
+        if self.inventory.count() < self.max_items:
+            self.inventory.add(item)
+
+    ####################################################################
+    def buy_item(self, item):
+        if self.money >= item.price and self.inventory.count() < self.max_items:
+            with transaction.atomic():
+                self.money -= item.price
+                self.inventory.add(item)
+                self.save(update_fields=["money"])
+            return True
+        else:
+            return False
+
+    ####################################################################
+    def sell_item(self, item):
+        with transaction.atomic():
+            self.drop_item(item)
+            self.money += item.price
 
 
 ########################################################################

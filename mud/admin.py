@@ -6,9 +6,9 @@ import mud.models
 class ItemAdmin(admin.ModelAdmin):
     search_fields = ("name",)
     list_display = ("name", "type", "min", "max", "speed", "price",
-                    "STRENGTH", "HEALTH", "AGILITY", "MAX_HIT_POINTS",
-                    "ACCURACY", "DODGING", "STRIKE_DAMAGE",
-                    "DAMAGE_ABSORB", "HP_REGEN")
+                    "strength", "health", "agility", "max_hit_points",
+                    "accuracy", "dodging", "strike_damage",
+                    "damage_absorb", "hp_regen")
 
 admin.site.register(mud.models.Item, ItemAdmin)
 

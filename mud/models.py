@@ -1,8 +1,13 @@
+import logging
 from django.db import models
 import random
 from django.utils import timezone
 from utils import ItemType, RoomType, clamp
 from django.contrib.auth.models import User
+
+logger = logging.getLogger(__name__)
+MODIFIER_FIELDS = ["modifier_strength", "modifier_health", "modifier_agility", "modifier_max_hit_points", "modifier_accuracy", "modifier_dodging", "modifier_strike_damage", "modifier_damage_absorb", "modifier_hp_regen"]
+ATTRIBUTE_FIELDS = ["strength", "health", "agility", "max_hit_points", "accuracy", "dodging", "strike_damage", "damage_absorb", "hp_regen"]
 
 
 ########################################################################
@@ -260,23 +265,20 @@ class Player(models.Model):
     modifier_damage_absorb = models.PositiveSmallIntegerField(default=0)
     modifier_hp_regen = models.PositiveSmallIntegerField(default=0)
 
-    strength = models.PositiveSmallIntegerField(default=0)
-    health = models.PositiveSmallIntegerField(default=0)
-    agility = models.PositiveSmallIntegerField(default=0)
-    max_hit_points = models.PositiveSmallIntegerField(default=0)
-    accuracy = models.PositiveSmallIntegerField(default=0)
-    dodging = models.PositiveSmallIntegerField(default=0)
-    strike_damage = models.PositiveSmallIntegerField(default=0)
-    damage_absorb = models.PositiveSmallIntegerField(default=0)
-    hp_regen = models.PositiveSmallIntegerField(default=0)
+    ####################################################################
+    @property
+    def strength(self):
+        return self.base_strength + self.modifier_strength
 
     ####################################################################
-    def __unicode__(self):
-        return self.name
+    @property
+    def health(self):
+        return self.base_health + self.modifier_health
 
     ####################################################################
-    def recalculate_stats(self):
-        raise NotImplementedError
+    @property
+    def agility(self):
+        return self.base_agility + self.modifier_agility
 
     ####################################################################
     @property
@@ -285,12 +287,76 @@ class Player(models.Model):
 
     ####################################################################
     @property
-    def health(self):
-        return self.base_health + self.modifier_health
+    def hp_regen(self):
+        return (self.health // 5) + self.level + self.modifier_hp_regen + self.base_hp_regen
+
+    ####################################################################
+    @property
+    def accuracy(self):
+        return self.agility * 3 + self.modifier_accuracy + self.base_accuracy
+
+    ####################################################################
+    @property
+    def dodging(self):
+        return self.agility * 3 + self.modifier_dodging + self.base_dodging
+
+    ####################################################################
+    @property
+    def strike_damage(self):
+        return (self.strength // 5) + self.modifier_strike_damage + self.base_strike_damage
+
+    ####################################################################
+    @property
+    def damage_absorb(self):
+        return (self.strength // 5) + self.modifier_damage_absorb + self.base_damage_absorb
+
+    ####################################################################
+    def __unicode__(self):
+        return self.name
+
+    ####################################################################
+    def recalculate_stats(self):
+        logger.debug("Recalculating...")
+
+        for field in MODIFIER_FIELDS:
+            setattr(self, field, 0)
+
+        if self.weapon:
+            self._add_dynamic_bonuses(self.weapon)
+        if self.armor:
+            self._add_dynamic_bonuses(self.armor)
+
+        # make sure the hit points don't overflow if your max goes down
+        if self.hit_points > self.max_hit_points:
+            self.hit_points = self.max_hit_points
+            self.save(MODIFIER_FIELDS + ["hit_points"])
+        else:
+            self.save(update_fields=MODIFIER_FIELDS)
+
+    ####################################################################
+    def _add_dynamic_bonuses(self, item):
+        if item:
+            for field in ATTRIBUTE_FIELDS:
+                value = getattr(self, "modifier_" + field) + getattr(item, field)
+                setattr(self, field, value)
 
     ####################################################################
     def perform_heal_cycle(self):
         self.add_hit_points(self.hp_regen)
+
+    ####################################################################
+    def add_hit_points(self, hit_points, save=True):
+        self.hit_points += hit_points
+        self.hit_points = clamp(self.hit_points, 0, self.attributes.MAX_HIT_POINTS)
+        if save:
+            self.save(update_fields=["hit_points"])
+
+    ####################################################################
+    def set_hit_points(self, hit_points, save=True):
+        self.hit_points = hit_points
+        self.hit_points = clamp(self.hit_points, 0, self.attributes.MAX_HIT_POINTS)
+        if save:
+            self.save(update_fields=["hit_points"])
 
     ####################################################################
     def send_string(self, message):

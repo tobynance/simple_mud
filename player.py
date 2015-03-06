@@ -183,15 +183,6 @@ class Player(Entity):
             return self.protocol.get_remote_address()
 
     ####################################################################
-    def able_to_attack(self):
-        now = time.clock()
-        return now >= self.next_attack_time
-
-    ####################################################################
-    def raise_level(self):
-        raise NotImplementedError
-
-    ####################################################################
     def need_for_level(self, level=None):
         if level is None:
             level = self.level + 1
@@ -218,10 +209,6 @@ class Player(Entity):
     ####################################################################
     def add_dynamic_bonuses(self, item):
         self.attributes.add_dynamic_bonuses(item)
-
-    ####################################################################
-    def add_to_base_attr(self, attr, val):
-        raise NotImplementedError
 
     ####################################################################
     def add_hit_points(self, hit_points):

@@ -56,6 +56,12 @@ class Room(models.Model):
         for player in self.player_set.all():
             player.send_string(message)
 
+    ####################################################################
+    @property
+    def connecting_rooms(self):
+        for room in [self.north, self.east, self.south, self.west]:
+            if room:
+                yield room
 
 ########################################################################
 class Store(models.Model):
@@ -361,7 +367,7 @@ class Player(models.Model):
 
     ####################################################################
     def send_string(self, message):
-        print "sending message to %s: %s" % (self, message)
+        PlayerMessage.objects.create(player=self, text=message)
 
 
 ########################################################################

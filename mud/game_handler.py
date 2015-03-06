@@ -4,7 +4,7 @@ import datetime
 import random
 from attributes import Direction
 from mud.models import Player
-from training_handler import TrainingHandler
+#from training_handler import TrainingHandler
 from utils import find_all_by_name, double_find_by_name
 
 logger = logging.getLogger(__name__)
@@ -230,7 +230,7 @@ def goto_train(self):
 
 ####################################################################
 def handle_look(player, data, first_word, rest):
-    self.player.send_string(self.print_room(self.player.room))
+    player.send_string(print_room(player))
 
 ####################################################################
 def handle_north(player, data, first_word, rest):
@@ -330,7 +330,7 @@ def sell(player, item_name):
 # Base Handler Methods                                           ###
 ####################################################################
 ####################################################################
-def enter(self):
+def enter(player):
     logger.info("%s - enter called in %s", self.protocol.get_remote_address(), self.__class__.__name__)
     self.last_command = ""
     self.send_game("<bold><green>{} has entered the realm.".format(self.player.name))
@@ -340,7 +340,7 @@ def enter(self):
     if self.player.newbie:
         self.goto_train()
     else:
-        self.player.send_string(self.print_room(self.player.room))
+        player.send_string(print_room(player))
 
 ####################################################################
 def leave(self):
@@ -360,7 +360,7 @@ def hung_up(self):
     self.logout_message("%s has suddenly disappeared from the realm." % self.player.name)
 
 ####################################################################
-def flooded(self):
+def flooded(player):
     """
     This notifies the handler that a connection is being kicked
     due to flooding the server.
@@ -368,33 +368,34 @@ def flooded(self):
     player.player_database.logout(self.player.id)
     self.logout_message("%s has been kicked out for flooding!" % self.player.name)
 
+
 ########################################################################
 # Sending Methods                                                    ###
 ########################################################################
 ########################################################################
-def send_global(text):
+def send_global(player, text):
     """Sends a string to everyone connected."""
     for player in Player.objects.filter(logged_in=True):
         player.send_string(text)
 
+
 ########################################################################
-def send_game(text):
+def send_game(player, text):
     """Sends a string to everyone 'within the game'"""
     for player in Player.objects.filter(logged_in=True):
-    for p in player.player_database.all_active():
-        p.send_string(text)
+        player.send_string(text)
 
 
 ########################################################################
-def logout_message(reason):
+def logout_message(player, reason):
     """Sends a logout message"""
-    send_game("<red><bold>%s" % reason)
+    send_game(player, "<red><bold>%s" % reason)
 
 
 ########################################################################
-def announce(announcement):
+def announce(player, announcement):
     """Sends a system announcement"""
-    send_global("<cyan><bold>System Announcement: %s<newline>" % announcement)
+    send_global(player, "<cyan><bold>System Announcement: %s<newline>" % announcement)
 
 
 ########################################################################
@@ -546,11 +547,13 @@ def remove_item(player, item_name):
     player.send_string("<red><bold>" + "Could not remove item!")
     return False
 
+
 ####################################################################
 # Map Functions Added in Chapter 9                               ###
 ####################################################################
 ####################################################################
-def print_room(player, current_room):
+def print_room(player):
+    current_room = player.room
     description = ["<newline><bold><white>{room.name}<newline>",
                    "<reset><magenta>{room.description}<newline>",
                    "<reset><green>exits: "]
@@ -559,7 +562,7 @@ def print_room(player, current_room):
     description.append(paths)
     description.append("<newline>")
 
-    items = [item.name for item in current_room.items]
+    items = [item.name for item in current_room.items.all()]
     if current_room.money:
         items.insert(0, "${}".format(current_room.money))
     if items:
@@ -567,14 +570,15 @@ def print_room(player, current_room):
         description.append(", ".join(items))
         description.append("<newline>")
 
-    player_names = [p.name for p in current_room.players if p.active and p != player]
+    player_names = [p.name for p in current_room.player_set.filter(active=True).exclude(id=player.id)]
     if player_names:
         description.append("<reset><white>People: ")
         description.append(", ".join(player_names))
         description.append("<newline>")
-    if current_room.enemies:
+    enemies = current_room.enemy_set.all()
+    if enemies:
         description.append("<reset><cyan>Enemies: ")
-        description.append(", ".join([e.name for e in current_room.enemies]))
+        description.append(", ".join([e.name for e in enemies]))
         description.append("<newline>")
 
     return ("".join(description)).format(room=current_room)
@@ -596,7 +600,7 @@ def move(player, direction):
         player.send_string("<green>You walk {}.".format(direction.name))
         player.room = new_room
         new_room.add_player(player)
-        player.send_string(self.print_room(new_room))
+        player.send_string(print_room(player))
     else:
         player.send_string("<bold><red>You can't go that way!")
 

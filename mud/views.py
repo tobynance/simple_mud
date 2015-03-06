@@ -1,6 +1,7 @@
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, JsonResponse, HttpResponseForbidden
 from django.shortcuts import render
+from mud import game_handler
 from mud.models import Player, PlayerMessage
 import logging
 
@@ -46,6 +47,5 @@ def submit_command(request):
         return HttpResponseForbidden()
     player_id = int(request.POST["player_id"])
     player = Player.objects.filter(user=request.user, id=player_id).first()
-    text = request.POST["text"]
-    print "text: '%s'" % text
+    game_handler.handle(player, "look")
     return JsonResponse({"received": True})

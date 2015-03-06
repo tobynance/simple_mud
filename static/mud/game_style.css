@@ -1,7 +1,8 @@
 /* CSS Document */
 body {
     font:12px arial;
-    color: #222;
+    color: #FFF;
+    background-color: #000;
     text-align:center;
     padding:35px; }
 
@@ -20,7 +21,7 @@ a {
 #wrapper, #loginform {
     margin:0 auto;
     padding-bottom:25px;
-    background:#EBF4FB;
+    background:#000;
     width:504px;
     border:1px solid #ACD8F0; }
 
@@ -33,7 +34,7 @@ a {
     margin:0 auto;
     margin-bottom:25px;
     padding:10px;
-    background:#fff;
+    background:#000;
     height:270px;
     width:430px;
     border:1px solid #ACD8F0;
@@ -41,6 +42,8 @@ a {
 
 #user_text {
     width:395px;
+    background-color: #000;
+    color: #FFF;
     border:1px solid #ACD8F0; }
 
 #message_submit { width: 60px; }

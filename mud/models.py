@@ -4,7 +4,7 @@ import random
 import math
 from django.utils import timezone
 from attributes import Direction
-from utils import ItemType, RoomType, clamp
+from utils import ItemType, RoomType, clamp, double_find_by_name
 from django.contrib.auth.models import User
 
 logger = logging.getLogger(__name__)
@@ -37,6 +37,7 @@ class Item(models.Model):
 
 ########################################################################
 class Room(models.Model):
+    max_items = 32
     name = models.CharField(max_length=60, db_index=True)
     type = models.PositiveSmallIntegerField(choices=ItemType.choices(), default=RoomType.PLAIN_ROOM)
     description = models.TextField()
@@ -72,6 +73,20 @@ class Room(models.Model):
     ####################################################################
     def get_adjacent_room(self, direction):
         return self.connecting_rooms[direction]
+
+    ####################################################################
+    def find_enemy(self, enemy_name):
+        return double_find_by_name(enemy_name, self.enemy_set.all())
+
+    ####################################################################
+    def add_item(self, item):
+        while self.items.all().count() >= self.max_items:
+            self.remove_item(self.items.all().first())
+        self.items.add(item)
+
+    ####################################################################
+    def remove_item(self, item):
+        self.items.remove(item)
 
 
 ########################################################################
@@ -193,11 +208,6 @@ class Enemy(models.Model):
         return self.template.money_max
 
     ####################################################################
-    @property
-    def loot(self):
-        return self.template.loot_set
-
-    ####################################################################
     def add_hit_points(self, hit_points):
         self.hit_points += hit_points
         self.hit_points = clamp(self.hit_points, 0, self.template.hit_points)
@@ -236,10 +246,10 @@ class Enemy(models.Model):
             self.room.money += money
             self.room.send_room("<cyan>$%s drops to the ground." % money)
 
-        for item, chance in self.loot:
-            if random.randint(0, 99) < chance:
-                self.room.add_item(item)
-                self.room.send_room("<cyan>%s drops to the ground." % item.name)
+        for enemy_loot in EnemyLoot.objects.filter(enemy_template=self.template):
+            if random.randint(0, 99) < enemy_loot.chance:
+                self.room.add_item(enemy_loot.item)
+                self.room.send_room("<cyan>%s drops to the ground." % enemy_loot.item.name)
         killer.experience += self.experience
         killer.send_string("<cyan><bold>You gain %s experience." % self.experience)
         Enemy.objects.filter(id=self.id).delete()
@@ -458,6 +468,73 @@ class Player(models.Model):
         self.armor = item
         self.save(update_fields=["armor"])
         self.recalculate_stats()
+
+    ####################################################################
+    def killed(self):
+        self.room.send_room("<p class='bold red'>{} has died!</p>".format(self.name))
+        money = self.money // 10
+        # calculate how much money to drop
+        if money > 0:
+            self.room.money += money
+            self.money -= money
+            self.room.send_room("<p class='cyan'>${} drops to the ground.</p>".format(money))
+        if self.inventory:
+            some_item = random.choice(self.inventory)
+            self.drop_item(some_item)
+            self.room.add_item(some_item)
+            self.room.send_room("<p class='cyan'>{} drops to the ground.</p>".format(some_item.name))
+
+        exp = self.experience // 10
+        self.experience -= exp  # subtract 10% of player experience
+        self.room.remove_player(self)
+        self.room = room.room_database.by_id[1]
+        self.room.add_player(self)
+
+        # set player HP to 70%
+        self.set_hit_points(int(self.attributes.MAX_HIT_POINTS * 0.7))
+
+        self.send_string("<p class='bold white'>You have died, but you have resurrected in %s</p>" % self.room.name)
+        self.send_string("<p class='bold red'>You have lost %s experience!</p>" % exp)
+        self.room.send_room("<p class='bold white'>%s appears out of nowhere!!</p>" % self.name)
+
+    ####################################################################
+    def attack(self, enemy_name):
+        # check if the player can attack yet
+        if self.next_attack_time > 0:
+            self.send_string("<p class='bold red'>You can't attack yet!</p>")
+            return
+        if enemy_name is None:
+            # If there are no enemies to attack, tell the player
+            if not Enemy.objects.filter(room=self.room).exists():
+                self.send_string("<p class='bold red'>You don't see anything to attack here!</p>")
+                return
+            e = random.choice(list(self.room.enemy_set.all()))
+        else:
+            e = self.room.find_enemy(enemy_name)
+            # if we can't find the enemy, tell the player
+            if e is None:
+                self.send_string("<p class='bold red'>You don't see that here!</p>")
+                return
+
+        if self.weapon is None:  # fists, 1-3 damage, 1 second swing time
+            damage = random.randint(1, 3)
+            self.next_attack_time = 1
+        else:
+            damage = random.randint(self.weapon.min, self.weapon.max)
+            self.next_attack_time = self.weapon.speed
+
+        if random.randint(0, 99) >= (self.accuracy - e.dodging):
+            self.room.send_room("<p class='white'>{} swings at {} but misses!</p>".format(self.name, e.name))
+            return
+        damage += self.strike_damage
+        damage -= e.damage_absorb
+        if damage < 1:
+            damage = 1
+
+        e.add_hit_points(-damage)
+        self.room.send_room("<p class='bold red'>{} hits {} for {} damage!</p>".format(self.name, e.name, damage))
+        if e.hit_points <= 0:
+            e.killed(self)
 
 
 ########################################################################

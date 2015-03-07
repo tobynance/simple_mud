@@ -2,6 +2,7 @@ import logging
 import re
 import datetime
 import random
+from django.shortcuts import render_to_response
 from attributes import Direction
 from mud.models import Player, Store, StoreItem
 #from training_handler import TrainingHandler
@@ -44,6 +45,7 @@ ADMIN_HELP = "<p class='green'>" + \
 HELP_END = "<p class='bold'>%s</p>" % ("-" * 80)
 
 system_start_time = datetime.datetime.now()
+
 
 ########################################################################
 # Handler Methods                                                    ###
@@ -384,13 +386,8 @@ def who_list(who):
 ########################################################################
 def print_help(player):
     """Prints out a help listing based on a user's rank."""
-    # if player_rank is None:
-    #     player_rank = player.PlayerRank.REGULAR
-    help_text = [HELP]
-    # if player_rank >= player.PlayerRank.ADMIN:
-    #     help_text.append(ADMIN_HELP)
-    help_text.append(HELP_END)
-    return "".join(help_text)
+    return render_to_response("mud/help.html", {"admin": player.rank >= PlayerRank.ADMIN})
+
 
 ########################################################################
 def print_stats(player):

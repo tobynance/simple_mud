@@ -112,6 +112,7 @@ class Migration(migrations.Migration):
                 ('modifier_damage_absorb', models.PositiveSmallIntegerField(default=0)),
                 ('modifier_hp_regen', models.PositiveSmallIntegerField(default=0)),
                 ('armor', models.ForeignKey(related_name='+', default=None, blank=True, to='mud.Item', null=True)),
+                ('inventory', models.ManyToManyField(to='mud.Item')),
             ],
             options={
             },

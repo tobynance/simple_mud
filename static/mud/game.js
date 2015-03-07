@@ -22,7 +22,6 @@ $(document).ready(function(){
                 console.log("success");
                 console.log(data);
                 user_text.val("");
-                //user_text.attr("value", "");
                 user_text.focus();
             },
             error: function (data) {

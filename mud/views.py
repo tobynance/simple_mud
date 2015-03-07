@@ -23,7 +23,7 @@ def game(request):
 ########################################################################
 @login_required
 def get_messages(request):
-    logger.info("get_messages called")
+    logger.debug("get_messages called")
     if request.method != "POST":
         return HttpResponseForbidden()
     print "GET:", request.POST

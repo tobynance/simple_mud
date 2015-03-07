@@ -12,7 +12,7 @@ from utils import find_all_by_name, double_find_by_name, ItemType, PlayerRank, R
 logger = logging.getLogger(__name__)
 
 
-HELP = "<table class='help'>" + \
+HELP = "<table class='table_data'>" + \
        "--------------------------------- Command List ---------------------------------<br/>" + \
        " /                            - Repeats your last command exactly.<br/>" + \
        " chat <msg>                   - Sends message to everyone in the game<br/>" + \
@@ -413,12 +413,12 @@ def print_stats(player):
 def print_experience(player):
     """This prints up the experience of the player"""
     need_for_level = player.need_for_level()
-    response = """<table class='help'>
+    response = """<table class='table_data'>
         <tr><td>Level:</td><td>{level}</td><td> </td><td> </td></tr>
         <tr><td>Experience:</td><td>{experience}/{need_for_level} ({exp_percent})</td><td> </td><td> </td></tr>
     </table>"""
     context = {"level": player.level,
-               "experience:": player.experience,
+               "experience": player.experience,
                "need_for_level": need_for_level,
                "exp_percent": 100 * player.experience // need_for_level}
     return response.format(**context)

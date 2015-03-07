@@ -65,3 +65,7 @@ a {
 .cyan { color: #00FFFF; }
 .red { color: #FF0000; }
 .white { color: #FFFFFF; }
+
+.table_data {
+    font-weight: bold;
+    color: #FFFFFF; }

@@ -35,7 +35,7 @@
         "fields": {
             "name": "Training Room", 
             "type": 1, 
-            "description": "This is the training room. An aged guru stands here, practicing his arts. He says <reset>\"If you are ready to advance, young fellow, you may <bold><yellow>train<reset> here.\"", 
+            "description": "This is the training room. An aged guru stands here, practicing his arts. He says <span class='white'>\"If you are ready to advance, young fellow, you may <span class='bold yellow'>train</span> here.\"</span>",
             "max_enemies": 0, 
             "north": 25, 
             "east": null, 
@@ -50,7 +50,7 @@
         "fields": {
             "name": "Bob's Weapon Shop",
             "type": 2, 
-            "description": "Bob's Weapon Shop. You see lots of junk available to buy all over the room, and Bob grinning at you from behind a counter. He says <reset>\"Please, come in, shop around, and take a glance at my <bold><yellow>list<reset>.\"",
+            "description": "Bob's Weapon Shop. You see lots of junk available to buy all over the room, and Bob grinning at you from behind a counter. He says <span class='white'>\"Please, come in, shop around, and take a glance at my <span class='bold yellow'>list</span>.\"</span>",
             "max_enemies": 0, 
             "north": 1, 
             "east": null, 
@@ -256,7 +256,7 @@
         "fields": {
             "name": "Samuels Armorsmith", 
             "type": 2, 
-            "description": "This is Samuels Armorsmith. You see Samuel busy working on some kind of metalwork, and when he notices you he says, <reset>\"Hello, thanks for stopping by. I've got many things in my <bold><yellow>list<reset> you may be interested in.\"", 
+            "description": "This is Samuels Armorsmith. You see Samuel busy working on some kind of metalwork, and when he notices you he says, <span class='white'>\"Hello, thanks for stopping by. I've got many things in my <span class='bold yellow'>list</span> you may be interested in.\"</span>",
             "max_enemies": 0, 
             "north": null, 
             "east": null, 
@@ -271,7 +271,7 @@
         "fields": {
             "name": "The Insane Alchemist's Workshop", 
             "type": 2, 
-            "description": "This is The Insane Alchemist's Workshop. Lots of beakers and test tubes litter the room, most filled with strange-looking liquids. A few of them look like they have exploded. The Mad Alchemist is busy pouring something into a beaker, but he takes the time to tell you, <reset>\"Hello hello! I'm sure I've got something you need, just view my <bold><yellow>list<reset> and tell me what you want!\"", 
+            "description": "This is The Insane Alchemist's Workshop. Lots of beakers and test tubes litter the room, most filled with strange-looking liquids. A few of them look like they have exploded. The Mad Alchemist is busy pouring something into a beaker, but he takes the time to tell you, <span class='white'>\"Hello hello! I'm sure I've got something you need, just view my <span class='bold yellow'>list</span> and tell me what you want!\"</span>",
             "max_enemies": 0, 
             "north": null, 
             "east": 2, 
@@ -540,7 +540,7 @@
         "fields": {
             "name": "The Freak Shop", 
             "type": 2, 
-            "description": "You're in a shop with a very strange looking man standing behind the counter. He gazes at you with one eye (you can't tell what the other one is doing) and screeches <reset>\"Got anything good to sell me, sonny? The things I'm interested are right on this <bold><yellow>list<reset> here.\"", 
+            "description": "You're in a shop with a very strange looking man standing behind the counter. He gazes at you with one eye (you can't tell what the other one is doing) and screeches <span class='white'>\"Got anything good to sell me, sonny? The things I'm interested are right on this <span class='bold yellow'>list</span> here.\"</span>",
             "max_enemies": 0, 
             "north": 15, 
             "east": null, 
@@ -870,7 +870,7 @@
         "fields": {
             "name": "Sea Shanty", 
             "type": 2, 
-            "description": "You're in a little sea shanty, where an old man with a glass eye and a hook for an arm stands, gazing off at something in the ocean. He acknowledges your presense by saying <reset>\"Arrr maytee, the sea's be good this morn. I've many a thing ye may need to fight off them dern rogue shipmen on thee docks, just have a looksee at my <bold><yellow>list<reset> here.\"", 
+            "description": "You're in a little sea shanty, where an old man with a glass eye and a hook for an arm stands, gazing off at something in the ocean. He acknowledges your presence by saying <span class='white'>\"Arrr maytee, the sea's be good this morn. I've many a thing ye may need to fight off them dern rogue shipmen on thee docks, just have a looksee at my <span class='bold yellow'>list</span> here.\"</span>",
             "max_enemies": 0, 
             "north": 52, 
             "east": null, 

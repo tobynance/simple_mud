@@ -1,6 +1,7 @@
 import logging
 from django.db import models, transaction
 import random
+import math
 from django.utils import timezone
 from attributes import Direction
 from utils import ItemType, RoomType, clamp
@@ -67,6 +68,11 @@ class Room(models.Model):
                 rooms[d] = room
         print "rooms:", rooms
         return rooms
+
+    ####################################################################
+    def get_adjacent_room(self, direction):
+        return self.connecting_rooms[direction]
+
 
 ########################################################################
 class Store(models.Model):
@@ -199,7 +205,7 @@ class Enemy(models.Model):
     ####################################################################
     def attack(self):
         # attack a random player in the room
-        p = random.choice(list(self.room.players))
+        p = random.choice(list(self.room.player_set.all()))
         if not self.weapon:  # fists, 1-3 damage, 1 second swing time
             damage = random.randint(1, 3)
             self.next_attack_time = 1
@@ -207,11 +213,11 @@ class Enemy(models.Model):
             damage = random.randint(self.weapon.min, self.weapon.max)
             self.next_attack_time = self.weapon.speed
 
-        if random.randint(0, 99) >= (self.accuracy - p.attributes.dodging):
+        if random.randint(0, 99) >= (self.accuracy - p.dodging):
             self.room.send_room("<white>{} swings at {} but misses!".format(self.name, p.name))
             return
         damage += self.strike_damage
-        damage -= p.attributes.damage_absorb
+        damage -= p.damage_absorb
         if damage < 1:
             damage = 1
 
@@ -351,8 +357,15 @@ class Player(models.Model):
     def _add_dynamic_bonuses(self, item):
         if item:
             for field in ATTRIBUTE_FIELDS:
-                value = getattr(self, "modifier_" + field) + getattr(item, field)
-                setattr(self, field, value)
+                modifier_field = "modifier_" + field
+                value = getattr(self, modifier_field) + getattr(item, field)
+                setattr(self, modifier_field, value)
+
+    ####################################################################
+    def need_for_level(self, level=None):
+        if level is None:
+            level = self.level + 1
+        return int(100 * math.pow(1.4, level - 1) - 1)
 
     ####################################################################
     def perform_heal_cycle(self):
@@ -421,6 +434,30 @@ class Player(models.Model):
         with transaction.atomic():
             self.drop_item(item)
             self.money += item.price
+
+    ####################################################################
+    def remove_weapon(self):
+        self.weapon = None
+        self.save(update_fields=["weapon"])
+        self.recalculate_stats()
+
+    ####################################################################
+    def remove_armor(self):
+        self.armor = None
+        self.save(update_fields=["armor"])
+        self.recalculate_stats()
+
+    ####################################################################
+    def use_weapon(self, item):
+        self.weapon = item
+        self.save(update_fields=["weapon"])
+        self.recalculate_stats()
+
+    ####################################################################
+    def use_armor(self, item):
+        self.armor = item
+        self.save(update_fields=["armor"])
+        self.recalculate_stats()
 
 
 ########################################################################

@@ -3,6 +3,7 @@ import re
 import datetime
 import random
 from django.shortcuts import render_to_response
+from django.template.loader import render_to_string
 from attributes import Direction
 from mud.models import Player, Store, StoreItem
 #from training_handler import TrainingHandler
@@ -256,19 +257,14 @@ def handle_attack(player, data, first_word, rest):
 ####################################################################
 def store_list(player):
     store = Store.objects.get(room=player.room)
-    output = ["<reset><p class='bold'>%s" % ("-" * 80),
-              " {:<30} | {}".format("Item", "Price"),
-              "-" * 80]
-    for item in StoreItem.objects.filter(store=store):
-        output.append(" {:<30} | {}".format(item.name, item.price))
-    output.append("-" * 80)
-    return "</p>".join(output)
+    context = {"items": [si.item for si in StoreItem.objects.filter(store=store)]}
+    return render_to_string("mud/store_items.html", context)
 
 
 ####################################################################
 def buy(player, item_name):
     store = Store.objects.get(room=player.room)
-    items = StoreItem.objects.filter(store=store)
+    items = [si.item for si in StoreItem.objects.filter(store=store)]
     purchase_item = double_find_by_name(item_name, items)
     if purchase_item is None:
         player.send_string("<p class='bold red'>Sorry, we don't have that item!</p>")
@@ -386,58 +382,63 @@ def who_list(who):
 ########################################################################
 def print_help(player):
     """Prints out a help listing based on a user's rank."""
-    return render_to_response("mud/help.html", {"admin": player.rank >= PlayerRank.ADMIN})
+    return render_to_string("mud/help.html", {"admin": player.rank >= PlayerRank.ADMIN})
 
 
 ########################################################################
 def print_stats(player):
     """This prints up the stats of the player"""
-    # TODO: Write this as a table
-    stats = ["<bold><white>"]
-    stats.append("--------------------------------- Your Stats ----------------------------------<br/>")
-    stats.append("Name:        %s<br/>" % player.name)
-    stats.append("Rank:        %s<br/>" % player.rank.name)
-    stats.append("HP/Max:      %s/%s     (%s%%)<br/>" % (player.hit_points, player.attributes.MAX_HIT_POINTS, 100 * player.hit_points // player.attributes.MAX_HIT_POINTS))
-    stats.append(print_experience(player))
-    stats.append("Strength:    {:<5} Accuracy:       {}<br/>".format(player.attributes.STRENGTH, player.attributes.ACCURACY))
-    stats.append("Health:      {:<5} Dodging:        {}<br/>".format(player.attributes.HEALTH, player.attributes.DODGING))
-    stats.append("Agility:     {:<5} Strike Damage:  {}<br/>".format(player.attributes.AGILITY, player.attributes.STRIKE_DAMAGE))
-    stats.append("StatPoints:  {:<5} Damage Absorb:  {}</p>".format(player.stat_points, player.attributes.DAMAGE_ABSORB))
-    return "".join(stats)
-
-####################################################################
-def print_experience(self):
-    """This prints up the experience of the player"""
-    # TODO: Write this as a table
     need_for_level = player.need_for_level()
-    percentage = 100 * player.experience // need_for_level
+    context = {"name": player.name,
+               "rank": player.rank.name,
+               "hp": player.hit_points,
+               "max_hp": player.max_hit_points,
+               "hp_percent": 100 * player.hit_points // player.max_hit_points,
+               "level": player.level,
+               "experience:": player.experience,
+               "need_for_level": need_for_level,
+               "exp_percent": 100 * player.experience // need_for_level,
+               "strength": player.strength,
+               "accuracy": player.accuracy,
+               "health": player.health,
+               "dodging": player.dodging,
+               "agility": player.agility,
+               "strike_damage": player.strike_damage,
+               "stat_points": player.stat_points,
+               "damage_absorb": player.damage_absorb}
+    return render_to_string("mud/player_stats.html", context)
 
-    experience_text = ["<bold><white>"]
-    experience_text.append("Level:       {}<newline>".format(player.level))
-    experience_text.append("Experience:  {}/{} ({}%)<newline>".format(player.experience, need_for_level, percentage))
-    return "".join(experience_text)
 
 ####################################################################
-def print_inventory(self):
-    # TODO: Write this as a table
-    inventory_text = ["<bold><white>"]
-    inventory_text.append("-------------------------------- Your Inventory --------------------------------<newline>")
-    inventory_text.append(" Items:  ")
-    inventory_text.append(", ".join([item.name for item in player.inventory]))
-    inventory_text.append("<newline>")
-    inventory_text.append(" Weapon: ")
+def print_experience(player):
+    """This prints up the experience of the player"""
+    need_for_level = player.need_for_level()
+    response = """<table class='help'>
+        <tr><td>Level:</td><td>{level}</td><td> </td><td> </td></tr>
+        <tr><td>Experience:</td><td>{experience}/{need_for_level} ({exp_percent})</td><td> </td><td> </td></tr>
+    </table>"""
+    context = {"level": player.level,
+               "experience:": player.experience,
+               "need_for_level": need_for_level,
+               "exp_percent": 100 * player.experience // need_for_level}
+    return response.format(**context)
+
+
+####################################################################
+def print_inventory(player):
     if player.weapon:
-        inventory_text.append(player.weapon.name)
+        weapon = player.weapon.name
     else:
-        inventory_text.append("NONE!")
-    inventory_text.append("<newline> Armor:  ")
+        weapon = "NONE!"
     if player.armor:
-        inventory_text.append(player.armor.name)
+        armor = player.armor.name
     else:
-        inventory_text.append("NONE!")
-    inventory_text.append("<newline> Money:  ${}".format(player.money))
-    inventory_text.append("<newline>--------------------------------------------------------------------------------")
-    return "".join(inventory_text)
+        armor = "NONE!"
+    context = {"items": ", ".join([item.name for item in player.inventory.all()]),
+               "weapon": weapon,
+               "armor": armor,
+               "money": player.money}
+    return render_to_string("mud/player_inventory.html", context)
 
 
 ####################################################################
@@ -445,7 +446,7 @@ def print_inventory(self):
 ####################################################################
 ####################################################################
 def use_item(player, item_name):
-    for item in find_all_by_name(item_name, player.inventory):
+    for item in find_all_by_name(item_name, player.inventory.all()):
         if item.type == ItemType.WEAPON:
             player.use_weapon(item)
             player.room.send_room("<p class='bold green'>{} arms a {}.</p>".format(player.name, item.name))
@@ -521,12 +522,11 @@ def move(player, direction):
     current_room = player.room
     if direction in current_room.connecting_rooms:
         new_room = current_room.get_adjacent_room(direction)
-        current_room.remove_player(player)
         current_room.send_room("<p class='green'>{} leaves to the {}.</p>".format(player.name, direction.name))
         new_room.send_room("<p class='green'>{} enters from the {}.</p>".format(player.name, direction.opposite_direction().name))
         player.send_string("<p class='green'>You walk {}.</p>".format(direction.name))
         player.room = new_room
-        new_room.add_player(player)
+        player.save(update_fields=["room"])
         player.send_string(print_room(player))
     else:
         player.send_string("<p class='bold red'>You can't go that way!</p>")
@@ -613,9 +613,6 @@ data_handlers = [
     ("who", handle_who),
     ("kick", handle_kick),
     ("announce", handle_announce),
-    ("changerank", handle_change_rank),
-    ("reload", handle_reload),
-    ("shutdown", handle_shutdown),
     ("train", handle_train),
     ("editstats", handle_editstats),
     (["look", "l"], handle_look),

@@ -7,22 +7,39 @@ def clamp(value, minimum=0.0, maximum=1.0):
 
 
 ########################################################################
-def find_all_by_name(name, list_entities):
+def match_full(name, input_text):
     name = name.lower()
+    return name.lower() == input_text
+
+
+########################################################################
+def match(name, input_text):
+    name = name.lower()
+    if name == input_text:
+        return True
+    for part in name.split():
+        if part.startswith(input_text):
+            return True
+    return False
+
+
+########################################################################
+def find_all_by_name(input_text, list_entities):
+    input_text = input_text.lower()
     for entity in list_entities:
-        if entity.match(name):
+        if match(entity.name, input_text):
             yield entity
 
 
 ########################################################################
-def double_find_by_name(name, list_entities):
+def double_find_by_name(input_text, list_entities):
     """First try to find an exact match, then try to do a less exact match"""
-    name = name.lower()
+    input_text = input_text.lower()
     for entity in list_entities:
-        if entity.match_full(name):
+        if match_full(entity.name, input_text):
             return entity
     for entity in list_entities:
-        if entity.match(name):
+        if match(entity.name, input_text):
             return entity
 
 

@@ -35,8 +35,8 @@ a {
     margin-bottom:25px;
     padding:10px;
     background:#000;
-    height:270px;
-    width:430px;
+    height:450px;
+    width:100%;
     border:1px solid #ACD8F0;
     overflow:auto; }
 
@@ -64,3 +64,4 @@ a {
 .yellow { color: #FFFF00; }
 .cyan { color: #00FFFF; }
 .red { color: #FF0000; }
+.white { color: #FFFFFF; }

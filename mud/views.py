@@ -46,6 +46,7 @@ def submit_command(request):
     if request.method != "POST":
         return HttpResponseForbidden()
     player_id = int(request.POST["player_id"])
+    text = request.POST["text"]
     player = Player.objects.filter(user=request.user, id=player_id).first()
-    game_handler.handle(player, "look")
+    game_handler.handle(player, text)
     return JsonResponse({"received": True})

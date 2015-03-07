@@ -9,6 +9,7 @@ https://docs.djangoproject.com/en/1.7/ref/settings/
 """
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
+import sys
 import os
 import datetime
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
@@ -114,4 +115,83 @@ CELERYBEAT_SCHEDULE = {
         'task': 'mud.tasks.perform_heal_task',
         'schedule': datetime.timedelta(seconds=HEAL_TIME)
     },
+}
+
+BASE_LOG_FOLDER = '/home/tnance/logs'
+
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': True,
+    'formatters': {
+        'standard': {
+            'format' : "[%(asctime)s] %(levelname)s [%(name)s:%(lineno)s] %(message)s",
+            'datefmt' : "%d/%b/%Y %H:%M:%S"
+        },
+    },
+    'filters': {
+         'require_debug_false': {
+             '()': 'django.utils.log.RequireDebugFalse'
+         }
+     },
+    'handlers': {
+        'null': {
+            'level':'DEBUG',
+            'class':'django.utils.log.NullHandler',
+        },
+        'simplemud_logfile': {
+            'level':'DEBUG',
+            'class':'logging.handlers.WatchedFileHandler',
+            'filename': os.path.join(BASE_LOG_FOLDER, "simplemud.log"),
+            'formatter': 'standard',
+        },
+        'console':{
+            'level':'INFO',
+            'class':'logging.StreamHandler',
+            'stream':sys.stdout,
+            'formatter': 'standard'
+        },
+        'mail_admins': {
+            'level': 'ERROR',
+            'class': 'django.utils.log.AdminEmailHandler',
+            'filters': ['require_debug_false'],
+        }
+    },
+    'loggers': {
+        'django': {
+            'handlers':['console'],
+            'propagate': True,
+            'level':'DEBUG',
+        },
+        'django.request': {
+            'handlers': ['console', 'mail_admins','simplemud_logfile'],
+            'level': 'ERROR',
+            'propagate': False,
+        },
+        'django.db.backends': {
+            'handlers': ['console', 'simplemud_logfile'],
+            'level': 'WARN',
+            'propagate': False,
+        },
+        'nose.plugins': {
+            'handlers': ['console', 'simplemud_logfile'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+        'analytical.templatetags': {
+            'handlers': ['console', 'simplemud_logfile'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+        'mud': {
+            'handlers': ['console', 'simplemud_logfile'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+        '': {
+            'handlers': ['console', 'simplemud_logfile'],
+            'propagate': False,
+            'level': 'WARN',
+        },
+    }
 }

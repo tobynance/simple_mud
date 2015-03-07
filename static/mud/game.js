@@ -21,7 +21,8 @@ $(document).ready(function(){
             success: function (data) {
                 console.log("success");
                 console.log(data);
-                user_text.attr("value", "");
+                user_text.val("");
+                //user_text.attr("value", "");
                 user_text.focus();
             },
             error: function (data) {
@@ -34,14 +35,14 @@ $(document).ready(function(){
     });
 
     // Reload data every 700ms
-    setInterval(get_data, 2700);
+    setInterval(get_data, 700);
 });
 
 //*********************************************************************
 function get_data() {
     // Scroll height before the request
     var message_box = $("#message_box");
-    var old_scroll_height = message_box.attr("scrollHeight") - 20;
+    var old_scroll_height = message_box[0].scrollHeight - 20;
     var data = {player_id: 1,csrfmiddlewaretoken: CSRF_TOKEN};
     $.ajax({
         url: GET_MESSAGES_URL,
@@ -51,7 +52,7 @@ function get_data() {
         success: function(response) {
             if (response.messages.length > 0) {
                 // Insert chat log into the #message_box div
-                message = "";
+                var message = "";
                 for (var i = 0; i < response.messages.length; i++) {
                     message += response.messages[i];
                 }
@@ -59,7 +60,7 @@ function get_data() {
 
                 // Auto-scroll
                 // Scroll height after the request
-                var new_scroll_height = message_box.attr("scrollHeight") - 20;
+                var new_scroll_height = message_box[0].scrollHeight - 20;
                 if (new_scroll_height > old_scroll_height) {
                     // Auto-scroll to bottom of div
                     message_box.animate({scrollTop: new_scroll_height}, "normal");

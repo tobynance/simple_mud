@@ -1,0 +1,9 @@
+<table class='help'>
+    <tr><td colspan="2">------------------------------------------------------------</td></tr>
+    <tr><td>Item</td><td>Price</td></tr>
+    <tr><td colspan="2">------------------------------------------------------------</td></tr>
+    {% for item in items %}
+    <tr><td>{{ item.name }}</td><td>${{ item.price }}</td></tr>
+    {% endfor %}
+    <tr><td colspan="2">------------------------------------------------------------</td></tr>
+</table>

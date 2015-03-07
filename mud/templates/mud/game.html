@@ -11,7 +11,7 @@
 <div id="message_box"></div>
 <form name="message" action="">
  {% csrf_token %}
-    <label for="user_text">Input:</label><input name="user_text" type="text" id="user_text"/>
+    <label for="user_text">Input:</label><input name="user_text" type="text" id="user_text" autocomplete="off"/>
 <input name="submit" type="submit" id="message_submit" value="Send"/>
 </form>
 <script type="text/javascript" src="{% static "mud/jquery-2.1.3.min.js" %}"></script>

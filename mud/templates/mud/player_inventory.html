@@ -1,6 +1,14 @@
 <table class='table_data'>
     <tr><td colspan="2">-------------------------------- Your Inventory --------------------------------</td></tr>
-    <tr><td>Items:</td><td>{{ items }}</td></tr>
+    <tr><td>Items:</td><td> </td></tr>
+    {% for inventory_item in items %}
+        {% if inventory_item.quantity > 1 %}
+            <tr><td> </td><td>{{ inventory_item.item.name }} ({{ inventory_item.quantity }})</td></tr>
+        {% else %}
+            <tr><td> </td><td>{{ inventory_item.item.name }}</td></tr>
+        {% endif %}
+    {% endfor %}
+    <tr><td colspan="2">--------------------------------------------------------------------------------</td></tr>
     <tr><td>Weapon:</td><td>{{ weapon }}</td></tr>
     <tr><td>Armor:</td><td>{{ armor }}</td></tr>
     <tr><td>Money:</td><td>${{ money }}</td></tr>

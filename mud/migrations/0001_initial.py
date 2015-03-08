@@ -114,7 +114,18 @@ class Migration(migrations.Migration):
                 ('modifier_hp_regen', models.PositiveSmallIntegerField(default=0)),
                 ('created', models.DateTimeField(default=django.utils.timezone.now)),
                 ('armor', models.ForeignKey(related_name='+', default=None, blank=True, to='mud.Item', null=True)),
-                ('inventory', models.ManyToManyField(to='mud.Item', blank=True)),
+            ],
+            options={
+            },
+            bases=(models.Model,),
+        ),
+        migrations.CreateModel(
+            name='PlayerInventory',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('quantity', models.PositiveSmallIntegerField(default=1)),
+                ('item', models.ForeignKey(to='mud.Item')),
+                ('player', models.ForeignKey(to='mud.Player')),
             ],
             options={
             },
@@ -176,6 +187,12 @@ class Migration(migrations.Migration):
         migrations.AlterUniqueTogether(
             name='storeitem',
             unique_together=set([('store', 'item')]),
+        ),
+        migrations.AddField(
+            model_name='player',
+            name='inventory',
+            field=models.ManyToManyField(to='mud.Item', through='mud.PlayerInventory', blank=True),
+            preserve_default=True,
         ),
         migrations.AddField(
             model_name='player',

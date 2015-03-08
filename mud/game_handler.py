@@ -374,7 +374,7 @@ def print_stats(player):
                "max_hp": player.max_hit_points,
                "hp_percent": 100 * player.hit_points // player.max_hit_points,
                "level": player.level,
-               "experience:": player.experience,
+               "experience": player.experience,
                "need_for_level": need_for_level,
                "exp_percent": 100 * player.experience // need_for_level,
                "strength": player.strength,
@@ -394,7 +394,7 @@ def print_experience(player):
     need_for_level = player.need_for_level()
     response = """<table class='table_data'>
         <tr><td>Level:</td><td>{level}</td><td> </td><td> </td></tr>
-        <tr><td>Experience:</td><td>{experience}/{need_for_level} ({exp_percent})</td><td> </td><td> </td></tr>
+        <tr><td>Experience:</td><td>{experience}/{need_for_level} ({exp_percent}%)</td><td> </td><td> </td></tr>
     </table>"""
     context = {"level": player.level,
                "experience": player.experience,
@@ -413,7 +413,7 @@ def print_inventory(player):
         armor = player.armor.name
     else:
         armor = "NONE!"
-    context = {"items": ", ".join([item.name for item in player.inventory.all()]),
+    context = {"items": player.playerinventory_set.all(),
                "weapon": weapon,
                "armor": armor,
                "money": player.money}

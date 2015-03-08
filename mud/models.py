@@ -9,6 +9,7 @@ from django.contrib.auth.models import User
 
 logger = logging.getLogger(__name__)
 MODIFIER_FIELDS = ["modifier_strength", "modifier_health", "modifier_agility", "modifier_max_hit_points", "modifier_accuracy", "modifier_dodging", "modifier_strike_damage", "modifier_damage_absorb", "modifier_hp_regen"]
+BASE_FIELDS = ["base_strength", "base_health", "base_agility", "base_max_hit_points", "base_accuracy", "base_dodging", "base_strike_damage", "base_damage_absorb", "base_hp_regen"]
 ATTRIBUTE_FIELDS = ["strength", "health", "agility", "max_hit_points", "accuracy", "dodging", "strike_damage", "damage_absorb", "hp_regen"]
 
 
@@ -212,9 +213,11 @@ class Enemy(models.Model):
         return self.template.money_max
 
     ####################################################################
-    def add_hit_points(self, hit_points):
+    def add_hit_points(self, hit_points, save=True):
         self.hit_points += hit_points
         self.hit_points = clamp(self.hit_points, 0, self.template.hit_points)
+        if save:
+            self.save(update_fields=["hit_points"])
 
     ####################################################################
     def attack(self):
@@ -272,11 +275,11 @@ class Player(models.Model):
     level = models.PositiveSmallIntegerField(default=1)
     money = models.PositiveIntegerField(default=0)
     next_attack_time = models.PositiveIntegerField(default=0)
-    hit_points = models.PositiveIntegerField(default=1)
+    hit_points = models.PositiveIntegerField(default=10)
     weapon = models.ForeignKey(Item, null=True, blank=True, default=None, related_name="+")
     armor = models.ForeignKey(Item, null=True, blank=True, default=None, related_name="+")
     room = models.ForeignKey(Room, on_delete=models.PROTECT)
-    inventory = models.ManyToManyField(Item, blank=True)
+    inventory = models.ManyToManyField(Item, blank=True, through="PlayerInventory")
     logged_in = models.BooleanField(db_index=True, default=False)
     active = models.BooleanField(db_index=True, default=False)
     newbie = models.BooleanField(default=True)
@@ -405,7 +408,7 @@ class Player(models.Model):
 
     ####################################################################
     def send_string(self, message):
-        logger.info("send_string: %s", message)
+        logger.debug("send_string: %s", message)
         PlayerMessage.objects.create(player=self, text=message)
 
     ####################################################################
@@ -420,14 +423,13 @@ class Player(models.Model):
 
     ####################################################################
     def drop_item(self, item):
-        if item in self.inventory.all():
-            self.inventory.remove(item)
-            if item == self.weapon:
-                self.weapon = None
-                self.save(update_fields=["weapon"])
-            if item == self.armor:
-                self.armor = None
-                self.save(update_fields=["armor"])
+        inventory_item = PlayerInventory.objects.filter(player=self, item=item).first()
+        if inventory_item:
+            if inventory_item.quantity > 1:
+                inventory_item.quantity -= 1
+                inventory_item.save(update_fields=["quantity"])
+            else:
+                PlayerInventory.objects.filter(player=self, item=item).delete()
             return True
         else:
             return False
@@ -438,7 +440,12 @@ class Player(models.Model):
         logger.info("max_items: %s", self.max_items)
         logger.info("inventory: %s", self.inventory.count())
         if self.inventory.count() < self.max_items:
-            self.inventory.add(item)
+            inventory_item = PlayerInventory.objects.filter(player=self, item=item).first()
+            if inventory_item:
+                inventory_item.quantity += 1
+                inventory_item.save(update_fields=["quantity"])
+            else:
+                PlayerInventory.objects.create(player=self, item=item)
             return True
         else:
             return False
@@ -447,8 +454,13 @@ class Player(models.Model):
     def buy_item(self, item):
         if self.money >= item.price and self.inventory.count() < self.max_items:
             with transaction.atomic():
+                inventory_item = PlayerInventory.objects.filter(player=self, item=item).first()
+                if inventory_item:
+                    inventory_item.quantity += 1
+                    inventory_item.save(update_fields=["quantity"])
+                else:
+                    PlayerInventory.objects.create(player=self, item=item)
                 self.money -= item.price
-                self.inventory.add(item)
                 self.save(update_fields=["money"])
             return True
         else:
@@ -548,7 +560,7 @@ class Player(models.Model):
             damage = 1
 
         e.add_hit_points(-damage)
-        self.room.send_room("<p class='bold red'>{} hits {} for {} damage!</p>".format(self.name, e.name, damage))
+        self.room.send_room("<p class='bold yellow'>{} hits {} for {} damage!</p>".format(self.name, e.name, damage))
         if e.hit_points <= 0:
             e.killed(self)
 
@@ -585,6 +597,23 @@ class Player(models.Model):
         self.get_handler_module().leave(self)
         logger.info("Entering handler %s", HandlerType(handler_type))
         self.get_handler_module().enter(self)
+
+    ####################################################################
+    def add_bonuses(self, item):
+        if item:
+            for field in ATTRIBUTE_FIELDS:
+                base_field = "base_" + field
+                value = getattr(self, base_field) + getattr(item, field)
+                setattr(self, base_field, value)
+        self.save(update_fields=BASE_FIELDS)
+        self.recalculate_stats()
+
+
+########################################################################
+class PlayerInventory(models.Model):
+    player = models.ForeignKey(Player)
+    item = models.ForeignKey(Item)
+    quantity = models.PositiveSmallIntegerField(default=1)
 
 
 ########################################################################

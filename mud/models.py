@@ -21,15 +21,15 @@ class Item(models.Model):
     max = models.PositiveSmallIntegerField(default=0)
     speed = models.PositiveSmallIntegerField(default=0)
     price = models.PositiveIntegerField(default=0)
-    strength = models.PositiveSmallIntegerField(default=0)
-    health = models.PositiveSmallIntegerField(default=0)
-    agility = models.PositiveSmallIntegerField(default=0)
-    max_hit_points = models.PositiveSmallIntegerField(default=0)
-    accuracy = models.PositiveSmallIntegerField(default=0)
-    dodging = models.PositiveSmallIntegerField(default=0)
-    strike_damage = models.PositiveSmallIntegerField(default=0)
-    damage_absorb = models.PositiveSmallIntegerField(default=0)
-    hp_regen = models.PositiveSmallIntegerField(default=0)
+    strength = models.SmallIntegerField(default=0)
+    health = models.SmallIntegerField(default=0)
+    agility = models.SmallIntegerField(default=0)
+    max_hit_points = models.SmallIntegerField(default=0)
+    accuracy = models.SmallIntegerField(default=0)
+    dodging = models.SmallIntegerField(default=0)
+    strike_damage = models.SmallIntegerField(default=0)
+    damage_absorb = models.SmallIntegerField(default=0)
+    hp_regen = models.SmallIntegerField(default=0)
 
     ####################################################################
     def __unicode__(self):
@@ -77,8 +77,8 @@ class Room(models.Model):
 
     ####################################################################
     def find_enemy(self, enemy_name):
-        return self.enemy_set.filter(name_iexact=enemy_name).first() or \
-               self.enemy_set.filter(name_istartswith=enemy_name).first()
+        return self.enemy_set.filter(template__name__iexact=enemy_name).first() or \
+               self.enemy_set.filter(template__name__istartswith=enemy_name).first()
 
     ####################################################################
     def get_total_inventory_count(self):
@@ -109,8 +109,8 @@ class Room(models.Model):
 
     ####################################################################
     def find_item(self, item_name):
-        return self.items.filter(name_iexact=item_name).first() or \
-               self.items.filter(name_istartswith=item_name).first()
+        return self.items.filter(name__iexact=item_name).first() or \
+               self.items.filter(name__istartswith=item_name).first()
 
     ####################################################################
     def remove_item(self, item):
@@ -266,9 +266,11 @@ class Enemy(models.Model):
         if not self.weapon:  # fists, 1-3 damage, 1 second swing time
             damage = random.randint(1, 3)
             self.next_attack_time = 1
+            self.save(update_fields=["next_attack_time"])
         else:
             damage = random.randint(self.weapon.min, self.weapon.max)
             self.next_attack_time = self.weapon.speed
+            self.save(update_fields=["next_attack_time"])
 
         if random.randint(0, 99) >= (self.accuracy - p.dodging):
             self.room.send_room("<p>{} swings at {} but misses!</p>".format(self.name, p.name))
@@ -325,25 +327,25 @@ class Player(models.Model):
     newbie = models.BooleanField(default=True)
     handler = models.PositiveSmallIntegerField(choices=HandlerType.choices(), default=HandlerType.TRAINING_HANDLER)
 
-    base_strength = models.PositiveSmallIntegerField(default=1)
-    base_health = models.PositiveSmallIntegerField(default=1)
-    base_agility = models.PositiveSmallIntegerField(default=1)
-    base_max_hit_points = models.PositiveSmallIntegerField(default=0)
-    base_accuracy = models.PositiveSmallIntegerField(default=0)
-    base_dodging = models.PositiveSmallIntegerField(default=0)
-    base_strike_damage = models.PositiveSmallIntegerField(default=0)
-    base_damage_absorb = models.PositiveSmallIntegerField(default=0)
-    base_hp_regen = models.PositiveSmallIntegerField(default=0)
+    base_strength = models.SmallIntegerField(default=1)
+    base_health = models.SmallIntegerField(default=1)
+    base_agility = models.SmallIntegerField(default=1)
+    base_max_hit_points = models.SmallIntegerField(default=0)
+    base_accuracy = models.SmallIntegerField(default=0)
+    base_dodging = models.SmallIntegerField(default=0)
+    base_strike_damage = models.SmallIntegerField(default=0)
+    base_damage_absorb = models.SmallIntegerField(default=0)
+    base_hp_regen = models.SmallIntegerField(default=0)
 
-    modifier_strength = models.PositiveSmallIntegerField(default=0)
-    modifier_health = models.PositiveSmallIntegerField(default=0)
-    modifier_agility = models.PositiveSmallIntegerField(default=0)
-    modifier_max_hit_points = models.PositiveSmallIntegerField(default=0)
-    modifier_accuracy = models.PositiveSmallIntegerField(default=0)
-    modifier_dodging = models.PositiveSmallIntegerField(default=0)
-    modifier_strike_damage = models.PositiveSmallIntegerField(default=0)
-    modifier_damage_absorb = models.PositiveSmallIntegerField(default=0)
-    modifier_hp_regen = models.PositiveSmallIntegerField(default=0)
+    modifier_strength = models.SmallIntegerField(default=0)
+    modifier_health = models.SmallIntegerField(default=0)
+    modifier_agility = models.SmallIntegerField(default=0)
+    modifier_max_hit_points = models.SmallIntegerField(default=0)
+    modifier_accuracy = models.SmallIntegerField(default=0)
+    modifier_dodging = models.SmallIntegerField(default=0)
+    modifier_strike_damage = models.SmallIntegerField(default=0)
+    modifier_damage_absorb = models.SmallIntegerField(default=0)
+    modifier_hp_regen = models.SmallIntegerField(default=0)
     created = models.DateTimeField(default=timezone.now)
 
     ####################################################################
@@ -427,6 +429,10 @@ class Player(models.Model):
         if level is None:
             level = self.level + 1
         return int(100 * math.pow(1.4, level - 1) - 1)
+
+    ####################################################################
+    def need_for_next_level(self):
+        return self.need_for_level(self.level + 1) - self.experience
 
     ####################################################################
     def perform_heal_cycle(self):
@@ -587,9 +593,11 @@ class Player(models.Model):
         if self.weapon is None:  # fists, 1-3 damage, 1 second swing time
             damage = random.randint(1, 3)
             self.next_attack_time = 1
+            self.save(update_fields=["next_attack_time"])
         else:
             damage = random.randint(self.weapon.min, self.weapon.max)
             self.next_attack_time = self.weapon.speed
+            self.save(update_fields=["next_attack_time"])
 
         if random.randint(0, 99) >= (self.accuracy - e.dodging):
             self.room.send_room("<p class='white'>{} swings at {} but misses!</p>".format(self.name, e.name))
@@ -647,6 +655,17 @@ class Player(models.Model):
                 setattr(self, base_field, value)
         self.save(update_fields=BASE_FIELDS)
         self.recalculate_stats()
+
+    ####################################################################
+    def train(self):
+        if self.need_for_next_level() <= 0:
+            self.stat_points += 2
+            self.base_max_hit_points += self.level
+            self.level += 1
+            self.save(update_fields=["stat_points", "level", "base_max_hit_points"])
+            self.recalculate_stats()
+            return True
+        return False
 
 
 ########################################################################

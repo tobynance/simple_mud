@@ -14,12 +14,14 @@ def perform_round_task():
     logger.debug("Performing attack cycle...")
     for enemy in Enemy.objects.all():
         enemy.next_attack_time = max(0, enemy.next_attack_time - settings.ROUND_TIME)
+        enemy.save(update_fields=["next_attack_time"])
         # check if enemy can attack
         if enemy.next_attack_time == 0 and enemy.room.player_set.count() > 0:
             enemy.attack()
 
     for player in Player.objects.filter(active=True):
         player.next_attack_time = max(0, player.next_attack_time - settings.ROUND_TIME)
+        player.save(update_fields=["next_attack_time"])
 
 
 ########################################################################

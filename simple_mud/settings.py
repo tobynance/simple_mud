@@ -63,8 +63,24 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        'OPTIONS': {
+            "timeout": 20
+        }
     }
 }
+
+POSTGRES_DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': 'simplemud',
+        'USER': 'simplemud',
+        'PASSWORD': 'qwerty876543dfgVBGT^',
+        'HOST': 'localhost',
+        'PORT': '',
+        }
+}
+
+DATABASES = POSTGRES_DATABASES
 
 # Internationalization
 # https://docs.djangoproject.com/en/1.7/topics/i18n/

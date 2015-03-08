@@ -1,4 +1,5 @@
 from django.contrib.auth.decorators import login_required
+from django.db import transaction
 from django.http import JsonResponse, HttpResponseForbidden
 from django.shortcuts import render
 from mud.models import Player, PlayerMessage
@@ -38,9 +39,10 @@ def get_messages(request):
     player_id = int(request.POST["player_id"])
     player = Player.objects.filter(user=request.user, id=player_id).first()
     print "player:", player
-    query_set = PlayerMessage.objects.filter(player=player)
-    messages = [m.text for m in query_set.order_by("created")]
-    query_set.delete()
+    with transaction.atomic():
+        query_set = PlayerMessage.objects.filter(player=player)
+        messages = [m.text for m in query_set.order_by("created")]
+        query_set.delete()
     output = {"hit_points": player.hit_points,
               "max_hit_points": player.max_hit_points,
               "messages": messages}

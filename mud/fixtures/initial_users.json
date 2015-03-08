@@ -24,7 +24,7 @@
           "username": "test.user@draft2digital.com",
           "first_name": "Test",
           "last_name": "User",
-          "is_active": false,
+          "is_active": true,
           "is_superuser": false,
           "is_staff": false,
           "last_login": "2014-09-10T21:24:52.579Z",
@@ -43,6 +43,26 @@
           "name": "toby",
           "room": 1,
           "money": 10000
+        }
+    },
+    {
+        "model": "mud.player",
+        "pk": 2,
+        "fields": {
+          "user": 2,
+          "name": "lucas",
+          "room": 1,
+          "money": 100
+        }
+    },
+    {
+        "model": "mud.player",
+        "pk": 3,
+        "fields": {
+          "user": 2,
+          "name": "aaron",
+          "room": 1,
+          "money": 100
         }
     }
 ]

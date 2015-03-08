@@ -266,7 +266,7 @@
             "strike_damage": 5, 
             "damage_absorb": 2, 
             "experience": 65, 
-            "weapon": 32, 
+            "weapon": 69,
             "money_min": 0, 
             "money_max": 20
         }
@@ -282,7 +282,7 @@
             "strike_damage": 0, 
             "damage_absorb": 8, 
             "experience": 95, 
-            "weapon": 33, 
+            "weapon": 71,
             "money_min": 10, 
             "money_max": 40
         }
@@ -298,7 +298,7 @@
             "strike_damage": 10, 
             "damage_absorb": 10, 
             "experience": 200, 
-            "weapon": 34, 
+            "weapon": 72,
             "money_min": 0, 
             "money_max": 200
         }

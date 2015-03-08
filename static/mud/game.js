@@ -23,6 +23,7 @@ $(document).ready(function(){
                 console.log(data);
                 user_text.val("");
                 user_text.focus();
+                get_data();
             },
             error: function (data) {
                 console.log("fail");

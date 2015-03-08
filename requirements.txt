@@ -1,5 +1,7 @@
+# apt-get install postgresql postgresql-contrib postgresql-client libpq-dev
 Django==1.7.4
 enum34==1.0.4
 mock==1.0.1
 Twisted==15.0.0
 celery[redis]==3.1.17
+psycopg2==2.6

@@ -10,6 +10,6 @@
 <h2>Welcome to SimpleMud!</h2>
 <p>Choose the player you wish to play as:</p>
 {% for player in players %}
-    <input type="button" name="player_{{ player.id }}" value="{{ player.name }}" onclick="window.location = '{% url "game" player.id %}';"/>
+    <div><input type="button" name="player_{{ player.id }}" value="{{ player.name }}" onclick="window.location = '{% url "game" player.id %}';"/></div>
 {% endfor %}
 {% endblock %}

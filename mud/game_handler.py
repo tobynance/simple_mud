@@ -246,13 +246,16 @@ def store_list(player):
 def buy(player, item_name):
     store = Store.objects.get(room=player.room)
     items = StoreItem.objects.filter(store=store)
-    purchase_item = items.filter(name_iexact=item_name).first() or \
-                    items.filter(name_istartswith=item_name).first()
+    purchase_item = items.filter(item__name__iexact=item_name).first() or \
+                    items.filter(item__name__istartswith=item_name).first()
 
     if purchase_item is None:
         player.send_string("<p class='bold red'>Sorry, we don't have that item!</p>")
         return
-    elif player.money < purchase_item.price:
+    else:
+        purchase_item = purchase_item.item
+
+    if player.money < purchase_item.price:
         player.send_string("<p class='bold red'>Sorry, but you can't afford that!</p>")
         return
     elif player.buy_item(purchase_item):
@@ -264,8 +267,8 @@ def buy(player, item_name):
 ####################################################################
 def sell(player, item_name):
     store = Store.objects.get(room=player.room)
-    item = player.inventory.filter(name_iexact=item_name).first() or \
-           player.inventory.filter(name_istartswith=item_name).first()
+    item = player.inventory.filter(name__iexact=item_name).first() or \
+           player.inventory.filter(name__istartswith=item_name).first()
     if item is None:
         player.send_string("<p class='bold red'>Sorry, you don't have that!</p>")
         return
@@ -468,7 +471,7 @@ def remove_item(player, item_name):
 ####################################################################
 def print_room(player):
     current_room = player.room
-    description = ["<p class='strong'>{room.name}</p>",
+    description = ["<br/><p class='strong'>{room.name}</p>",
                    "<p class='magenta'>{room.description}</p>",
                    "<p class='green'>exits: "]
 

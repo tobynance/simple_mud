@@ -405,6 +405,7 @@ class Player(models.Model):
 
     ####################################################################
     def send_string(self, message):
+        logger.info("send_string: %s", message)
         PlayerMessage.objects.create(player=self, text=message)
 
     ####################################################################
@@ -565,7 +566,7 @@ class Player(models.Model):
         return "".join(text)
 
     ####################################################################
-    def _get_handler_module(self):
+    def get_handler_module(self):
         from mud import game_handler, training_handler
         if self.handler == HandlerType.GAME_HANDLER:
             return game_handler
@@ -574,16 +575,16 @@ class Player(models.Model):
 
     ####################################################################
     def handle(self, text):
-        self._get_handler_module().handle(self, text)
+        self.get_handler_module().handle(self, text)
 
     ####################################################################
     def set_handler(self, handler_type):
         self.handler = handler_type
         self.save(update_fields=["handler"])
         logger.info("Leaving handler %s", HandlerType(handler_type))
-        self._get_handler_module().leave(self)
+        self.get_handler_module().leave(self)
         logger.info("Entering handler %s", HandlerType(handler_type))
-        self._get_handler_module().enter(self)
+        self.get_handler_module().enter(self)
 
 
 ########################################################################

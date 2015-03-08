@@ -228,7 +228,7 @@ def handle_sell(player, data, first_word, rest):
 
 ####################################################################
 def handle_clear(player, data, first_word, rest):
-    player.send_string("<p></p>" * 80)
+    player.send_string("<clearscreen>")
 
 
 ####################################################################
@@ -280,7 +280,7 @@ def sell(player, item_name):
 ####################################################################
 def enter(player):
     player.last_command = "look"
-    player.send_game("<p class='bold green'>{} has entered the realm.</p>".format(player.name))
+    send_game("<p class='bold green'>{} has entered the realm.</p>".format(player.name))
     player.active = True
     player.logged_in = True
     player.save(update_fields=["active", "last_command", "logged_in"])

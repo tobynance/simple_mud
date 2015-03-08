@@ -23,6 +23,8 @@ def player_login(request):
 @login_required
 def game(request, player_id):
     context = {"player_id": player_id}
+    player = Player.objects.get(id=player_id)
+    player.get_handler_module().enter(player)
     return render(request, "mud/game.html", context)
 
 

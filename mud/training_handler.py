@@ -26,7 +26,7 @@ def handle(player, data):
     else:
         logger.warn("unknown command: %s", data)
         player.send_string("<clearscreen><p class='red'>Unknown Command '%s'</p>" % data)
-        print_stats(False)
+        print_stats(player, False)
 
 
 ####################################################################
@@ -38,7 +38,7 @@ def enter(player):
                             "before you enter the realm.<br/></p>") % player.name)
         player.newbie = False
     player.save(update_fields=["active", "newbie"])
-    print_stats(False)
+    print_stats(player, False)
 
 
 ########################################################################
@@ -55,6 +55,6 @@ def print_stats(player, clear_screen=True):
                "stat_points": player.stat_points}
     message = render_to_string("mud/training_stats.html", context)
     if clear_screen:
-        return "<clearscreen>" + message
+        player.send_string("<clearscreen>" + message)
     else:
-        return message
+        player.send_string(message)

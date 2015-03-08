@@ -38,6 +38,11 @@ $(document).ready(function(){
 });
 
 //*********************************************************************
+function starts_with (str1, substring) {
+    return str1.slice(0, substring.length) == substring;
+}
+
+//*********************************************************************
 function get_data() {
     // Scroll height before the request
     var message_box = $("#message_box");
@@ -54,10 +59,16 @@ function get_data() {
             if (response.messages.length > 0) {
                 // Insert chat log into the #message_box div
                 var message = "";
+                var old_messages = message_box.html();
                 for (var i = 0; i < response.messages.length; i++) {
-                    message += response.messages[i];
+                    var m = response.messages[i];
+                    if (starts_with(m, "<clearscreen>")) {
+                        m = m.slice(13);
+                        old_messages = "";
+                    }
+                    message += m;
                 }
-                message_box.html(message_box.html() + message);
+                message_box.html(old_messages + message);
 
                 // Auto-scroll
                 // Scroll height after the request

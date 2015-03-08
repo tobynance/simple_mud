@@ -13,6 +13,7 @@ logger = logging.getLogger(__name__)
 base = os.path.dirname(__file__)
 
 RoomType = Enum("RoomType", "PLAIN_ROOM TRAINING_ROOM STORE")
+
 MAX_ITEMS = 32
 
 room_database = None

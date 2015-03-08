@@ -1,7 +1,6 @@
 from django.contrib.auth.decorators import login_required
-from django.http import HttpResponse, JsonResponse, HttpResponseForbidden
+from django.http import JsonResponse, HttpResponseForbidden
 from django.shortcuts import render
-from mud import game_handler
 from mud.models import Player, PlayerMessage
 import logging
 
@@ -15,8 +14,15 @@ def home(request):
 
 ########################################################################
 @login_required
-def game(request):
-    context = {"player": None}
+def player_login(request):
+    context = {"players": Player.objects.filter(user=request.user)}
+    return render(request, "mud/player_login.html", context)
+
+
+########################################################################
+@login_required
+def game(request, player_id):
+    context = {"player_id": player_id}
     return render(request, "mud/game.html", context)
 
 
@@ -48,5 +54,5 @@ def submit_command(request):
     player_id = int(request.POST["player_id"])
     text = request.POST["text"]
     player = Player.objects.filter(user=request.user, id=player_id).first()
-    game_handler.handle(player, text)
+    player.handle(text)
     return JsonResponse({"received": True})

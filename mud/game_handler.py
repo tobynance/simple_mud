@@ -2,12 +2,10 @@ import logging
 import re
 import datetime
 import random
-from django.shortcuts import render_to_response
 from django.template.loader import render_to_string
 from attributes import Direction
 from mud.models import Player, Store, StoreItem
-#from training_handler import TrainingHandler
-from utils import find_all_by_name, double_find_by_name, ItemType, PlayerRank, RoomType
+from utils import find_all_by_name, double_find_by_name, ItemType, PlayerRank, RoomType, HandlerType
 
 logger = logging.getLogger(__name__)
 
@@ -75,7 +73,7 @@ def handle_experience(player, data, first_word, rest):
 
 ####################################################################
 def handle_help(player, data, first_word, rest):
-    player.send_string(print_help(player.rank))
+    player.send_string(print_help())
 
 
 ####################################################################
@@ -118,8 +116,11 @@ def handle_time(player, data, first_word, rest):
 
 ####################################################################
 def handle_whisper(player, data, first_word, rest):
-    name, message = rest.split(None, 1)
-    whisper(player, message, name)
+    pieces = rest.split(None, 1)
+    if len(pieces) == 2:
+        whisper(player, pieces[0], pieces[1])
+    else:
+        player.send_string("<p class='bold red'>Bad command: Usage: whisper &lt;name&gt; &lt;message&gt;</p>")
 
 
 ####################################################################
@@ -134,24 +135,6 @@ def handle_who(player, data, first_word, rest):
 ####################################################################
 # Moderator Methods                                              ###
 ####################################################################
-####################################################################
-def handle_kick(player, data, first_word, player_name):
-    if player.rank < PlayerRank.MODERATOR:
-        logger.warn("player %s tried to use the kick command, but doesn't have permission to do so", player.name)
-        player.send_string("<p class='red'>You do not have permission to do so</p>")
-        return
-    kicked_player = Player.objects.filter(logged_in=True, name=player_name).first()
-    if kicked_player is None:
-        player.send_string("<p class='bold red'>Player could not be found.</p>")
-        return
-    if kicked_player.rank > player.rank:
-        player.send_string("<p class='bold red'>You can't kick that player!</p>")
-        return
-
-    kicked_player.set_active(False)
-    logout_message("%s has been kicked by %s!!!" % (kicked_player.name, player.name))
-
-
 ####################################################################
 def handle_announce(player, data, first_word, announcement):
     if player.rank < PlayerRank.ADMIN:
@@ -182,9 +165,7 @@ def handle_editstats(player, data, first_word, rest):
 
 ####################################################################
 def goto_train(player):
-    player.set_active(False)
-    # TODO: Figure out different states, such as training
-    # self.protocol.add_handler(TrainingHandler(self.protocol, self.player))
+    player.set_handler(HandlerType.TRAINING_HANDLER)
     logout_message("%s leaves to edit stats" % player.name)
 
 
@@ -227,7 +208,8 @@ def handle_drop(player, data, first_word, rest):
 def handle_list(player, data, first_word, rest):
     if player.room.type != RoomType.STORE:
         player.send_string("<p class='bold red'>You're not in a store!</p>")
-    player.send_string(store_list(player))
+    else:
+        player.send_string(store_list(player))
 
 
 ####################################################################
@@ -296,25 +278,23 @@ def sell(player, item_name):
 # Base Handler Methods                                           ###
 ####################################################################
 ####################################################################
-# def enter(player):
-#     logger.info("%s - enter called in %s", self.protocol.get_remote_address(), self.__class__.__name__)
-#     self.last_command = ""
-#     self.send_game("<bold><green>{} has entered the realm.".format(self.player.name))
-#     self.player.active = True
-#     self.player.logged_in = True
-#     self.player.room.add_player(self.player)
-#     if self.player.newbie:
-#         self.goto_train()
-#     else:
-#         player.send_string(print_room(player))
-#
-# ####################################################################
-# def leave(self):
-#     self.player.active = False
-#     if self.protocol.closed:
-#         player.player_database.logout(self.player.id)
-#     self.player.room.remove_player(self.player)
-#     self.send_game("<bold><green>{} has left the realm.".format(self.player.name))
+def enter(player):
+    player.last_command = "look"
+    player.send_game("<p class='bold green'>{} has entered the realm.</p>".format(player.name))
+    player.active = True
+    player.logged_in = True
+    player.save(update_fields=["active", "last_command", "logged_in"])
+    if player.newbie:
+        goto_train(player)
+    else:
+        player.send_string(print_room(player))
+
+
+####################################################################
+def leave(player):
+    player.active = False
+    player.save(update_fields=["active"])
+    send_game("<p class='bold green'>{} has left the realm.</p>".format(player.name))
 
 
 ########################################################################
@@ -367,22 +347,22 @@ def who_list(who):
     else:
         players = list(Player.objects.filter(logged_in=True))
 
-    message = ["<p class='bold'>{}<br/>".format("-" * 80),
-               " Name             | Level     | Activity | Rank<br/>",
-               "-" * 80, "<br/>"]
-
+    bar = "<tr><td colspan='3'>%s</td></tr>" % ("-" * 40)
+    message = ["<table class='table_data'>\n",
+               bar,
+               "<tr><td>Name</td><td>Level</td><td>Activity</td></tr>",
+               bar]
     for player in players:
         message.append(player.who_text())
 
-    message.append("-" * 80)
-    message.append("</p>")
+    message.append(bar)
     return "".join(message)
 
 
 ########################################################################
-def print_help(player):
+def print_help():
     """Prints out a help listing based on a user's rank."""
-    return render_to_string("mud/help.html", {"admin": player.rank >= PlayerRank.ADMIN})
+    return render_to_string("mud/help.html")
 
 
 ########################################################################
@@ -390,7 +370,6 @@ def print_stats(player):
     """This prints up the stats of the player"""
     need_for_level = player.need_for_level()
     context = {"name": player.name,
-               "rank": player.rank.name,
                "hp": player.hit_points,
                "max_hp": player.max_hit_points,
                "hp_percent": 100 * player.hit_points // player.max_hit_points,
@@ -534,8 +513,8 @@ def move(player, direction):
 
 ####################################################################
 def get_item(player, item_name):
-    if not item_name and player.room.items:
-        i = random.choice(player.room.items)
+    if not item_name and player.room.items.exists():
+        i = random.choice(list(player.room.items.all()))
         if not player.pick_up_item(i):
             player.send_string("<p class='bold red'>You can't carry that much!</p>")
             return
@@ -546,7 +525,9 @@ def get_item(player, item_name):
     if not item_name and player.room.money:
         amount = player.room.money
         player.room.money -= amount
+        player.room.save(update_fields=["money"])
         player.money += amount
+        player.save(update_fields=["money"])
         player.room.send_room("<p class='bold cyan'>{p.name} picks up ${amount}</p>".format(p=player, amount=amount))
         return
     if item_name.startswith("$"):
@@ -555,7 +536,9 @@ def get_item(player, item_name):
             amount = int(amount)
             if amount <= player.room.money:
                 player.room.money -= amount
+                player.room.save(update_fields=["money"])
                 player.money += amount
+                player.save(update_fields=["money"])
                 player.room.send_room("<p class='bold cyan'>{p.name} picks up ${amount}</p>".format(p=player, amount=amount))
             else:
                 player.send_string("<p class='bold red'>There isn't that much there!</p>")
@@ -571,6 +554,7 @@ def get_item(player, item_name):
             player.room.remove_item(i)
             player.room.send_room("<p class='bold cyan'>{} picks up {}.</p>".format(player.name, i.name))
 
+
 ####################################################################
 def drop_item(player, item_name):
     if item_name.startswith("$"):
@@ -580,6 +564,7 @@ def drop_item(player, item_name):
             if amount <= player.money:
                 player.money -= amount
                 player.room.money += amount
+                player.room.save(update_fields="money")
                 player.room.send_room("<p class='bold cyan'>{p.name} drops ${amount}</p>".format(p=player, amount=amount))
             else:
                 player.send_string("<p class='bold red'>You don't have that much money!</p>")
@@ -611,7 +596,6 @@ data_handlers = [
     ("time", handle_time),
     ("whisper", handle_whisper),
     ("who", handle_who),
-    ("kick", handle_kick),
     ("announce", handle_announce),
     ("train", handle_train),
     ("editstats", handle_editstats),

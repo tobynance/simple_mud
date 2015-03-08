@@ -9,6 +9,7 @@
 {% block content %}
 <p>The Game Window</p>
 <div id="message_box"></div>
+<p id="health_bar"></p>
 <form name="message" action="">
  {% csrf_token %}
     <label for="user_text">Input:</label><input name="user_text" type="text" id="user_text" autocomplete="off"/>
@@ -20,6 +21,7 @@ var HOME_URL = "{% url "home" %}";
 var SUBMIT_COMMAND_URL = "{% url "ajax_submit_command" %}";
 var GET_MESSAGES_URL = "{% url "ajax_get_messages" %}";
 var CSRF_TOKEN = "{{ csrf_token }}";
+var PLAYER_ID = {{ player_id }};
 </script>
 <script type="text/javascript" src="{% static "mud/game.js" %}"></script>
 {% endblock %}

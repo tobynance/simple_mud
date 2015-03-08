@@ -110,3 +110,7 @@ RoomType = DjangoChoiceEnum()
 RoomType.add(0, "PLAIN_ROOM")
 RoomType.add(1, "TRAINING_ROOM")
 RoomType.add(2, "STORE")
+
+HandlerType = DjangoChoiceEnum()
+HandlerType.add(0, "TRAINING_HANDLER")
+HandlerType.add(1, "GAME_HANDLER")

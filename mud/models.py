@@ -4,7 +4,7 @@ import random
 import math
 from django.utils import timezone
 from attributes import Direction
-from utils import ItemType, RoomType, clamp, double_find_by_name
+from utils import ItemType, RoomType, HandlerType, clamp, double_find_by_name
 from django.contrib.auth.models import User
 
 logger = logging.getLogger(__name__)
@@ -47,7 +47,7 @@ class Room(models.Model):
     west = models.ForeignKey("Room", null=True, default=None, related_name="+")
     enemy_type = models.ForeignKey("EnemyTemplate", null=True, default=None)
     max_enemies = models.PositiveSmallIntegerField(default=0)
-    items = models.ManyToManyField(Item)
+    items = models.ManyToManyField(Item, blank=True)
     money = models.PositiveIntegerField(default=0)
 
     ####################################################################
@@ -83,6 +83,10 @@ class Room(models.Model):
         while self.items.all().count() >= self.max_items:
             self.remove_item(self.items.all().first())
         self.items.add(item)
+
+    ####################################################################
+    def find_item(self, item_name):
+        return double_find_by_name(item_name, self.items.all())
 
     ####################################################################
     def remove_item(self, item):
@@ -123,7 +127,7 @@ class EnemyTemplate(models.Model):
     weapon = models.ForeignKey(Item, null=True, blank=True, default=None, related_name="+")
     money_min = models.SmallIntegerField(default=0)
     money_max = models.SmallIntegerField(default=0)
-    loot = models.ManyToManyField(Item, through="EnemyLoot")
+    loot = models.ManyToManyField(Item, through="EnemyLoot", blank=True)
 
     ####################################################################
     def __unicode__(self):
@@ -224,7 +228,7 @@ class Enemy(models.Model):
             self.next_attack_time = self.weapon.speed
 
         if random.randint(0, 99) >= (self.accuracy - p.dodging):
-            self.room.send_room("<white>{} swings at {} but misses!".format(self.name, p.name))
+            self.room.send_room("<p>{} swings at {} but misses!</p>".format(self.name, p.name))
             return
         damage += self.strike_damage
         damage -= p.damage_absorb
@@ -232,26 +236,28 @@ class Enemy(models.Model):
             damage = 1
 
         p.add_hit_points(-damage)
-        self.room.send_room("<red>{} hits {} for {} damage!".format(self.name, p.name, damage))
+        self.room.send_room("<p class='red'>{} hits {} for {} damage!</p>".format(self.name, p.name, damage))
         if p.hit_points <= 0:
             p.killed()
 
     ####################################################################
     def killed(self, killer):
-        self.room.send_room("<cyan><bold>%s has died!" % self.name)
+        self.room.send_room("<p class='bold cyan'>%s has died!</p>" % self.name)
 
         # drop the money
         money = random.randint(self.money_min, self.money_max)
         if money > 0:
             self.room.money += money
-            self.room.send_room("<cyan>$%s drops to the ground." % money)
+            self.room.save(update_fields=["money"])
+            self.room.send_room("<p class='cyan'>$%s drops to the ground.</p>" % money)
 
         for enemy_loot in EnemyLoot.objects.filter(enemy_template=self.template):
-            if random.randint(0, 99) < enemy_loot.chance:
+            if random.randint(0, 99) < enemy_loot.percent_chance:
                 self.room.add_item(enemy_loot.item)
-                self.room.send_room("<cyan>%s drops to the ground." % enemy_loot.item.name)
+                self.room.send_room("<p class='cyan>%s drops to the ground.</p>" % enemy_loot.item.name)
         killer.experience += self.experience
-        killer.send_string("<cyan><bold>You gain %s experience." % self.experience)
+        killer.save(update_fields=["experience"])
+        killer.send_string("<p class='bold cyan'>You gain %s experience.</p>" % self.experience)
         Enemy.objects.filter(id=self.id).delete()
 
 
@@ -270,10 +276,11 @@ class Player(models.Model):
     weapon = models.ForeignKey(Item, null=True, blank=True, default=None, related_name="+")
     armor = models.ForeignKey(Item, null=True, blank=True, default=None, related_name="+")
     room = models.ForeignKey(Room, on_delete=models.PROTECT)
-    inventory = models.ManyToManyField(Item)
+    inventory = models.ManyToManyField(Item, blank=True)
     logged_in = models.BooleanField(db_index=True, default=False)
     active = models.BooleanField(db_index=True, default=False)
     newbie = models.BooleanField(default=True)
+    handler = models.PositiveSmallIntegerField(choices=HandlerType.choices(), default=HandlerType.TRAINING_HANDLER)
 
     base_strength = models.PositiveSmallIntegerField(default=1)
     base_health = models.PositiveSmallIntegerField(default=1)
@@ -294,6 +301,7 @@ class Player(models.Model):
     modifier_strike_damage = models.PositiveSmallIntegerField(default=0)
     modifier_damage_absorb = models.PositiveSmallIntegerField(default=0)
     modifier_hp_regen = models.PositiveSmallIntegerField(default=0)
+    created = models.DateTimeField(default=timezone.now)
 
     ####################################################################
     @property
@@ -384,14 +392,14 @@ class Player(models.Model):
     ####################################################################
     def add_hit_points(self, hit_points, save=True):
         self.hit_points += hit_points
-        self.hit_points = clamp(self.hit_points, 0, self.attributes.MAX_HIT_POINTS)
+        self.hit_points = clamp(self.hit_points, 0, self.max_hit_points)
         if save:
             self.save(update_fields=["hit_points"])
 
     ####################################################################
     def set_hit_points(self, hit_points, save=True):
         self.hit_points = hit_points
-        self.hit_points = clamp(self.hit_points, 0, self.attributes.MAX_HIT_POINTS)
+        self.hit_points = clamp(self.hit_points, 0, self.max_hit_points)
         if save:
             self.save(update_fields=["hit_points"])
 
@@ -411,7 +419,7 @@ class Player(models.Model):
 
     ####################################################################
     def drop_item(self, item):
-        if item in self.inventory:
+        if item in self.inventory.all():
             self.inventory.remove(item)
             if item == self.weapon:
                 self.weapon = None
@@ -425,8 +433,14 @@ class Player(models.Model):
 
     ####################################################################
     def pick_up_item(self, item):
+        logger.info("item: %s", item)
+        logger.info("max_items: %s", self.max_items)
+        logger.info("inventory: %s", self.inventory.count())
         if self.inventory.count() < self.max_items:
             self.inventory.add(item)
+            return True
+        else:
+            return False
 
     ####################################################################
     def buy_item(self, item):
@@ -476,26 +490,27 @@ class Player(models.Model):
         # calculate how much money to drop
         if money > 0:
             self.room.money += money
+            self.room.save(update_fields=["money"])
             self.money -= money
             self.room.send_room("<p class='cyan'>${} drops to the ground.</p>".format(money))
-        if self.inventory:
-            some_item = random.choice(self.inventory)
+        if self.inventory.exists():
+            some_item = random.choice(list(self.inventory.all()))
             self.drop_item(some_item)
             self.room.add_item(some_item)
             self.room.send_room("<p class='cyan'>{} drops to the ground.</p>".format(some_item.name))
 
         exp = self.experience // 10
         self.experience -= exp  # subtract 10% of player experience
-        self.room.remove_player(self)
-        self.room = room.room_database.by_id[1]
-        self.room.add_player(self)
+        self.room = Room.objects.get(id=1)
 
         # set player HP to 70%
-        self.set_hit_points(int(self.attributes.MAX_HIT_POINTS * 0.7))
+        self.set_hit_points(int(self.max_hit_points * 0.7))
 
         self.send_string("<p class='bold white'>You have died, but you have resurrected in %s</p>" % self.room.name)
         self.send_string("<p class='bold red'>You have lost %s experience!</p>" % exp)
         self.room.send_room("<p class='bold white'>%s appears out of nowhere!!</p>" % self.name)
+        self.save(update_fields=["money", "experience", "room", "hit_points"])
+        logger.warn("self.room: %s", self.room)
 
     ####################################################################
     def attack(self, enemy_name):
@@ -535,6 +550,40 @@ class Player(models.Model):
         self.room.send_room("<p class='bold red'>{} hits {} for {} damage!</p>".format(self.name, e.name, damage))
         if e.hit_points <= 0:
             e.killed(self)
+
+    ####################################################################
+    def who_text(self):
+        """Return a string describing the player"""
+        text = ["<tr><td>", self.name, "</td>"]
+        if self.active:
+            text.append("<td class='green'>Online</td>")
+        elif self.logged_in:
+            text.append("<td class='yellow'>Inactive</td>")
+        else:
+            text.append("<td class='yellow'>Offline</td>")
+        text.append("</tr>")
+        return "".join(text)
+
+    ####################################################################
+    def _get_handler_module(self):
+        from mud import game_handler, training_handler
+        if self.handler == HandlerType.GAME_HANDLER:
+            return game_handler
+        elif self.handler == HandlerType.TRAINING_HANDLER:
+            return training_handler
+
+    ####################################################################
+    def handle(self, text):
+        self._get_handler_module().handle(self, text)
+
+    ####################################################################
+    def set_handler(self, handler_type):
+        self.handler = handler_type
+        self.save(update_fields=["handler"])
+        logger.info("Leaving handler %s", HandlerType(handler_type))
+        self._get_handler_module().leave(self)
+        logger.info("Entering handler %s", HandlerType(handler_type))
+        self._get_handler_module().enter(self)
 
 
 ########################################################################

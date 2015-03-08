@@ -41,7 +41,8 @@
         "fields": {
           "user": 1,
           "name": "toby",
-          "room": 1
+          "room": 1,
+          "money": 10000
         }
     }
 ]

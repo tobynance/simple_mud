@@ -16,7 +16,7 @@ a {
     color:#0000FF;
     text-decoration:none; }
 
-    a:hover { text-decoration:underline; }
+a:hover { text-decoration:underline; }
 
 #wrapper, #loginform {
     margin:0 auto;
@@ -27,7 +27,7 @@ a {
 
 #loginform { padding-top:18px; }
 
-    #loginform p { margin: 5px; }
+#loginform p { margin: 5px; }
 
 #message_box {
     text-align:left;
@@ -68,4 +68,8 @@ a {
 
 .table_data {
     font-weight: bold;
+    color: #FFFFFF; }
+
+.dim_table_data {
+    font-weight: normal;
     color: #FFFFFF; }

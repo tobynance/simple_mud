@@ -93,6 +93,7 @@ class Migration(migrations.Migration):
                 ('logged_in', models.BooleanField(default=False, db_index=True)),
                 ('active', models.BooleanField(default=False, db_index=True)),
                 ('newbie', models.BooleanField(default=True)),
+                ('handler', models.PositiveSmallIntegerField(default=0, choices=[(0, b'TRAINING_HANDLER'), (1, b'GAME_HANDLER')])),
                 ('base_strength', models.PositiveSmallIntegerField(default=1)),
                 ('base_health', models.PositiveSmallIntegerField(default=1)),
                 ('base_agility', models.PositiveSmallIntegerField(default=1)),
@@ -111,8 +112,9 @@ class Migration(migrations.Migration):
                 ('modifier_strike_damage', models.PositiveSmallIntegerField(default=0)),
                 ('modifier_damage_absorb', models.PositiveSmallIntegerField(default=0)),
                 ('modifier_hp_regen', models.PositiveSmallIntegerField(default=0)),
+                ('created', models.DateTimeField(default=django.utils.timezone.now)),
                 ('armor', models.ForeignKey(related_name='+', default=None, blank=True, to='mud.Item', null=True)),
-                ('inventory', models.ManyToManyField(to='mud.Item')),
+                ('inventory', models.ManyToManyField(to='mud.Item', blank=True)),
             ],
             options={
             },
@@ -141,7 +143,7 @@ class Migration(migrations.Migration):
                 ('money', models.PositiveIntegerField(default=0)),
                 ('east', models.ForeignKey(related_name='+', default=None, to='mud.Room', null=True)),
                 ('enemy_type', models.ForeignKey(default=None, to='mud.EnemyTemplate', null=True)),
-                ('items', models.ManyToManyField(to='mud.Item')),
+                ('items', models.ManyToManyField(to='mud.Item', blank=True)),
                 ('north', models.ForeignKey(related_name='+', default=None, to='mud.Room', null=True)),
                 ('south', models.ForeignKey(related_name='+', default=None, to='mud.Room', null=True)),
                 ('west', models.ForeignKey(related_name='+', default=None, to='mud.Room', null=True)),
@@ -196,7 +198,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='enemytemplate',
             name='loot',
-            field=models.ManyToManyField(to='mud.Item', through='mud.EnemyLoot'),
+            field=models.ManyToManyField(to='mud.Item', through='mud.EnemyLoot', blank=True),
             preserve_default=True,
         ),
         migrations.AddField(

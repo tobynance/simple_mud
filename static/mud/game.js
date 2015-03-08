@@ -13,7 +13,7 @@ $(document).ready(function(){
     $("#message_submit").click(function() {
         var user_text = $("#user_text");
         var client_message = user_text.val();
-        var data = {player_id: 1, text: client_message, csrfmiddlewaretoken: CSRF_TOKEN};
+        var data = {player_id: PLAYER_ID, text: client_message, csrfmiddlewaretoken: CSRF_TOKEN};
         $.ajax({
             type: "POST",
             url: SUBMIT_COMMAND_URL,
@@ -42,13 +42,15 @@ function get_data() {
     // Scroll height before the request
     var message_box = $("#message_box");
     var old_scroll_height = message_box[0].scrollHeight - 20;
-    var data = {player_id: 1,csrfmiddlewaretoken: CSRF_TOKEN};
+    var data = {player_id: PLAYER_ID, csrfmiddlewaretoken: CSRF_TOKEN};
     $.ajax({
         url: GET_MESSAGES_URL,
         type: "POST",
         cache: false,
         data: data,
         success: function(response) {
+            var health = "[" + response.hit_points + "/" + response.max_hit_points + "]";
+            $("#health_bar").text(health);
             if (response.messages.length > 0) {
                 // Insert chat log into the #message_box div
                 var message = "";

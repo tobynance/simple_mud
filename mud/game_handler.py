@@ -3,9 +3,8 @@ import re
 import datetime
 import random
 from django.template.loader import render_to_string
-from attributes import Direction
-from mud.models import Player, Store, StoreItem
-from utils import find_all_by_name, double_find_by_name, ItemType, PlayerRank, RoomType, HandlerType
+from mud.models import Player, Store, StoreItem, RoomItem
+from utils import ItemType, PlayerRank, RoomType, HandlerType, Direction
 
 logger = logging.getLogger(__name__)
 
@@ -246,8 +245,10 @@ def store_list(player):
 ####################################################################
 def buy(player, item_name):
     store = Store.objects.get(room=player.room)
-    items = [si.item for si in StoreItem.objects.filter(store=store)]
-    purchase_item = double_find_by_name(item_name, items)
+    items = StoreItem.objects.filter(store=store)
+    purchase_item = items.filter(name_iexact=item_name).first() or \
+                    items.filter(name_istartswith=item_name).first()
+
     if purchase_item is None:
         player.send_string("<p class='bold red'>Sorry, we don't have that item!</p>")
         return
@@ -263,7 +264,8 @@ def buy(player, item_name):
 ####################################################################
 def sell(player, item_name):
     store = Store.objects.get(room=player.room)
-    item = double_find_by_name(item_name, player.inventory)
+    item = player.inventory.filter(name_iexact=item_name).first() or \
+           player.inventory.filter(name_istartswith=item_name).first()
     if item is None:
         player.send_string("<p class='bold red'>Sorry, you don't have that!</p>")
         return
@@ -413,7 +415,7 @@ def print_inventory(player):
         armor = player.armor.name
     else:
         armor = "NONE!"
-    context = {"items": player.playerinventory_set.all(),
+    context = {"items": player.playeritem_set.all(),
                "weapon": weapon,
                "armor": armor,
                "money": player.money}
@@ -425,7 +427,7 @@ def print_inventory(player):
 ####################################################################
 ####################################################################
 def use_item(player, item_name):
-    for item in find_all_by_name(item_name, player.inventory.all()):
+    for item in player.inventory.filter(name__istartswith=item_name):
         if item.type == ItemType.WEAPON:
             player.use_weapon(item)
             player.room.send_room("<p class='bold green'>{} arms a {}.</p>".format(player.name, item.name))
@@ -474,12 +476,17 @@ def print_room(player):
     description.append(paths)
     description.append("</p>")
 
-    items = [item.name for item in current_room.items.all()]
-    if current_room.money:
-        items.insert(0, "${}".format(current_room.money))
-    if items:
+    if current_room.get_total_inventory_count() > 0 or current_room.money:
         description.append("<p class='yellow'>You see: ")
-        description.append(", ".join(items))
+        item_text = []
+        for room_item in RoomItem.objects.filter(room=current_room).order_by("created"):
+            if room_item.quantity > 1:
+                item_text.append("%s (%s)" % (room_item.item.name, room_item.quantity))
+            else:
+                item_text.append(room_item.item.name)
+        if current_room.money:
+            item_text.insert(0, "${}".format(current_room.money))
+        description.append(", ".join(item_text))
         description.append("</p>")
 
     player_names = [p.name for p in current_room.player_set.filter(active=True).exclude(id=player.id)]
@@ -563,15 +570,16 @@ def drop_item(player, item_name):
             amount = int(amount)
             if amount <= player.money:
                 player.money -= amount
+                player.save(update_fields=["money"])
                 player.room.money += amount
-                player.room.save(update_fields="money")
+                player.room.save(update_fields=["money"])
                 player.room.send_room("<p class='bold cyan'>{p.name} drops ${amount}</p>".format(p=player, amount=amount))
             else:
                 player.send_string("<p class='bold red'>You don't have that much money!</p>")
         else:
             player.send_string("<p class='bold red'>Invalid amount!</p>")
     else:
-        i = player.find_in_inventory(item_name)
+        i = player.inventory.filter(name__istartswith=item_name).first()
         if i is None:
             player.send_string("<p class='bold red'>You don't have that item!</p>")
         elif not player.drop_item(i):

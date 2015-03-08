@@ -1,46 +1,22 @@
 from collections import OrderedDict
+from enum import IntEnum
+
+
+########################################################################
+class Direction(IntEnum):
+    NORTH = 0
+    EAST = 1
+    SOUTH = 2
+    WEST = 3
+
+    ####################################################################
+    def opposite_direction(self):
+        return Direction((self.value + 2) % 4)
 
 
 ########################################################################
 def clamp(value, minimum=0.0, maximum=1.0):
     return min(maximum, max(minimum, value))
-
-
-########################################################################
-def match_full(name, input_text):
-    name = name.lower()
-    return name.lower() == input_text
-
-
-########################################################################
-def match(name, input_text):
-    name = name.lower()
-    if name == input_text:
-        return True
-    for part in name.split():
-        if part.startswith(input_text):
-            return True
-    return False
-
-
-########################################################################
-def find_all_by_name(input_text, list_entities):
-    input_text = input_text.lower()
-    for entity in list_entities:
-        if match(entity.name, input_text):
-            yield entity
-
-
-########################################################################
-def double_find_by_name(input_text, list_entities):
-    """First try to find an exact match, then try to do a less exact match"""
-    input_text = input_text.lower()
-    for entity in list_entities:
-        if match_full(entity.name, input_text):
-            return entity
-    for entity in list_entities:
-        if match(entity.name, input_text):
-            return entity
 
 
 ########################################################################
@@ -93,6 +69,7 @@ class DjangoChoiceEnum(object):
     ####################################################################
     def to_variable_name(self, key):
         return self._variables[key]
+
 
 ########################################################################
 ########################################################################

@@ -89,7 +89,7 @@ class Migration(migrations.Migration):
                 ('level', models.PositiveSmallIntegerField(default=1)),
                 ('money', models.PositiveIntegerField(default=0)),
                 ('next_attack_time', models.PositiveIntegerField(default=0)),
-                ('hit_points', models.PositiveIntegerField(default=1)),
+                ('hit_points', models.PositiveIntegerField(default=10)),
                 ('logged_in', models.BooleanField(default=False, db_index=True)),
                 ('active', models.BooleanField(default=False, db_index=True)),
                 ('newbie', models.BooleanField(default=True)),
@@ -120,10 +120,11 @@ class Migration(migrations.Migration):
             bases=(models.Model,),
         ),
         migrations.CreateModel(
-            name='PlayerInventory',
+            name='PlayerItem',
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('quantity', models.PositiveSmallIntegerField(default=1)),
+                ('created', models.DateTimeField(default=django.utils.timezone.now)),
                 ('item', models.ForeignKey(to='mud.Item')),
                 ('player', models.ForeignKey(to='mud.Player')),
             ],
@@ -154,10 +155,19 @@ class Migration(migrations.Migration):
                 ('money', models.PositiveIntegerField(default=0)),
                 ('east', models.ForeignKey(related_name='+', default=None, to='mud.Room', null=True)),
                 ('enemy_type', models.ForeignKey(default=None, to='mud.EnemyTemplate', null=True)),
-                ('items', models.ManyToManyField(to='mud.Item', blank=True)),
-                ('north', models.ForeignKey(related_name='+', default=None, to='mud.Room', null=True)),
-                ('south', models.ForeignKey(related_name='+', default=None, to='mud.Room', null=True)),
-                ('west', models.ForeignKey(related_name='+', default=None, to='mud.Room', null=True)),
+            ],
+            options={
+            },
+            bases=(models.Model,),
+        ),
+        migrations.CreateModel(
+            name='RoomItem',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('quantity', models.PositiveSmallIntegerField(default=1)),
+                ('created', models.DateTimeField(default=django.utils.timezone.now)),
+                ('item', models.ForeignKey(to='mud.Item')),
+                ('room', models.ForeignKey(to='mud.Room')),
             ],
             options={
             },
@@ -189,9 +199,33 @@ class Migration(migrations.Migration):
             unique_together=set([('store', 'item')]),
         ),
         migrations.AddField(
+            model_name='room',
+            name='items',
+            field=models.ManyToManyField(to='mud.Item', through='mud.RoomItem', blank=True),
+            preserve_default=True,
+        ),
+        migrations.AddField(
+            model_name='room',
+            name='north',
+            field=models.ForeignKey(related_name='+', default=None, to='mud.Room', null=True),
+            preserve_default=True,
+        ),
+        migrations.AddField(
+            model_name='room',
+            name='south',
+            field=models.ForeignKey(related_name='+', default=None, to='mud.Room', null=True),
+            preserve_default=True,
+        ),
+        migrations.AddField(
+            model_name='room',
+            name='west',
+            field=models.ForeignKey(related_name='+', default=None, to='mud.Room', null=True),
+            preserve_default=True,
+        ),
+        migrations.AddField(
             model_name='player',
             name='inventory',
-            field=models.ManyToManyField(to='mud.Item', through='mud.PlayerInventory', blank=True),
+            field=models.ManyToManyField(to='mud.Item', through='mud.PlayerItem', blank=True),
             preserve_default=True,
         ),
         migrations.AddField(

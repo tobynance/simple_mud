@@ -2,9 +2,9 @@ import logging
 from django.db import models, transaction
 import random
 import math
+from django.db.models import Sum
 from django.utils import timezone
-from attributes import Direction
-from utils import ItemType, RoomType, HandlerType, clamp, double_find_by_name
+from utils import ItemType, RoomType, HandlerType, clamp, Direction
 from django.contrib.auth.models import User
 
 logger = logging.getLogger(__name__)
@@ -48,7 +48,7 @@ class Room(models.Model):
     west = models.ForeignKey("Room", null=True, default=None, related_name="+")
     enemy_type = models.ForeignKey("EnemyTemplate", null=True, default=None)
     max_enemies = models.PositiveSmallIntegerField(default=0)
-    items = models.ManyToManyField(Item, blank=True)
+    items = models.ManyToManyField(Item, blank=True, through="RoomItem")
     money = models.PositiveIntegerField(default=0)
 
     ####################################################################
@@ -77,21 +77,61 @@ class Room(models.Model):
 
     ####################################################################
     def find_enemy(self, enemy_name):
-        return double_find_by_name(enemy_name, self.enemy_set.all())
+        return self.enemy_set.filter(name_iexact=enemy_name).first() or \
+               self.enemy_set.filter(name_istartswith=enemy_name).first()
+
+    ####################################################################
+    def get_total_inventory_count(self):
+        return RoomItem.objects.filter(room=self).aggregate(Sum("quantity"))["quantity__sum"] or 0
 
     ####################################################################
     def add_item(self, item):
-        while self.items.all().count() >= self.max_items:
-            self.remove_item(self.items.all().first())
-        self.items.add(item)
+        # Drop items if too many items
+        inventory_quantity = self.get_total_inventory_count()
+        logger.info("inventory_quantity: %s", inventory_quantity)
+        logger.info("max_items: %s", self.max_items)
+        while inventory_quantity >= self.max_items:
+            oldest = RoomItem.objects.filter(room=self).order_by("created").first()
+            if oldest.quantity > 1:
+                oldest.quantity -= 1
+                oldest.save(update_fields=["quantity"])
+            else:
+                RoomItem.objects.filter(room=self, item=oldest.item).delete()
+            inventory_quantity = self.get_total_inventory_count()
+
+        # Now add item
+        inventory_item = RoomItem.objects.filter(room=self, item=item).first()
+        if inventory_item:
+            inventory_item.quantity += 1
+            inventory_item.save(update_fields=["quantity"])
+        else:
+            RoomItem.objects.create(room=self, item=item)
 
     ####################################################################
     def find_item(self, item_name):
-        return double_find_by_name(item_name, self.items.all())
+        return self.items.filter(name_iexact=item_name).first() or \
+               self.items.filter(name_istartswith=item_name).first()
 
     ####################################################################
     def remove_item(self, item):
-        self.items.remove(item)
+        inventory_item = RoomItem.objects.filter(room=self, item=item).order_by("created").first()
+        if inventory_item:
+            if inventory_item.quantity > 1:
+                inventory_item.quantity -= 1
+                inventory_item.save(update_fields=["quantity"])
+            else:
+                RoomItem.objects.filter(room=self, item=item).delete()
+            return True
+        else:
+            return False
+
+
+########################################################################
+class RoomItem(models.Model):
+    room = models.ForeignKey(Room)
+    item = models.ForeignKey(Item)
+    quantity = models.PositiveSmallIntegerField(default=1)
+    created = models.DateTimeField(default=timezone.now)
 
 
 ########################################################################
@@ -279,7 +319,7 @@ class Player(models.Model):
     weapon = models.ForeignKey(Item, null=True, blank=True, default=None, related_name="+")
     armor = models.ForeignKey(Item, null=True, blank=True, default=None, related_name="+")
     room = models.ForeignKey(Room, on_delete=models.PROTECT)
-    inventory = models.ManyToManyField(Item, blank=True, through="PlayerInventory")
+    inventory = models.ManyToManyField(Item, blank=True, through="PlayerItem")
     logged_in = models.BooleanField(db_index=True, default=False)
     active = models.BooleanField(db_index=True, default=False)
     newbie = models.BooleanField(default=True)
@@ -423,13 +463,13 @@ class Player(models.Model):
 
     ####################################################################
     def drop_item(self, item):
-        inventory_item = PlayerInventory.objects.filter(player=self, item=item).first()
+        inventory_item = PlayerItem.objects.filter(player=self, item=item).order_by("created").first()
         if inventory_item:
             if inventory_item.quantity > 1:
                 inventory_item.quantity -= 1
                 inventory_item.save(update_fields=["quantity"])
             else:
-                PlayerInventory.objects.filter(player=self, item=item).delete()
+                PlayerItem.objects.filter(player=self, item=item).delete()
             return True
         else:
             return False
@@ -440,12 +480,12 @@ class Player(models.Model):
         logger.info("max_items: %s", self.max_items)
         logger.info("inventory: %s", self.inventory.count())
         if self.inventory.count() < self.max_items:
-            inventory_item = PlayerInventory.objects.filter(player=self, item=item).first()
+            inventory_item = PlayerItem.objects.filter(player=self, item=item).first()
             if inventory_item:
                 inventory_item.quantity += 1
                 inventory_item.save(update_fields=["quantity"])
             else:
-                PlayerInventory.objects.create(player=self, item=item)
+                PlayerItem.objects.create(player=self, item=item)
             return True
         else:
             return False
@@ -454,12 +494,12 @@ class Player(models.Model):
     def buy_item(self, item):
         if self.money >= item.price and self.inventory.count() < self.max_items:
             with transaction.atomic():
-                inventory_item = PlayerInventory.objects.filter(player=self, item=item).first()
+                inventory_item = PlayerItem.objects.filter(player=self, item=item).first()
                 if inventory_item:
                     inventory_item.quantity += 1
                     inventory_item.save(update_fields=["quantity"])
                 else:
-                    PlayerInventory.objects.create(player=self, item=item)
+                    PlayerItem.objects.create(player=self, item=item)
                 self.money -= item.price
                 self.save(update_fields=["money"])
             return True
@@ -610,10 +650,11 @@ class Player(models.Model):
 
 
 ########################################################################
-class PlayerInventory(models.Model):
+class PlayerItem(models.Model):
     player = models.ForeignKey(Player)
     item = models.ForeignKey(Item)
     quantity = models.PositiveSmallIntegerField(default=1)
+    created = models.DateTimeField(default=timezone.now)
 
 
 ########################################################################

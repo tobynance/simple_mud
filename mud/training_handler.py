@@ -29,7 +29,7 @@ def handle(player, data):
         print_stats(player, False)
 
 
-####################################################################
+########################################################################
 def enter(player):
     player.active = False
     if player.newbie:
@@ -46,7 +46,7 @@ def leave(player):
     pass
 
 
-####################################################################
+########################################################################
 def print_stats(player, clear_screen=True):
     context = {"name": player.name,
                "strength": player.strength,

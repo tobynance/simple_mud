@@ -1,4 +1,4 @@
-# apt-get install postgresql postgresql-contrib postgresql-client libpq-dev
+# apt-get install postgresql postgresql-contrib postgresql-client libpq-dev redis-server
 Django==1.7.4
 enum34==1.0.4
 mock==1.0.1

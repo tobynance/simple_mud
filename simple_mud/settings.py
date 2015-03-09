@@ -82,6 +82,12 @@ POSTGRES_DATABASES = {
 
 DATABASES = POSTGRES_DATABASES
 
+TESTING_DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+    }
+}
+
 # Internationalization
 # https://docs.djangoproject.com/en/1.7/topics/i18n/
 
@@ -208,3 +214,12 @@ LOGGING = {
         },
     }
 }
+
+
+if "test" in sys.argv:
+    TESTING = True
+else:
+    TESTING = False
+
+if TESTING:
+    DATABASES = TESTING_DATABASES

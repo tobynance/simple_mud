@@ -65,6 +65,13 @@ admin.site.register(mud.models.Enemy, EnemyAdmin)
 
 
 ########################################################################
+class EnemyLootAdmin(admin.ModelAdmin):
+    search_fields = ("enemy", "item")
+    list_display = ("enemy_template", "item", "percent_chance")
+
+admin.site.register(mud.models.EnemyLoot, EnemyLootAdmin)
+
+########################################################################
 class StoreAdmin(admin.ModelAdmin):
     search_fields = ["room"]
     list_display = ["room"]

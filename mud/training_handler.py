@@ -7,7 +7,7 @@ logger = logging.getLogger(__name__)
 
 ########################################################################
 def handle(player, data):
-    if data == "quit":
+    if data in ["quit", "leave", "exit"]:
         player.set_handler(HandlerType.GAME_HANDLER)
         return
     if data in ["1", "2", "3"]:

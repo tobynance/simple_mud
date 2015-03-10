@@ -66,6 +66,7 @@ a:hover { text-decoration:underline; }
 .red { color: #FF0000; }
 .white { color: #FFFFFF; }
 
+.reverse_red { color: #000000; background-color: #FF0000; }
 .table_data {
     font-weight: bold;
     color: #FFFFFF; }

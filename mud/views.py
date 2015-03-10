@@ -35,13 +35,16 @@ def get_messages(request):
     logger.debug("get_messages called")
     if request.method != "POST":
         return HttpResponseForbidden()
-    print "GET:", request.POST
     player_id = int(request.POST["player_id"])
     player = Player.objects.filter(user=request.user, id=player_id).first()
-    print "player:", player
     with transaction.atomic():
         query_set = PlayerMessage.objects.filter(player=player)
-        messages = [m.text for m in query_set.order_by("created")]
+        messages = []
+        for m in query_set.order_by("created"):
+            # timestamp = m.created.strftime("%H:%M:%S")
+            # text = "<br/><p>%s|%s</p>%s" % (m.id, timestamp, m.text)
+            text = m.text
+            messages.append(text)
         query_set.delete()
     output = {"hit_points": player.hit_points,
               "max_hit_points": player.max_hit_points,

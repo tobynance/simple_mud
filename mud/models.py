@@ -78,7 +78,7 @@ class Room(models.Model):
     ####################################################################
     def find_enemy(self, enemy_name):
         return self.enemy_set.filter(template__name__iexact=enemy_name).first() or \
-               self.enemy_set.filter(template__name__istartswith=enemy_name).first()
+               self.enemy_set.filter(template__name__icontains=enemy_name).first()
 
     ####################################################################
     def get_total_inventory_count(self):
@@ -110,7 +110,7 @@ class Room(models.Model):
     ####################################################################
     def find_item(self, item_name):
         return self.items.filter(name__iexact=item_name).first() or \
-               self.items.filter(name__istartswith=item_name).first()
+               self.items.filter(name__icontains=item_name).first()
 
     ####################################################################
     def remove_item(self, item):
@@ -476,6 +476,12 @@ class Player(models.Model):
                 inventory_item.save(update_fields=["quantity"])
             else:
                 PlayerItem.objects.filter(player=self, item=item).delete()
+                if item == self.weapon:
+                    self.weapon = None
+                    self.save(update_fields=["weapon"])
+                if item == self.armor:
+                    self.armor = None
+                    self.save(update_fields=["armor"])
             return True
         else:
             return False
@@ -517,6 +523,7 @@ class Player(models.Model):
         with transaction.atomic():
             self.drop_item(item)
             self.money += item.price
+            self.save(update_fields=["money"])
 
     ####################################################################
     def remove_weapon(self):
@@ -544,7 +551,7 @@ class Player(models.Model):
 
     ####################################################################
     def killed(self):
-        self.room.send_room("<p class='bold red'>{} has died!</p>".format(self.name))
+        self.room.send_room("<br/><br/><p class='reverse_red'>{} has died!</p>".format(self.name))
         money = self.money // 10
         # calculate how much money to drop
         if money > 0:

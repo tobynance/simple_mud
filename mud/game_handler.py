@@ -155,7 +155,7 @@ def handle_train(player, data, first_word, rest):
 
 
 ####################################################################
-def handle_editstats(player, data, first_word, rest):
+def handle_edit_stats(player, data, first_word, rest):
     if player.room.type != RoomType.TRAINING_ROOM:
         player.send_string("<p class='bold red'>You cannot edit your stats here!</p>")
         return
@@ -247,7 +247,7 @@ def buy(player, item_name):
     store = Store.objects.get(room=player.room)
     items = StoreItem.objects.filter(store=store)
     purchase_item = items.filter(item__name__iexact=item_name).first() or \
-                    items.filter(item__name__istartswith=item_name).first()
+                    items.filter(item__name__icontains=item_name).first()
 
     if purchase_item is None:
         player.send_string("<p class='bold red'>Sorry, we don't have that item!</p>")
@@ -268,7 +268,7 @@ def buy(player, item_name):
 def sell(player, item_name):
     store = Store.objects.get(room=player.room)
     item = player.inventory.filter(name__iexact=item_name).first() or \
-           player.inventory.filter(name__istartswith=item_name).first()
+           player.inventory.filter(name__icontains=item_name).first()
     if item is None:
         player.send_string("<p class='bold red'>Sorry, you don't have that!</p>")
         return
@@ -332,9 +332,9 @@ def announce(announcement):
 
 
 ########################################################################
-def whisper(player, message, player_name):
+def whisper(player, player_name, message):
     """Sends a whisper string to the requested player"""
-    other_player = Player.objects.filter(active=True, name=player_name).first()
+    other_player = Player.objects.filter(active=True, name__iexact=player_name).first()
     if other_player is None:
         player.send_string("<p class='bold red'>" + "Error, cannot find user.")
     else:
@@ -430,7 +430,7 @@ def print_inventory(player):
 ####################################################################
 ####################################################################
 def use_item(player, item_name):
-    for item in player.inventory.filter(name__istartswith=item_name):
+    for item in player.inventory.filter(name__icontains=item_name):
         if item.type == ItemType.WEAPON:
             player.use_weapon(item)
             player.room.send_room("<p class='bold green'>{} arms a {}.</p>".format(player.name, item.name))
@@ -465,9 +465,6 @@ def remove_item(player, item_name):
     return False
 
 
-####################################################################
-# Map Functions Added in Chapter 9                               ###
-####################################################################
 ####################################################################
 def print_room(player):
     current_room = player.room
@@ -582,7 +579,7 @@ def drop_item(player, item_name):
         else:
             player.send_string("<p class='bold red'>Invalid amount!</p>")
     else:
-        i = player.inventory.filter(name__istartswith=item_name).first()
+        i = player.inventory.filter(name__icontains=item_name).first()
         if i is None:
             player.send_string("<p class='bold red'>You don't have that item!</p>")
         elif not player.drop_item(i):
@@ -597,7 +594,7 @@ def drop_item(player, item_name):
 data_handlers = [
     ("/", handle_last_command),
     (["chat", ":"], handle_chat),
-    (["experience", "exp"], handle_experience),
+    (["experience", "exp", "xp"], handle_experience),
     (["help", "commands"], handle_help),
     (["inventory", "i"], handle_inventory),
     (["stats", "st"], handle_stats),
@@ -609,13 +606,13 @@ data_handlers = [
     ("who", handle_who),
     ("announce", handle_announce),
     ("train", handle_train),
-    ("editstats", handle_editstats),
+    ("editstats", handle_edit_stats),
     (["look", "l"], handle_look),
     (["north", "n"], handle_north),
     (["east", "e"], handle_east),
     (["south", "s"], handle_south),
     (["west", "w"], handle_west),
-    ("get", handle_get),
+    (["get", "take"], handle_get),
     ("drop", handle_drop),
     ("list", handle_list),
     ("buy", handle_buy),

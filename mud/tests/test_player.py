@@ -1,15 +1,237 @@
 from django.test import TestCase
-from mud.models import Player, Room, User
+from mud.models import Player, Room, User, Item
 from mud import game_handler
 
 
 ########################################################################
 class PlayerTest(TestCase):
+    fixtures = ["initial_items.json",
+                "initial_rooms.json",
+                "initial_enemy_templates.json"]
+
     ####################################################################
-    def test_print_experience(self):
-        self.assertEqual(User.objects.all().count(), 0)
-        u = User.objects.create(username="test.user")
-        r = Room.objects.create(name="Town Square")
-        p = Player.objects.create(name="test.user", user=u, room=r)
-        content = game_handler.print_experience(p)
-        self.assertEqual(content, "b")
+    def setUp(self):
+        self.user = User.objects.create(username="test.user")
+        self.room1 = Room.objects.get(name="Town Square")
+        self.room2 = Room.objects.get(id=2)
+        self.player = Player.objects.create(name="jerry_john", user=self.user, room=self.room1)
+
+    ####################################################################
+    def test_who_text(self):
+        m = "<tr><td>jerry_john</td><td class='yellow'>Offline</td></tr>"
+        self.assertEqual(self.player.who_text(), m)
+
+    ####################################################################
+    def test_find_active(self):
+        self.assertEqual(None, Player.objects.active.filter(name="jerry_john").first())
+        self.player.active = True
+        self.player.save(update_fields=["active"])
+        self.assertEqual(self.player, Player.objects.active.filter(name="jerry_john").first())
+
+    ####################################################################
+    def test_logout(self):
+        # Make sure we forward the user to the player choice page
+        # probably should be moved into a test_views.py file.
+        user = self.player_database.find("user")
+        user.logged_in = True
+        self.assertTrue(self.player_database.find_logged_in("user").logged_in)
+        self.player_database.logout(user.id)
+        self.assertEqual(self.player_database.find_logged_in("user"), None)
+
+    ####################################################################
+    def add_players(self):
+        Player.objects.create(name="a", active=True)
+        Player.objects.create(name="b", active=False)
+
+    ####################################################################
+    def test_recalculate_stats(self):
+        self.player.modifier_accuracy = 18
+
+        self.assertEqual(self.player.accuracy, 21)
+        self.assertEqual(self.player.agility, 1)
+        self.assertEqual(self.player.base_accuracy, 0)
+        self.assertEqual(self.player.base_agility, 1)
+        self.assertEqual(self.player.base_damage_absorb, 0)
+        self.assertEqual(self.player.base_dodging, 0)
+        self.assertEqual(self.player.base_health, 1)
+        self.assertEqual(self.player.base_hp_regen, 0)
+        self.assertEqual(self.player.base_max_hit_points, 0)
+        self.assertEqual(self.player.base_strength, 1)
+        self.assertEqual(self.player.base_strike_damage, 0)
+        self.assertEqual(self.player.damage_absorb, 0)
+        self.assertEqual(self.player.dodging, 3)
+        self.assertEqual(self.player.health, 1)
+        self.assertEqual(self.player.hp_regen, 1)
+        self.assertEqual(self.player.max_hit_points, 10)
+        self.assertEqual(self.player.modifier_accuracy, 18)
+        self.assertEqual(self.player.modifier_agility, 0)
+        self.assertEqual(self.player.modifier_damage_absorb, 0)
+        self.assertEqual(self.player.modifier_dodging, 0)
+        self.assertEqual(self.player.modifier_health, 0)
+        self.assertEqual(self.player.modifier_hp_regen, 0)
+        self.assertEqual(self.player.modifier_max_hit_points, 0)
+        self.assertEqual(self.player.modifier_strength, 0)
+        self.assertEqual(self.player.modifier_strike_damage, 0)
+        self.assertEqual(self.player.strength, 1)
+        self.assertEqual(self.player.strike_damage, 0)
+
+        self.player.recalculate_stats()
+        self.assertEqual(self.player.accuracy, 3)
+        self.assertEqual(self.player.agility, 1)
+        self.assertEqual(self.player.base_accuracy, 0)
+        self.assertEqual(self.player.base_agility, 1)
+        self.assertEqual(self.player.base_damage_absorb, 0)
+        self.assertEqual(self.player.base_dodging, 0)
+        self.assertEqual(self.player.base_health, 1)
+        self.assertEqual(self.player.base_hp_regen, 0)
+        self.assertEqual(self.player.base_max_hit_points, 0)
+        self.assertEqual(self.player.base_strength, 1)
+        self.assertEqual(self.player.base_strike_damage, 0)
+        self.assertEqual(self.player.damage_absorb, 0)
+        self.assertEqual(self.player.dodging, 3)
+        self.assertEqual(self.player.health, 1)
+        self.assertEqual(self.player.hp_regen, 1)
+        self.assertEqual(self.player.max_hit_points, 10)
+        self.assertEqual(self.player.modifier_accuracy, 0)
+        self.assertEqual(self.player.modifier_agility, 0)
+        self.assertEqual(self.player.modifier_damage_absorb, 0)
+        self.assertEqual(self.player.modifier_dodging, 0)
+        self.assertEqual(self.player.modifier_health, 0)
+        self.assertEqual(self.player.modifier_hp_regen, 0)
+        self.assertEqual(self.player.modifier_max_hit_points, 0)
+        self.assertEqual(self.player.modifier_strength, 0)
+        self.assertEqual(self.player.modifier_strike_damage, 0)
+        self.assertEqual(self.player.strength, 1)
+        self.assertEqual(self.player.strike_damage, 0)
+
+    ####################################################################
+    def test_add_and_remove_item(self):
+        item = Item.objects.get(id=55)
+        self.assertEqual(self.player.accuracy, 3)
+        self.assertEqual(self.player.agility, 1)
+        self.assertEqual(self.player.base_accuracy, 0)
+        self.assertEqual(self.player.base_agility, 1)
+        self.assertEqual(self.player.base_damage_absorb, 0)
+        self.assertEqual(self.player.base_dodging, 0)
+        self.assertEqual(self.player.base_health, 1)
+        self.assertEqual(self.player.base_hp_regen, 0)
+        self.assertEqual(self.player.base_max_hit_points, 0)
+        self.assertEqual(self.player.base_strength, 1)
+        self.assertEqual(self.player.base_strike_damage, 0)
+        self.assertEqual(self.player.damage_absorb, 0)
+        self.assertEqual(self.player.dodging, 3)
+        self.assertEqual(self.player.health, 1)
+        self.assertEqual(self.player.hp_regen, 1)
+        self.assertEqual(self.player.max_hit_points, 10)
+        self.assertEqual(self.player.modifier_accuracy, 0)
+        self.assertEqual(self.player.modifier_agility, 0)
+        self.assertEqual(self.player.modifier_damage_absorb, 0)
+        self.assertEqual(self.player.modifier_dodging, 0)
+        self.assertEqual(self.player.modifier_health, 0)
+        self.assertEqual(self.player.modifier_hp_regen, 0)
+        self.assertEqual(self.player.modifier_max_hit_points, 0)
+        self.assertEqual(self.player.modifier_strength, 0)
+        self.assertEqual(self.player.modifier_strike_damage, 0)
+        self.assertEqual(self.player.strength, 1)
+        self.assertEqual(self.player.strike_damage, 0)
+
+        self.player.use_armor(item)
+        self.assertEqual(self.player.modifier_accuracy, 10)
+        self.assertEqual(self.player.modifier_agility, 0)
+        self.assertEqual(self.player.modifier_damage_absorb, 5)
+        self.assertEqual(self.player.modifier_dodging, 60)
+        self.assertEqual(self.player.modifier_health, 0)
+        self.assertEqual(self.player.modifier_hp_regen, 0)
+        self.assertEqual(self.player.modifier_max_hit_points, 0)
+        self.assertEqual(self.player.modifier_strength, 0)
+        self.assertEqual(self.player.modifier_strike_damage, 10)
+        self.assertEqual(self.player.accuracy, 13)
+        self.assertEqual(self.player.agility, 1)
+        self.assertEqual(self.player.base_accuracy, 0)
+        self.assertEqual(self.player.base_agility, 1)
+        self.assertEqual(self.player.base_damage_absorb, 0)
+        self.assertEqual(self.player.base_dodging, 0)
+        self.assertEqual(self.player.base_health, 1)
+        self.assertEqual(self.player.base_hp_regen, 0)
+        self.assertEqual(self.player.base_max_hit_points, 0)
+        self.assertEqual(self.player.base_strength, 1)
+        self.assertEqual(self.player.base_strike_damage, 0)
+        self.assertEqual(self.player.damage_absorb, 5)
+        self.assertEqual(self.player.dodging, 63)
+        self.assertEqual(self.player.health, 1)
+        self.assertEqual(self.player.hp_regen, 1)
+        self.assertEqual(self.player.max_hit_points, 10)
+        self.assertEqual(self.player.strength, 1)
+        self.assertEqual(self.player.strike_damage, 10)
+
+        self.player.remove_armor()
+        self.assertEqual(self.player.accuracy, 3)
+        self.assertEqual(self.player.agility, 1)
+        self.assertEqual(self.player.base_accuracy, 0)
+        self.assertEqual(self.player.base_agility, 1)
+        self.assertEqual(self.player.base_damage_absorb, 0)
+        self.assertEqual(self.player.base_dodging, 0)
+        self.assertEqual(self.player.base_health, 1)
+        self.assertEqual(self.player.base_hp_regen, 0)
+        self.assertEqual(self.player.base_max_hit_points, 0)
+        self.assertEqual(self.player.base_strength, 1)
+        self.assertEqual(self.player.base_strike_damage, 0)
+        self.assertEqual(self.player.damage_absorb, 0)
+        self.assertEqual(self.player.dodging, 3)
+        self.assertEqual(self.player.health, 1)
+        self.assertEqual(self.player.hp_regen, 1)
+        self.assertEqual(self.player.max_hit_points, 10)
+        self.assertEqual(self.player.modifier_accuracy, 0)
+        self.assertEqual(self.player.modifier_agility, 0)
+        self.assertEqual(self.player.modifier_damage_absorb, 0)
+        self.assertEqual(self.player.modifier_dodging, 0)
+        self.assertEqual(self.player.modifier_health, 0)
+        self.assertEqual(self.player.modifier_hp_regen, 0)
+        self.assertEqual(self.player.modifier_max_hit_points, 0)
+        self.assertEqual(self.player.modifier_strength, 0)
+        self.assertEqual(self.player.modifier_strike_damage, 0)
+        self.assertEqual(self.player.strength, 1)
+        self.assertEqual(self.player.strike_damage, 0)
+
+    ####################################################################
+    def test_add_bonuses(self):
+        item = Item.objects.get(id=34)
+
+        self.assertEqual(item.strength, 0)
+        self.assertEqual(item.health, 0)
+        self.assertEqual(item.agility, 2)
+        self.assertEqual(item.max_hit_points, 0)
+        self.assertEqual(item.accuracy, 0)
+        self.assertEqual(item.dodging, 0)
+        self.assertEqual(item.strike_damage, 0)
+        self.assertEqual(item.damage_absorb, 0)
+        self.assertEqual(item.hp_regen, 0)
+
+        self.player.add_bonuses(item)
+        self.assertEqual(self.player.accuracy, 9)
+        self.assertEqual(self.player.agility, 3)
+        self.assertEqual(self.player.base_accuracy, 0)
+        self.assertEqual(self.player.base_agility, 3)
+        self.assertEqual(self.player.base_damage_absorb, 0)
+        self.assertEqual(self.player.base_dodging, 0)
+        self.assertEqual(self.player.base_health, 1)
+        self.assertEqual(self.player.base_hp_regen, 0)
+        self.assertEqual(self.player.base_max_hit_points, 0)
+        self.assertEqual(self.player.base_strength, 1)
+        self.assertEqual(self.player.base_strike_damage, 0)
+        self.assertEqual(self.player.damage_absorb, 0)
+        self.assertEqual(self.player.dodging, 9)
+        self.assertEqual(self.player.health, 1)
+        self.assertEqual(self.player.hp_regen, 1)
+        self.assertEqual(self.player.max_hit_points, 10)
+        self.assertEqual(self.player.modifier_accuracy, 0)
+        self.assertEqual(self.player.modifier_agility, 0)
+        self.assertEqual(self.player.modifier_damage_absorb, 0)
+        self.assertEqual(self.player.modifier_dodging, 0)
+        self.assertEqual(self.player.modifier_health, 0)
+        self.assertEqual(self.player.modifier_hp_regen, 0)
+        self.assertEqual(self.player.modifier_max_hit_points, 0)
+        self.assertEqual(self.player.modifier_strength, 0)
+        self.assertEqual(self.player.modifier_strike_damage, 0)
+        self.assertEqual(self.player.strength, 1)
+        self.assertEqual(self.player.strike_damage, 0)

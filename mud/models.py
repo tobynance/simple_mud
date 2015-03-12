@@ -1,4 +1,5 @@
 import logging
+from django.core import validators
 from django.db import models, transaction
 import random
 import math
@@ -307,11 +308,19 @@ class Enemy(models.Model):
 
 
 ########################################################################
+class PlayerManager(models.Manager):
+    ####################################################################
+    @property
+    def active(self):
+        return super(PlayerManager, self).get_query_set().filter(active=True)
+
+
+########################################################################
 class Player(models.Model):
     max_items = 16
     user = models.ForeignKey(User)
     last_command = models.CharField(max_length=60, default="look")
-    name = models.CharField(max_length=60, db_index=True, unique=True)
+    name = models.CharField(max_length=60, db_index=True, unique=True, blank=False)
     stat_points = models.PositiveIntegerField(default=18)
     experience = models.PositiveIntegerField(default=0)
     level = models.PositiveSmallIntegerField(default=1)
@@ -347,6 +356,8 @@ class Player(models.Model):
     modifier_damage_absorb = models.SmallIntegerField(default=0)
     modifier_hp_regen = models.SmallIntegerField(default=0)
     created = models.DateTimeField(default=timezone.now)
+
+    objects = PlayerManager()
 
     ####################################################################
     @property

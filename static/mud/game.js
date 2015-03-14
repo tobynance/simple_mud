@@ -1,16 +1,7 @@
 
 //*********************************************************************
-$(document).ready(function(){
-    // If the user wants to end session
-    $("#exit").click(function() {
-        var exit = confirm("Are you sure you want to end the session?");
-        if (exit == true)
-        {
-            window.location = HOME_URL;
-        }
-    });
-
-    $("#message_submit").click(function() {
+function pressed_key(e) {
+    if (e.keyCode == 13) {
         var user_text = $("#user_text");
         var client_message = user_text.val();
         var data = {player_id: PLAYER_ID, text: client_message, csrfmiddlewaretoken: CSRF_TOKEN};
@@ -29,10 +20,21 @@ $(document).ready(function(){
                 console.log("fail");
                 console.log(data);
                 user_text.focus();
-            }});
-
-        return false;
+            }
+        });
+    }
+}
+$(document).ready(function(){
+    // If the user wants to end session
+    $("#exit").click(function() {
+        var exit = confirm("Are you sure you want to end the session?");
+        if (exit == true)
+        {
+            window.location = HOME_URL;
+        }
     });
+
+    $("#user_text").keypress(pressed_key);
 
     // Reload data every 700ms
     setInterval(get_data, 700);
@@ -60,16 +62,15 @@ function get_data() {
             if (response.messages.length > 0) {
                 // Insert chat log into the #message_box div
                 var message = "";
-                var old_messages = message_box.html();
                 for (var i = 0; i < response.messages.length; i++) {
                     var m = response.messages[i];
                     if (starts_with(m, "<clearscreen>")) {
                         m = m.slice(13);
-                        old_messages = "";
+                        message_box.html("");
                     }
                     message += m;
                 }
-                message_box.html(old_messages + message);
+                message_box.append(message);
 
                 // Auto-scroll
                 // Scroll height after the request

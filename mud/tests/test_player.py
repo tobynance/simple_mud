@@ -1,6 +1,5 @@
 from django.test import TestCase
 from mud.models import Player, Room, User, Item
-from mud import game_handler
 
 
 ########################################################################
@@ -32,8 +31,8 @@ class PlayerTest(TestCase):
     def test_logout(self):
         # Make sure we forward the user to the player choice page
         # probably should be moved into a test_views.py file.
-        user = self.player_database.find("user")
-        user.logged_in = True
+        player = Player.objects.get(name="user")
+        player.logged_in = True
         self.assertTrue(self.player_database.find_logged_in("user").logged_in)
         self.player_database.logout(user.id)
         self.assertEqual(self.player_database.find_logged_in("user"), None)
